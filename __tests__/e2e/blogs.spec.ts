@@ -3,6 +3,11 @@ import request from 'supertest';
 import { Routes } from '../../src/app/routes';
 import { HttpStatus } from '../../src/core/types/HttpStatus';
 import { BlogType, InputBlogType } from '../../src/entities/blogs/types';
+import {
+  MAX_BLOG_DESCRIPTION_LENGTH,
+  MAX_BLOG_NAME_LENGTH,
+  MAX_BLOG_WEBSITE_URL_LENGTH,
+} from '../../src/entities/blogs/constants';
 const app = createApp();
 
 const correctInputBlog: InputBlogType = {
@@ -29,17 +34,30 @@ const createCorrectBlog = async (changedFields: Partial<InputBlogType> = {}) => 
   return response;
 };
 
-// const createInorrectBlog = async (changedFields: {}) => {
-//   const inputBlog = {
-//     name: 'IT-KAMASUTRA',
-//     description: 'Web development lessons',
-//     websiteUrl: 'https://it-kamasutra.io',
-//     ...changedFields,
-//   };
-//   const response = await request(app).post(Routes.Blogs).send(inputBlog);
-//   expect(response.status).toBe(HttpStatus.Bad_Request);
-//   return response;
-// };
+const createInorrectBlog = async (
+  changedFields: Partial<InputBlogType> = {},
+  excludedFileds: (keyof InputBlogType)[] = []
+) => {
+  const inputBlog = { ...correctInputBlog };
+
+  Object.assign(inputBlog, changedFields);
+
+  for (const key of excludedFileds) {
+    delete inputBlog[key];
+  }
+
+  const response = await request(app).post(Routes.Blogs).send(inputBlog);
+  expect(response.status).toBe(HttpStatus.Bad_Request);
+  expect(response.body).toEqual({
+    errorsMessages: expect.arrayContaining([
+      expect.objectContaining({
+        field: expect.any(String),
+        message: expect.any(String),
+      }),
+    ]),
+  });
+  return response;
+};
 
 beforeEach(async () => {
   await request(app).delete(`${Routes.Testing}/all-data`).expect(HttpStatus.No_Content);
@@ -86,6 +104,107 @@ describe(`POST ${Routes.Blogs}`, () => {
     it('all data is correct', async () => {
       await createCorrectBlog();
     });
+
+    it('name length equal 1', async () => {
+      await createCorrectBlog({ name: 'p' });
+    });
+
+    it('description length equal 1', async () => {
+      await createCorrectBlog({ description: 'p' });
+    });
+
+    it(`name length equal max: ${MAX_BLOG_NAME_LENGTH}`, async () => {
+      await createCorrectBlog({ name: 'p'.repeat(MAX_BLOG_NAME_LENGTH) });
+    });
+
+    it(`description length equal max: ${MAX_BLOG_DESCRIPTION_LENGTH}`, async () => {
+      await createCorrectBlog({ description: 'p'.repeat(MAX_BLOG_DESCRIPTION_LENGTH) });
+    });
+
+    it(`websiteUrl length equal max: ${MAX_BLOG_WEBSITE_URL_LENGTH}`, async () => {
+      const longUrl = 'https://' + 'p'.repeat(MAX_BLOG_WEBSITE_URL_LENGTH - 12) + '.io';
+      await createCorrectBlog({ websiteUrl: longUrl });
+    });
+
+    const correctURLs = [
+      'https://it-incubator.io',
+      'https://it_incubator.io',
+      'https://it__incubator.io',
+      'https://it-incubator2026.io',
+      'https://it-incubator.com',
+      'https://it-incubator.io/',
+      'https://IT-incubator.io/',
+      'https://it-incubator.io/courses',
+      'https://it-incubator.io/courses/2',
+      'https://it-incubator.io/students/courses/2',
+    ];
+
+    for (const correctURL of correctURLs) {
+      it(`websiteUrl is correct: ${correctURL}`, async () => {
+        await createCorrectBlog({ websiteUrl: correctURL });
+      });
+    }
+
+  });
+
+  describe(`should return ${HttpStatus.Bad_Request}`, () => {
+    it('several fields has error', async () => {
+      const response = await createInorrectBlog({ description: '' }, ['name']);
+      expect(response.body.errorsMessages.length).toBe(2);
+      expect(response.body.errorsMessages).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ field: 'name' }),
+          expect.objectContaining({ field: 'description' }),
+        ])
+      );
+    });
+
+    for (const key in correctInputBlog) {
+      it(`"${key}" not passed`, async () => {
+        await createInorrectBlog({}, [key as keyof InputBlogType]);
+      });
+    }
+
+    for (const key in correctInputBlog) {
+      it(`${key} is empty string`, async () => {
+        await createInorrectBlog({ [key as keyof InputBlogType]: '' });
+      });
+    }
+
+    for (const key in correctInputBlog) {
+      it(`${key} is not string`, async () => {
+        await createInorrectBlog({ [key as keyof InputBlogType]: 10 });
+      });
+    }
+
+    it(`description length more than ${MAX_BLOG_DESCRIPTION_LENGTH}`, async () => {
+      await createInorrectBlog({ description: 'p'.repeat(MAX_BLOG_DESCRIPTION_LENGTH + 1) });
+    });
+
+    it(`name length more than ${MAX_BLOG_NAME_LENGTH}`, async () => {
+      await createInorrectBlog({ name: 'p'.repeat(MAX_BLOG_NAME_LENGTH + 1) });
+    });
+
+    it(`description length more than ${MAX_BLOG_DESCRIPTION_LENGTH}`, async () => {
+      await createInorrectBlog({ description: 'p'.repeat(MAX_BLOG_DESCRIPTION_LENGTH + 1) });
+    });
+
+    it(`websiteUrl length more than ${MAX_BLOG_WEBSITE_URL_LENGTH}`, async () => {
+      await createInorrectBlog({ websiteUrl: 'p'.repeat(MAX_BLOG_WEBSITE_URL_LENGTH + 1) });
+    });
+
+    const incorrectURLs = [
+      'http://it-incubator.io',
+      'https:/it-incubator.io',
+      'https:/it-incubator',
+      'it-incubator.io',
+    ];
+
+    for (const incorrectURL of incorrectURLs) {
+      it(`websiteUrl is incorrect: ${incorrectURL}`, async () => {
+        await createInorrectBlog({ websiteUrl: incorrectURL });
+      });
+    }
   });
 });
 
@@ -121,8 +240,7 @@ describe(`DELETE ${Routes.Blogs}/:id`, () => {
   describe(`should return ${HttpStatus.No_Content} status code if blog was successfuly deleted`, () => {
     it('blog exist', async () => {
       const postResponse = await createCorrectBlog();
-      const deleteResponse = await request(app)
-        .delete(`${Routes.Blogs}/${postResponse.body.id}`);
+      const deleteResponse = await request(app).delete(`${Routes.Blogs}/${postResponse.body.id}`);
       expect(deleteResponse.status).toBe(HttpStatus.No_Content);
       const getResponse = await request(app).get(`${Routes.Blogs}/${postResponse.body.id}`);
       expect(getResponse.status).toBe(HttpStatus.Not_Found);
