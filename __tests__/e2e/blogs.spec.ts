@@ -18,7 +18,10 @@ const correctInputBlog: InputBlogType = {
 
 const notExistBlogId = 'p'.repeat(5);
 
-const createCorrectBlog = async (changedFields: Partial<InputBlogType> = {}) => {
+const createCorrectBlog = async (
+  changedFields: Partial<InputBlogType> = {},
+  expectedFileds: Partial<InputBlogType> = {}
+) => {
   const inputBlog: InputBlogType = {
     ...correctInputBlog,
     ...changedFields,
@@ -27,6 +30,7 @@ const createCorrectBlog = async (changedFields: Partial<InputBlogType> = {}) => 
     id: expect.any(String),
     ...correctInputBlog,
     ...changedFields,
+    ...expectedFileds,
   };
   const response = await request(app).post(Routes.Blogs).send(inputBlog);
   expect(response.status).toBe(HttpStatus.Created);
@@ -57,6 +61,52 @@ const createInorrectBlog = async (
     ]),
   });
   return response;
+};
+
+const correctUpdateBlog = async (
+  changedFields: Partial<InputBlogType>,
+  expectedFileds: Partial<InputBlogType> = {}
+) => {
+  const createResponse = await createCorrectBlog();
+  const { id, ...createdBlog } = { ...createResponse.body };
+  const dataForUpdate = {
+    ...createdBlog,
+    ...changedFields,
+  };
+
+  const expectedBlog: BlogType = {
+    id: expect.any(String),
+    ...dataForUpdate,
+    ...expectedFileds,
+  };
+
+  const updateResponse = await request(app).put(`${Routes.Blogs}/${id}`).send(dataForUpdate);
+  expect(updateResponse.status).toBe(HttpStatus.No_Content);
+  const getResponse = await request(app).get(`${Routes.Blogs}/${id}`);
+
+  expect(getResponse.body).toEqual(expectedBlog);
+};
+
+const incorrectUpdateBlog = async (
+  changedFields: Partial<InputBlogType>,
+  excludedFileds: (keyof InputBlogType)[] = []
+) => {
+  const createResponse = await createCorrectBlog();
+  const { id, ...createdBlog } = { ...createResponse.body };
+  const dataForUpdate = {
+    ...createdBlog,
+    ...changedFields,
+  };
+
+  for (const key of excludedFileds) {
+    delete dataForUpdate[key];
+  }
+
+  const updateResponse = await request(app).put(`${Routes.Blogs}/${id}`).send(dataForUpdate);
+  expect(updateResponse.status).toBe(HttpStatus.Bad_Request);
+  const getResponse = await request(app).get(`${Routes.Blogs}/${id}`);
+  expect(getResponse.body).toEqual(createResponse.body);
+  return updateResponse;
 };
 
 beforeEach(async () => {
@@ -105,6 +155,10 @@ describe(`POST ${Routes.Blogs}`, () => {
       await createCorrectBlog();
     });
 
+    it('name has spaces', async () => {
+      await createCorrectBlog({ name: '   IT-INCUBATOR  ' }, { name: 'IT-INCUBATOR' });
+    });
+
     it('name length equal 1', async () => {
       await createCorrectBlog({ name: 'p' });
     });
@@ -144,7 +198,6 @@ describe(`POST ${Routes.Blogs}`, () => {
         await createCorrectBlog({ websiteUrl: correctURL });
       });
     }
-
   });
 
   describe(`should return ${HttpStatus.Bad_Request}`, () => {
@@ -160,7 +213,7 @@ describe(`POST ${Routes.Blogs}`, () => {
     });
 
     for (const key in correctInputBlog) {
-      it(`"${key}" not passed`, async () => {
+      it(`${key} not passed`, async () => {
         await createInorrectBlog({}, [key as keyof InputBlogType]);
       });
     }
@@ -211,19 +264,57 @@ describe(`POST ${Routes.Blogs}`, () => {
 describe(`PUT ${Routes.Blogs}/:id`, () => {
   describe(`should update blog, return ${HttpStatus.No_Content} status code`, () => {
     it('all data is correct', async () => {
-      const postResponse = await createCorrectBlog();
-      const updateBlogData: InputBlogType = {
-        ...correctInputBlog,
-        name: 'Updated name',
+      const dataForUpdate = {
+        name: 'IT-INCUBATOR',
+        description: 'Best programming school ever',
+        websiteUrl: 'https://it-incubator.io',
       };
-      const updateResponse = await request(app)
-        .put(`${Routes.Blogs}/${postResponse.body.id}`)
-        .send(updateBlogData);
-      expect(updateResponse.status).toBe(HttpStatus.No_Content);
-      const getResponse = await request(app).get(`${Routes.Blogs}/${postResponse.body.id}`);
-      expect(getResponse.status).toBe(HttpStatus.Ok);
-      expect(getResponse.body.name).toBe(updateBlogData.name);
+      await correctUpdateBlog(dataForUpdate);
     });
+
+    it('name has spaces', async () => {
+      await correctUpdateBlog({ name: '   IT-INCUBATOR  ' }, { name: 'IT-INCUBATOR' });
+    });
+
+    it('name length equal 1', async () => {
+      await correctUpdateBlog({ name: 'p' });
+    });
+
+    it('description length equal 1', async () => {
+      await correctUpdateBlog({ description: 'p' });
+    });
+
+    it(`name length equal max: ${MAX_BLOG_NAME_LENGTH}`, async () => {
+      await correctUpdateBlog({ name: 'p'.repeat(MAX_BLOG_NAME_LENGTH) });
+    });
+
+    it(`description length equal max: ${MAX_BLOG_DESCRIPTION_LENGTH}`, async () => {
+      await correctUpdateBlog({ description: 'p'.repeat(MAX_BLOG_DESCRIPTION_LENGTH) });
+    });
+
+    it(`websiteUrl length equal max: ${MAX_BLOG_WEBSITE_URL_LENGTH}`, async () => {
+      const longUrl = 'https://' + 'p'.repeat(MAX_BLOG_WEBSITE_URL_LENGTH - 12) + '.io';
+      await correctUpdateBlog({ websiteUrl: longUrl });
+    });
+
+    const correctURLs = [
+      'https://it-incubator.io',
+      'https://it_incubator.io',
+      'https://it__incubator.io',
+      'https://it-incubator2026.io',
+      'https://it-incubator.com',
+      'https://it-incubator.io/',
+      'https://IT-incubator.io/',
+      'https://it-incubator.io/courses',
+      'https://it-incubator.io/courses/2',
+      'https://it-incubator.io/students/courses/2',
+    ];
+
+    for (const correctURL of correctURLs) {
+      it(`websiteUrl is correct: ${correctURL}`, async () => {
+        await correctUpdateBlog({ websiteUrl: correctURL });
+      });
+    }
   });
 
   describe(`should return ${HttpStatus.Not_Found} status code if blog not found`, () => {
@@ -233,6 +324,66 @@ describe(`PUT ${Routes.Blogs}/:id`, () => {
         .send(correctInputBlog);
       expect(response.status).toBe(HttpStatus.Not_Found);
     });
+  });
+
+  describe(`should return ${HttpStatus.Bad_Request}`, () => {
+    it('several fields has error', async () => {
+      const response = await incorrectUpdateBlog({ description: '' }, ['name']);
+      expect(response.body.errorsMessages.length).toBe(2);
+      expect(response.body.errorsMessages).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ field: 'name' }),
+          expect.objectContaining({ field: 'description' }),
+        ])
+      );
+    });
+
+    for (const key in correctInputBlog) {
+      it(`${key} not passed`, async () => {
+        await incorrectUpdateBlog({}, [key as keyof InputBlogType]);
+      });
+    }
+
+    for (const key in correctInputBlog) {
+      it(`${key} is empty string`, async () => {
+        await incorrectUpdateBlog({ [key as keyof InputBlogType]: '' });
+      });
+    }
+
+    for (const key in correctInputBlog) {
+      it(`${key} is not string`, async () => {
+        await incorrectUpdateBlog({ [key as keyof InputBlogType]: 10 });
+      });
+    }
+
+    it(`description length more than ${MAX_BLOG_DESCRIPTION_LENGTH}`, async () => {
+      await incorrectUpdateBlog({ description: 'p'.repeat(MAX_BLOG_DESCRIPTION_LENGTH + 1) });
+    });
+
+    it(`name length more than ${MAX_BLOG_NAME_LENGTH}`, async () => {
+      await incorrectUpdateBlog({ name: 'p'.repeat(MAX_BLOG_NAME_LENGTH + 1) });
+    });
+
+    it(`description length more than ${MAX_BLOG_DESCRIPTION_LENGTH}`, async () => {
+      await incorrectUpdateBlog({ description: 'p'.repeat(MAX_BLOG_DESCRIPTION_LENGTH + 1) });
+    });
+
+    it(`websiteUrl length more than ${MAX_BLOG_WEBSITE_URL_LENGTH}`, async () => {
+      await incorrectUpdateBlog({ websiteUrl: 'p'.repeat(MAX_BLOG_WEBSITE_URL_LENGTH + 1) });
+    });
+
+    const incorrectURLs = [
+      'http://it-incubator.io',
+      'https:/it-incubator.io',
+      'https:/it-incubator',
+      'it-incubator.io',
+    ];
+
+    for (const incorrectURL of incorrectURLs) {
+      it(`websiteUrl is incorrect: ${incorrectURL}`, async () => {
+        await incorrectUpdateBlog({ websiteUrl: incorrectURL });
+      });
+    }
   });
 });
 

@@ -13,7 +13,11 @@ blogsRouter.post(
   validationResultMiddleware,
   blogsController.createBlog
 );
-blogsRouter.put('/:id', blogsController.updateBlog);
+blogsRouter.put('/:id',
+  inputBlogValidationSchema,
+  validationResultMiddleware,
+  blogsController.updateBlog
+);
 blogsRouter.delete('/:id', blogsController.deleteBlog);
 
 export { blogsRouter };
