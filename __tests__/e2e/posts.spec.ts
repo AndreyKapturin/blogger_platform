@@ -11,6 +11,7 @@ import {
   MAX_POST_SHORT_DESCRIPTION_LENGTH,
   MAX_POST_TITLE_LENGTH,
 } from '../../src/entities/posts/constants';
+import { authHeader } from '../../src/core/constants';
 
 const app = createApp();
 const { createCorrectBlog } = createBlogsTestManager(app);
@@ -151,6 +152,15 @@ describe(`POST ${Routes.Posts}`, () => {
       await createInorrectPost({ blogId: notExistBlogId });
     });
   });
+
+  describe(`should return ${HttpStatus.Unauthorized}`, () => {
+    it('if auth header incorrect', async () => {
+      await request(app)
+        .post(Routes.Posts)
+        .send(correctInputPostData)
+        .expect(HttpStatus.Unauthorized);
+    });
+  });
 });
 
 describe(`PUT ${Routes.Posts}/:id`, () => {
@@ -203,6 +213,7 @@ describe(`PUT ${Routes.Posts}/:id`, () => {
     it('post not exist', async () => {
       const response = await request(app)
         .put(`${Routes.Posts}/${notExistPostId}`)
+        .set('Authorization', authHeader)
         .send(correctInputPostData);
       expect(response.status).toBe(HttpStatus.Not_Found);
     });
@@ -256,22 +267,47 @@ describe(`PUT ${Routes.Posts}/:id`, () => {
       await incorrectUpdatePost(blog, { blogId: notExistBlogId });
     });
   });
+
+  describe(`should return ${HttpStatus.Unauthorized}`, () => {
+    it('if auth header incorrect', async () => {
+      const createRespone = await createCorrectPost(blog);
+      const { id, blogName, ...updatedPost } = { ...createRespone.body, title: 'New post title' };
+      await request(app)
+        .put(`${Routes.Posts}/${id}`)
+        .send(updatedPost)
+        .expect(HttpStatus.Unauthorized);
+    });
+  });
 });
 
 describe(`DELETE ${Routes.Posts}/:id`, () => {
   describe(`should return ${HttpStatus.No_Content} status code if post was successfuly deleted`, () => {
     it('post exist', async () => {
       const postResponse = await createCorrectPost(blog);
-      const deleteResponse = await request(app).delete(`${Routes.Posts}/${postResponse.body.id}`);
+      const deleteResponse = await request(app)
+        .delete(`${Routes.Posts}/${postResponse.body.id}`)
+        .set('Authorization', authHeader);
       expect(deleteResponse.status).toBe(HttpStatus.No_Content);
       const getResponse = await request(app).get(`${Routes.Posts}/${postResponse.body.id}`);
       expect(getResponse.status).toBe(HttpStatus.Not_Found);
     });
   });
+
   describe(`should return ${HttpStatus.Not_Found} status code if post not found`, () => {
     it('post not exist', async () => {
-      const response = await request(app).delete(`${Routes.Posts}/${notExistPostId}`);
+      const response = await request(app)
+        .delete(`${Routes.Posts}/${notExistPostId}`)
+        .set('Authorization', authHeader);
       expect(response.status).toBe(HttpStatus.Not_Found);
+    });
+  });
+
+  describe(`should return ${HttpStatus.Unauthorized}`, () => {
+    it('if auth header incorrect', async () => {
+      const createRespone = await createCorrectPost(blog);
+      await request(app)
+        .delete(`${Routes.Posts}/${createRespone.body.id}`)
+        .expect(HttpStatus.Unauthorized);
     });
   });
 });

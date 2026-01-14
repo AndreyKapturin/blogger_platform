@@ -1,8 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { HttpStatus } from "../types/HttpStatus";
-
-const ADMIN_LOGIN = 'admin';
-const ADMIN_PASSWORD = 'qwerty';
+import { ADMIN_LOGIN, ADMIN_PASSWORD } from "../constants";
 
 const basicAuthMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;

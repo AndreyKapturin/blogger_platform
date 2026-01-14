@@ -3,6 +3,7 @@ import { HttpStatus } from '../../../src/core/types/HttpStatus';
 import { BlogType, InputBlogType } from '../../../src/entities/blogs/types';
 import request from 'supertest';
 import { Express } from 'express';
+import { authHeader } from '../../../src/core/constants';
 
 const correctInputBlog: InputBlogType = {
   name: 'IT-KAMASUTRA',
@@ -25,7 +26,10 @@ const createBlogsTestManager = (app: Express) => {
       ...changedFields,
       ...expectedFileds,
     };
-    const response = await request(app).post(Routes.Blogs).send(inputBlog);
+    const response = await request(app)
+    .post(Routes.Blogs)
+    .set('Authorization', authHeader)
+    .send(inputBlog);
     expect(response.status).toBe(HttpStatus.Created);
     expect(response.body).toEqual(expectedBlog);
     return response;
@@ -44,7 +48,10 @@ const createBlogsTestManager = (app: Express) => {
       delete inputBlog[key];
     }
 
-    const response = await request(app).post(Routes.Blogs).send(inputBlog);
+    const response = await request(app)
+    .post(Routes.Blogs)
+    .set('Authorization', authHeader)
+    .send(inputBlog);
     expect(response.status).toBe(HttpStatus.Bad_Request);
     expect(response.body).toEqual({
       errorsMessages: expect.arrayContaining([
@@ -74,10 +81,13 @@ const createBlogsTestManager = (app: Express) => {
       ...expectedFileds,
     };
 
-    const updateResponse = await request(app).put(`${Routes.Blogs}/${id}`).send(dataForUpdate);
+    const updateResponse = await request(app)
+    .put(`${Routes.Blogs}/${id}`)
+    .set('Authorization', authHeader)
+    .send(dataForUpdate);
     expect(updateResponse.status).toBe(HttpStatus.No_Content);
-    const getResponse = await request(app).get(`${Routes.Blogs}/${id}`);
 
+    const getResponse = await request(app).get(`${Routes.Blogs}/${id}`);
     expect(getResponse.body).toEqual(expectedBlog);
   };
 
@@ -96,8 +106,12 @@ const createBlogsTestManager = (app: Express) => {
       delete dataForUpdate[key];
     }
 
-    const updateResponse = await request(app).put(`${Routes.Blogs}/${id}`).send(dataForUpdate);
+    const updateResponse = await request(app)
+    .put(`${Routes.Blogs}/${id}`)
+    .set('Authorization', authHeader)
+    .send(dataForUpdate);
     expect(updateResponse.status).toBe(HttpStatus.Bad_Request);
+
     const getResponse = await request(app).get(`${Routes.Blogs}/${id}`);
     expect(getResponse.body).toEqual(createResponse.body);
     return updateResponse;

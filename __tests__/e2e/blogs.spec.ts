@@ -2,7 +2,7 @@ import { createApp } from '../../src/app';
 import request from 'supertest';
 import { Routes } from '../../src/app/routes';
 import { HttpStatus } from '../../src/core/types/HttpStatus';
-import { BlogType, InputBlogType } from '../../src/entities/blogs/types';
+import { InputBlogType } from '../../src/entities/blogs/types';
 import {
   MAX_BLOG_DESCRIPTION_LENGTH,
   MAX_BLOG_NAME_LENGTH,
@@ -10,6 +10,8 @@ import {
 } from '../../src/entities/blogs/constants';
 import { correctInputBlog, createBlogsTestManager } from './utils/blogsTestManager';
 import { createPostsTestManager } from './utils/PostsTestManager';
+import { authHeader } from '../../src/core/constants';
+
 const app = createApp();
 const { createCorrectBlog, createInorrectBlog, correctUpdateBlog, incorrectUpdateBlog } =
   createBlogsTestManager(app);
@@ -167,6 +169,12 @@ describe(`POST ${Routes.Blogs}`, () => {
       });
     }
   });
+
+  describe(`should return ${HttpStatus.Unauthorized}`, () => {
+    it('if auth header incorrect', async () => {
+      await request(app).post(Routes.Blogs).send(correctInputBlog).expect(HttpStatus.Unauthorized);
+    });
+  });
 });
 
 describe(`PUT ${Routes.Blogs}/:id`, () => {
@@ -229,6 +237,7 @@ describe(`PUT ${Routes.Blogs}/:id`, () => {
     it('blog not exist', async () => {
       const response = await request(app)
         .put(`${Routes.Blogs}/${notExistBlogId}`)
+        .set('Authorization', authHeader)
         .send(correctInputBlog);
       expect(response.status).toBe(HttpStatus.Not_Found);
     });
@@ -293,13 +302,26 @@ describe(`PUT ${Routes.Blogs}/:id`, () => {
       });
     }
   });
+
+  describe(`should return ${HttpStatus.Unauthorized}`, () => {
+    it('if auth header incorrect', async () => {
+      const createRespone = await createCorrectBlog();
+      const { id, ...updatedBlog } = { ...createRespone.body, name: 'New blog name' };
+      await request(app)
+        .put(`${Routes.Blogs}/${id}`)
+        .send(updatedBlog)
+        .expect(HttpStatus.Unauthorized);
+    });
+  });
 });
 
 describe(`DELETE ${Routes.Blogs}/:id`, () => {
   describe(`should return ${HttpStatus.No_Content} status code if blog was successfuly deleted`, () => {
     it('blog exist', async () => {
       const postResponse = await createCorrectBlog();
-      const deleteResponse = await request(app).delete(`${Routes.Blogs}/${postResponse.body.id}`);
+      const deleteResponse = await request(app)
+        .delete(`${Routes.Blogs}/${postResponse.body.id}`)
+        .set('Authorization', authHeader);
       expect(deleteResponse.status).toBe(HttpStatus.No_Content);
       const getResponse = await request(app).get(`${Routes.Blogs}/${postResponse.body.id}`);
       expect(getResponse.status).toBe(HttpStatus.Not_Found);
@@ -328,9 +350,9 @@ describe(`DELETE ${Routes.Blogs}/:id`, () => {
       expect(post2GetResponse.body).toEqual(createPost2Response.body);
       expect(post2GetResponse.body.blogId).toEqual(createBlogResponse.body.id);
 
-      const deleteBlogResponse = await request(app).delete(
-        `${Routes.Blogs}/${createBlogResponse.body.id}`
-      );
+      const deleteBlogResponse = await request(app)
+        .delete(`${Routes.Blogs}/${createBlogResponse.body.id}`)
+        .set('Authorization', authHeader);
       expect(deleteBlogResponse.status).toBe(HttpStatus.No_Content);
 
       await request(app)
@@ -345,8 +367,19 @@ describe(`DELETE ${Routes.Blogs}/:id`, () => {
 
   describe(`should return ${HttpStatus.Not_Found} status code if blog not found`, () => {
     it('blog not exist', async () => {
-      const response = await request(app).delete(`${Routes.Blogs}/${notExistBlogId}`);
+      const response = await request(app)
+        .delete(`${Routes.Blogs}/${notExistBlogId}`)
+        .set('Authorization', authHeader);
       expect(response.status).toBe(HttpStatus.Not_Found);
+    });
+  });
+
+  describe(`should return ${HttpStatus.Unauthorized}`, () => {
+    it('if auth header incorrect', async () => {
+      const createRespone = await createCorrectBlog();
+      await request(app)
+        .delete(`${Routes.Blogs}/${createRespone.body.id}`)
+        .expect(HttpStatus.Unauthorized);
     });
   });
 });
