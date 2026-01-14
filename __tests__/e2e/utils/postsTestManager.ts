@@ -4,6 +4,7 @@ import { BlogType } from '../../../src/entities/blogs/types';
 import request from 'supertest';
 import { Express } from 'express';
 import { InputPostType, VievPostType } from '../../../src/entities/posts/types';
+import { authHeader } from '../../../src/core/constants';
 
 const correctInputPostData: Partial<InputPostType> = {
   title: 'How create node js app?',
@@ -29,7 +30,10 @@ const createPostsTestManager = (app: Express) => {
       ...changedFields,
       ...expectedFileds,
     };
-    const response = await request(app).post(Routes.Posts).send(inputPost);
+    const response = await request(app)
+      .post(Routes.Posts)
+      .set('Authorization', authHeader)
+      .send(inputPost);
     expect(response.status).toBe(HttpStatus.Created);
     expect(response.body).toEqual(expectedPost);
     return response;
@@ -48,7 +52,10 @@ const createPostsTestManager = (app: Express) => {
       delete inputPost[key];
     }
 
-    const response = await request(app).post(Routes.Posts).send(inputPost);
+    const response = await request(app)
+      .post(Routes.Posts)
+      .set('Authorization', authHeader)
+      .send(inputPost);
     expect(response.status).toBe(HttpStatus.Bad_Request);
     expect(response.body).toEqual({
       errorsMessages: expect.arrayContaining([
@@ -80,7 +87,10 @@ const createPostsTestManager = (app: Express) => {
       ...expectedFileds,
     };
 
-    const updateResponse = await request(app).put(`${Routes.Posts}/${id}`).send(dataForUpdate);
+    const updateResponse = await request(app)
+      .put(`${Routes.Posts}/${id}`)
+      .set('Authorization', authHeader)
+      .send(dataForUpdate);
     expect(updateResponse.status).toBe(HttpStatus.No_Content);
 
     const getResponse = await request(app).get(`${Routes.Posts}/${id}`);
@@ -103,7 +113,10 @@ const createPostsTestManager = (app: Express) => {
       delete dataForUpdate[key];
     }
 
-    const updateResponse = await request(app).put(`${Routes.Posts}/${id}`).send(dataForUpdate);
+    const updateResponse = await request(app)
+      .put(`${Routes.Posts}/${id}`)
+      .set('Authorization', authHeader)
+      .send(dataForUpdate);
     expect(updateResponse.status).toBe(HttpStatus.Bad_Request);
     const getResponse = await request(app).get(`${Routes.Posts}/${id}`);
     expect(getResponse.body).toEqual(createResponse.body);
