@@ -1,7 +1,7 @@
 import express from 'express';
 import { Routes } from './routes';
 import { blogsRouter } from '../entities/blogs/router';
-import { jsonBodyMiddleware } from './middlewares/jsonBodyMiddleware';
+import { jsonBodyMiddleware } from '../core/middlewares/jsonBodyMiddleware';
 import { testingRouter } from '../entities/testing/router';
 import { postsRouter } from '../entities/posts/router';
 

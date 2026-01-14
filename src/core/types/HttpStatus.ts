@@ -4,5 +4,6 @@ export enum HttpStatus {
   No_Content = 204,
 
   Bad_Request = 400,
-  Not_Found = 404
+  Unauthorized = 401,
+  Not_Found = 404,
 }
