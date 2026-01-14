@@ -8,106 +8,14 @@ import {
   MAX_BLOG_NAME_LENGTH,
   MAX_BLOG_WEBSITE_URL_LENGTH,
 } from '../../src/entities/blogs/constants';
+import { correctInputBlog, createBlogsTestManager } from './utils/blogsTestManager';
+import { createPostsTestManager } from './utils/PostsTestManager';
 const app = createApp();
-
-const correctInputBlog: InputBlogType = {
-  name: 'IT-KAMASUTRA',
-  description: 'Web development lessons',
-  websiteUrl: 'https://it-kamasutra.io',
-};
+const { createCorrectBlog, createInorrectBlog, correctUpdateBlog, incorrectUpdateBlog } =
+  createBlogsTestManager(app);
+const { createCorrectPost } = createPostsTestManager(app);
 
 const notExistBlogId = 'p'.repeat(5);
-
-const createCorrectBlog = async (
-  changedFields: Partial<InputBlogType> = {},
-  expectedFileds: Partial<InputBlogType> = {}
-) => {
-  const inputBlog: InputBlogType = {
-    ...correctInputBlog,
-    ...changedFields,
-  };
-  const expectedBlog: BlogType = {
-    id: expect.any(String),
-    ...correctInputBlog,
-    ...changedFields,
-    ...expectedFileds,
-  };
-  const response = await request(app).post(Routes.Blogs).send(inputBlog);
-  expect(response.status).toBe(HttpStatus.Created);
-  expect(response.body).toEqual(expectedBlog);
-  return response;
-};
-
-const createInorrectBlog = async (
-  changedFields: Partial<InputBlogType> = {},
-  excludedFileds: (keyof InputBlogType)[] = []
-) => {
-  const inputBlog = { ...correctInputBlog };
-
-  Object.assign(inputBlog, changedFields);
-
-  for (const key of excludedFileds) {
-    delete inputBlog[key];
-  }
-
-  const response = await request(app).post(Routes.Blogs).send(inputBlog);
-  expect(response.status).toBe(HttpStatus.Bad_Request);
-  expect(response.body).toEqual({
-    errorsMessages: expect.arrayContaining([
-      expect.objectContaining({
-        field: expect.any(String),
-        message: expect.any(String),
-      }),
-    ]),
-  });
-  return response;
-};
-
-const correctUpdateBlog = async (
-  changedFields: Partial<InputBlogType>,
-  expectedFileds: Partial<InputBlogType> = {}
-) => {
-  const createResponse = await createCorrectBlog();
-  const { id, ...createdBlog } = { ...createResponse.body };
-  const dataForUpdate = {
-    ...createdBlog,
-    ...changedFields,
-  };
-
-  const expectedBlog: BlogType = {
-    id: expect.any(String),
-    ...dataForUpdate,
-    ...expectedFileds,
-  };
-
-  const updateResponse = await request(app).put(`${Routes.Blogs}/${id}`).send(dataForUpdate);
-  expect(updateResponse.status).toBe(HttpStatus.No_Content);
-  const getResponse = await request(app).get(`${Routes.Blogs}/${id}`);
-
-  expect(getResponse.body).toEqual(expectedBlog);
-};
-
-const incorrectUpdateBlog = async (
-  changedFields: Partial<InputBlogType>,
-  excludedFileds: (keyof InputBlogType)[] = []
-) => {
-  const createResponse = await createCorrectBlog();
-  const { id, ...createdBlog } = { ...createResponse.body };
-  const dataForUpdate = {
-    ...createdBlog,
-    ...changedFields,
-  };
-
-  for (const key of excludedFileds) {
-    delete dataForUpdate[key];
-  }
-
-  const updateResponse = await request(app).put(`${Routes.Blogs}/${id}`).send(dataForUpdate);
-  expect(updateResponse.status).toBe(HttpStatus.Bad_Request);
-  const getResponse = await request(app).get(`${Routes.Blogs}/${id}`);
-  expect(getResponse.body).toEqual(createResponse.body);
-  return updateResponse;
-};
 
 beforeEach(async () => {
   await request(app).delete(`${Routes.Testing}/all-data`).expect(HttpStatus.No_Content);
@@ -396,7 +304,45 @@ describe(`DELETE ${Routes.Blogs}/:id`, () => {
       const getResponse = await request(app).get(`${Routes.Blogs}/${postResponse.body.id}`);
       expect(getResponse.status).toBe(HttpStatus.Not_Found);
     });
+
+    it('posts belonging to the blog are deleted along with the blog', async () => {
+      const createBlogResponse = await createCorrectBlog();
+      const createPost1Response = await createCorrectPost(createBlogResponse.body, {
+        title: 'Post 1',
+      });
+      const createPost2Response = await createCorrectPost(createBlogResponse.body, {
+        title: 'Post 2',
+      });
+
+      const post1GetResponse = await request(app).get(
+        `${Routes.Posts}/${createPost1Response.body.id}`
+      );
+      expect(post1GetResponse.status).toBe(HttpStatus.Ok);
+      expect(post1GetResponse.body).toEqual(createPost1Response.body);
+      expect(post1GetResponse.body.blogId).toEqual(createBlogResponse.body.id);
+
+      const post2GetResponse = await request(app).get(
+        `${Routes.Posts}/${createPost2Response.body.id}`
+      );
+      expect(post2GetResponse.status).toBe(HttpStatus.Ok);
+      expect(post2GetResponse.body).toEqual(createPost2Response.body);
+      expect(post2GetResponse.body.blogId).toEqual(createBlogResponse.body.id);
+
+      const deleteBlogResponse = await request(app).delete(
+        `${Routes.Blogs}/${createBlogResponse.body.id}`
+      );
+      expect(deleteBlogResponse.status).toBe(HttpStatus.No_Content);
+
+      await request(app)
+        .get(`${Routes.Posts}/${createPost1Response.body.id}`)
+        .expect(HttpStatus.Not_Found);
+
+      await request(app)
+        .get(`${Routes.Posts}/${createPost2Response.body.id}`)
+        .expect(HttpStatus.Not_Found);
+    });
   });
+
   describe(`should return ${HttpStatus.Not_Found} status code if blog not found`, () => {
     it('blog not exist', async () => {
       const response = await request(app).delete(`${Routes.Blogs}/${notExistBlogId}`);
