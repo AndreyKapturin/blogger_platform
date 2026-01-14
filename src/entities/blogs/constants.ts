@@ -1,0 +1,3 @@
+export const MAX_BLOG_NAME_LENGTH = 15;
+export const MAX_BLOG_DESCRIPTION_LENGTH = 500;
+export const MAX_BLOG_WEBSITE_URL_LENGTH = 100;
