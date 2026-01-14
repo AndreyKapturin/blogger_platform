@@ -13,8 +13,8 @@ import { APIErrorResult } from '../../core/validation/APIErrorResult';
 const getPosts = (req: Request, res: Response<VievPostType[]>) => {
   const posts: VievPostType[] = postsRepository.fildAll().map<VievPostType>((post: PostType) => {
     const blog = blogsRepository.findById(post.blogId);
-    if (!blog) throw new Error('Post belongs to a non-existent blog');
-    return { ...post, blogName: blog.name };
+    const blogName = blog ? blog.name : 'Blog does not exist';
+    return { ...post, blogName };
   });
 
   res.status(HttpStatus.Ok).json(posts);
@@ -27,8 +27,8 @@ const getPostById = (req: RequestWithParams<PostIdParamType>, res: Response<Viev
     return;
   }
   const blog = blogsRepository.findById(foundPost.blogId);
-  if (!blog) throw new Error('Post belongs to a non-existent blog');
-  res.status(HttpStatus.Ok).json({ ...foundPost, blogName: blog.name });
+  const blogName = blog ? blog.name : 'Blog does not exist';
+  res.status(HttpStatus.Ok).json({ ...foundPost, blogName });
 };
 
 const createPost = (
