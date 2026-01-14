@@ -32,13 +32,24 @@ const remove = (postId: string) => {
   });
   return wasDeleted;
 };
-
+const removeRelated = (blogId: string) => {
+  let removeCount = 0;
+  database.posts = database.posts.filter((post) => {
+    if (post.blogId === blogId) {
+      removeCount++;
+      return false;
+    }
+    return true;
+  });
+  return removeCount;
+};
 const postsRepository = {
   fildAll,
   findById,
   save,
   update,
   remove,
+  removeRelated,
 };
 
 export { postsRepository };

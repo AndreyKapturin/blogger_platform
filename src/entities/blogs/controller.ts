@@ -7,6 +7,7 @@ import {
   RequestWithParams,
   RequestWithParamsAndBody,
 } from '../../core/types/RequestTypes';
+import { postsRepository } from '../posts/repository';
 
 const getBlogs = (req: Request, res: Response<BlogType[]>) => {
   const blogs = blogsRepository.fildAll();
@@ -54,7 +55,12 @@ const updateBlog = (
 
 const deleteBlog = (req: RequestWithParams<BlogIdParamType>, res: Response) => {
   const wasDeleted = blogsRepository.remove(req.params.id);
-  res.sendStatus(wasDeleted ? HttpStatus.No_Content : HttpStatus.Not_Found);
+  if (!wasDeleted) {
+    res.sendStatus(HttpStatus.Not_Found);
+    return;
+  }
+  postsRepository.removeRelated(req.params.id);
+  res.sendStatus(HttpStatus.No_Content);
 };
 
 const blogsController = {
