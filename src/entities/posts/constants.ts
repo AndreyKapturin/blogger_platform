@@ -1,0 +1,3 @@
+export const MAX_POST_TITLE_LENGTH = 30;
+export const MAX_POST__SHORT_DESCRIPTION_LENGTH = 100;
+export const MAX_POST_CONTENT_LENGTH = 1000;
