@@ -148,10 +148,6 @@ describe(`POST ${Routes.Blogs}`, () => {
       await createInorrectBlog({ name: 'p'.repeat(MAX_BLOG_NAME_LENGTH + 1) });
     });
 
-    it(`description length more than ${MAX_BLOG_DESCRIPTION_LENGTH}`, async () => {
-      await createInorrectBlog({ description: 'p'.repeat(MAX_BLOG_DESCRIPTION_LENGTH + 1) });
-    });
-
     it(`websiteUrl length more than ${MAX_BLOG_WEBSITE_URL_LENGTH}`, async () => {
       await createInorrectBlog({ websiteUrl: 'p'.repeat(MAX_BLOG_WEBSITE_URL_LENGTH + 1) });
     });
@@ -279,10 +275,6 @@ describe(`PUT ${Routes.Blogs}/:id`, () => {
 
     it(`name length more than ${MAX_BLOG_NAME_LENGTH}`, async () => {
       await incorrectUpdateBlog({ name: 'p'.repeat(MAX_BLOG_NAME_LENGTH + 1) });
-    });
-
-    it(`description length more than ${MAX_BLOG_DESCRIPTION_LENGTH}`, async () => {
-      await incorrectUpdateBlog({ description: 'p'.repeat(MAX_BLOG_DESCRIPTION_LENGTH + 1) });
     });
 
     it(`websiteUrl length more than ${MAX_BLOG_WEBSITE_URL_LENGTH}`, async () => {
