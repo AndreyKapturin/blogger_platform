@@ -1,0 +1,8 @@
+paths:
+  /testing/all-data:
+    delete:
+      summary: Clear database
+      tags: [Testing]
+      responses:
+        "204":
+          description: All data in database was deleted

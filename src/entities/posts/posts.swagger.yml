@@ -1,0 +1,137 @@
+paths:
+  /posts:
+    get:
+      tags: [Posts]
+      summary: Get list a posts
+      responses: 
+        '200':
+          description: Successful get post list
+          content: 
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/ViewPostSchema'
+
+    post:
+      tags: [Posts]
+      summary: Create a new post
+      security: 
+        - BasicAuth: []
+      requestBody: 
+        description: Data for create post
+        content: 
+          application/json: 
+            schema: 
+              $ref: '#/components/schemas/InputPostSchema'
+      responses: 
+        '201':
+          description: Successfully create post
+          content: 
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/ViewPostSchema'
+        '400':
+          $ref: '#/components/responses/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
+  /posts/{id}:
+    get:
+      tags: [Posts]
+      summary: Get post by id
+      parameters: 
+        - $ref: '#/components/parameters/PostIdPathParam'
+      responses: 
+        '200':
+          description: Successful
+          content: 
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/ViewPostSchema'
+        '404':
+          description: Post not found
+    put:
+      tags: [Posts]
+      summary: Update post by id
+      security:
+        - BasicAuth: []
+      parameters: 
+        - $ref: '#/components/parameters/PostIdPathParam'
+      requestBody: 
+        description: Data for update post
+        content: 
+          application/json: 
+            schema: 
+              $ref: '#/components/schemas/InputPostSchema'
+      responses: 
+        '204':
+          description: Successfully update post
+        '400':
+          $ref: '#/components/responses/ValidationErrorResponse'
+        '404':
+          description: Post not found
+    delete:
+      tags: [Posts]
+      summary: Delete post by id
+      security:
+        - BasicAuth: []
+      parameters: 
+        - $ref: '#/components/parameters/PostIdPathParam'
+      responses: 
+        '204':
+          description: Successfully delete post
+        '404':
+          description: Post not found
+      
+components: 
+  schemas: 
+    ViewPostSchema:
+      type: object
+      required: 
+        - id
+        - title
+        - shortDescription
+        - content
+        - blogId
+        - blogName
+      properties: 
+        id:
+          type: string
+        title:
+          type: string
+        shortDescription:
+          type: string
+        content:
+          type: string
+        blogId:
+          type: string
+        blogName:
+          type: string
+
+    InputPostSchema:
+      type: object
+      required: 
+        - title
+        - shortDescription
+        - content
+        - blogId
+      properties: 
+        title:
+          type: string
+          maxLength: 30
+        shortDescription:
+          type: string
+          maxLength: 100
+        content:
+          type: string
+          maxLength: 1000
+        blogId:
+          type: string
+
+  parameters:
+    PostIdPathParam:
+      in: path
+      name: id
+      required: true
+      description: The unique identifier of the post
+      schema:
+        type: string
+        example: '811f1a8a-9a41-4c14-8c05-bda2e69baffc'

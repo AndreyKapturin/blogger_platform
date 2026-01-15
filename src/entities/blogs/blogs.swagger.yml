@@ -1,0 +1,129 @@
+paths:
+  /blogs:
+    get:
+      tags: [Blogs]
+      summary: Get list a blogs
+      responses: 
+        '200':
+          description: Successful
+          content: 
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/ViewBlogSchema'
+
+    post:
+      tags: [Blogs]
+      summary: Create a new blog
+      security:
+        - BasicAuth: []
+      requestBody: 
+        description: Data for create blog
+        content: 
+          application/json: 
+            schema: 
+              $ref: '#/components/schemas/InputBlogSchema'
+      responses: 
+        '201':
+          description: Successfully create blogs
+          content: 
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/ViewBlogSchema'
+        '400':
+          $ref: '#/components/responses/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
+
+  /blogs/{id}:
+    get:
+      tags: [Blogs]
+      summary: Get blog by id
+      parameters: 
+        - $ref: '#/components/parameters/BlogIdPathParam'
+      responses: 
+        '200':
+          description: Successful
+          content: 
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/ViewBlogSchema'
+        '404':
+          description: Blog not found
+    put:
+      tags: [Blogs]
+      summary: Update blog by id
+      security:
+        - BasicAuth: []
+      parameters: 
+        - $ref: '#/components/parameters/BlogIdPathParam'
+      requestBody: 
+        description: Data for update blog
+        content: 
+          application/json: 
+            schema: 
+              $ref: '#/components/schemas/InputBlogSchema'
+      responses: 
+        '204':
+          description: Successfully update blog
+        '400':
+          $ref: '#/components/responses/ValidationErrorResponse'
+        '404':
+          description: Blog not found
+    delete:
+      tags: [Blogs]
+      summary: Delete blog by id
+      security:
+        - BasicAuth: []
+      parameters: 
+        - $ref: '#/components/parameters/BlogIdPathParam'
+      responses: 
+        '204':
+          description: Successfully delete blog
+        '404':
+          description: Blog not found
+
+components: 
+  schemas: 
+    ViewBlogSchema:
+      type: object
+      required: 
+        - id
+        - name
+        - description
+        - websiteUrl
+      properties: 
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        websiteUrl:
+          type: string
+    
+    InputBlogSchema:
+      type: object
+      required: 
+        - name
+        - description
+        - websiteUrl
+      properties: 
+        name:
+          type: string
+          maxLength: 15
+        description:
+          type: string
+          maxLength: 500
+        websiteUrl:
+          type: string
+          maxLength: 100
+
+  parameters:
+    BlogIdPathParam:
+      in: path
+      name: id
+      required: true
+      description: The unique identifier of the blog
+      schema:
+        type: string
+        example: '811f1a8a-9a41-4c14-8c05-bda2e69baffc'

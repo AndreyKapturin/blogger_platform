@@ -1,0 +1,39 @@
+components: 
+  schemas: 
+    ValidationFieldErrorSchema:
+      type: object
+      required:
+        - field
+        - message
+      properties:
+        field:
+          type: string
+        message:
+          type: string
+  
+    APIErrorResultSchema:
+      type: object
+      required:
+        - errorsMessages
+      properties:
+        errorsMessages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationFieldErrorSchema'
+            
+  responses: 
+    ValidationErrorResponse:
+      description: Validation error
+      content: 
+        application/json: 
+          schema: 
+            $ref: '#/components/schemas/APIErrorResultSchema'
+
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+      description: |
+        Basic HTTP authentication. 
+        Enter your username and password in the dialog.
+        The credentials will be encoded as `username:password` and sent in the `Authorization` header as `Basic <base64-encoded-string>`.
