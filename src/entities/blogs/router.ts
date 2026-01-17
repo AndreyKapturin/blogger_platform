@@ -1,13 +1,18 @@
 import { Router } from 'express';
-import { blogsController } from './controller';
 import { validationResultMiddleware } from '../../core/validation/validationMiddleware';
-import { inputBlogValidationSchema } from './validations';
+import { idInParamsCheckMiddleware, inputBlogValidationSchema } from './validations';
+import { blogsController } from './controller';
 import { basicAuthMiddleware } from '../../core/middlewares/basicAuthMiddleware';
 
 const blogsRouter = Router();
 
 blogsRouter.get('/', blogsController.getBlogs);
-blogsRouter.get('/:id', blogsController.getBlogById);
+blogsRouter.get(
+  '/:id',
+  idInParamsCheckMiddleware,
+  validationResultMiddleware,
+  blogsController.getBlogById
+);
 blogsRouter.post(
   '/',
   basicAuthMiddleware,
@@ -18,10 +23,17 @@ blogsRouter.post(
 blogsRouter.put(
   '/:id',
   basicAuthMiddleware,
+  idInParamsCheckMiddleware,
   inputBlogValidationSchema,
   validationResultMiddleware,
   blogsController.updateBlog
 );
-blogsRouter.delete('/:id', basicAuthMiddleware, blogsController.deleteBlog);
+blogsRouter.delete(
+  '/:id',
+  basicAuthMiddleware,
+  idInParamsCheckMiddleware,
+  validationResultMiddleware,
+  blogsController.deleteBlog
+);
 
 export { blogsRouter };
