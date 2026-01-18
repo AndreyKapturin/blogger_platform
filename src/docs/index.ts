@@ -7,7 +7,7 @@ const swaggerOptions = {
     openapi: '3.0.0',
     info: {
       title: 'Bloggers platform',
-      version: '1.0.0',
+      version: '1.0.1',
       description: 'A platform for publishing posts from various blogs',
     },
   },
