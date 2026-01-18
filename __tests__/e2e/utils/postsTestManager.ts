@@ -1,10 +1,11 @@
 import { Routes } from '../../../src/app/routes';
 import { HttpStatus } from '../../../src/core/types/HttpStatus';
-import { BlogType } from '../../../src/entities/blogs/types';
+import { ViewBlogType } from '../../../src/entities/blogs/types';
 import request from 'supertest';
 import { Express } from 'express';
-import { InputPostType, VievPostType } from '../../../src/entities/posts/types';
+import { InputPostType, ViewPostType } from '../../../src/entities/posts/types';
 import { authHeader } from '../../../src/core/constants';
+import { ISODateStringRegExp } from './constants';
 
 const correctInputPostData: Partial<InputPostType> = {
   title: 'How create node js app?',
@@ -14,9 +15,9 @@ const correctInputPostData: Partial<InputPostType> = {
 
 const createPostsTestManager = (app: Express) => {
   const createCorrectPost = async (
-    blog: BlogType,
+    blog: ViewBlogType,
     changedFields: Partial<InputPostType> = {},
-    expectedFileds: Partial<VievPostType> = {}
+    expectedFileds: Partial<ViewPostType> = {}
   ) => {
     const inputPost = {
       ...correctInputPostData,
@@ -27,6 +28,7 @@ const createPostsTestManager = (app: Express) => {
       id: expect.any(String),
       ...inputPost,
       blogName: blog.name,
+      createdAt: expect.stringMatching(ISODateStringRegExp),
       ...changedFields,
       ...expectedFileds,
     };
@@ -69,7 +71,7 @@ const createPostsTestManager = (app: Express) => {
   };
 
   const correctUpdatePost = async (
-    blog: BlogType,
+    blog: ViewBlogType,
     changedFields: Partial<InputPostType>,
     expectedFileds: Partial<InputPostType> = {}
   ) => {
@@ -80,9 +82,10 @@ const createPostsTestManager = (app: Express) => {
       ...changedFields,
     };
 
-    const expectedPost: VievPostType = {
+    const expectedPost: ViewPostType = {
       id: expect.any(String),
       blogName,
+      createdAt: expect.stringMatching(ISODateStringRegExp),
       ...dataForUpdate,
       ...expectedFileds,
     };
@@ -98,7 +101,7 @@ const createPostsTestManager = (app: Express) => {
   };
 
   const incorrectUpdatePost = async (
-    blog: BlogType,
+    blog: ViewBlogType,
     changedFields: Partial<InputPostType>,
     excludedFileds: (keyof InputPostType)[] = []
   ) => {
@@ -132,3 +135,4 @@ const createPostsTestManager = (app: Express) => {
 };
 
 export { createPostsTestManager, correctInputPostData };
+export type PostsTestManagerType = ReturnType<typeof createPostsTestManager>;

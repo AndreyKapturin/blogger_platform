@@ -9,5 +9,6 @@ module.exports = {
     ...tsJestTransformCfg,
   },
   testPathIgnorePatterns: ['<rootDir>/__tests__/*/utils/'],
-  testMatch: ['**/?(*.)+(spec|test).?([mc])[jt]s?(x)']
+  testMatch: ['**/?(*.)+(spec|test).?([mc])[jt]s?(x)'],
+  testTimeout: 120_000
 };

@@ -92,9 +92,12 @@ components:
         - content
         - blogId
         - blogName
+        - createdAt
       properties: 
         id:
           type: string
+          description: Mongo ObjectId format
+          example: '696c891bdfcde0419df1674d'
         title:
           type: string
         shortDescription:
@@ -103,8 +106,13 @@ components:
           type: string
         blogId:
           type: string
+          description: Mongo ObjectId format
+          example: '696c891bdfcde0419df1674d'
         blogName:
           type: string
+        createdAt:
+          type: string
+          format: date-time
 
     InputPostSchema:
       type: object
@@ -131,7 +139,7 @@ components:
       in: path
       name: id
       required: true
-      description: The unique identifier of the post
+      description: Mongo ObjectId format unique identifier of the post
       schema:
         type: string
-        example: '811f1a8a-9a41-4c14-8c05-bda2e69baffc'
+        example: '696c891bdfcde0419df1674d'
