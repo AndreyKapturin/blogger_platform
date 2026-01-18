@@ -1,9 +1,10 @@
 import { Routes } from '../../../src/app/routes';
 import { HttpStatus } from '../../../src/core/types/HttpStatus';
-import { BlogType, InputBlogType } from '../../../src/entities/blogs/types';
+import { BlogType, InputBlogType, ViewBlogType } from '../../../src/entities/blogs/types';
 import request from 'supertest';
 import { Express } from 'express';
 import { authHeader } from '../../../src/core/constants';
+import { ISODateStringRegExp } from './constants';
 
 const correctInputBlog: InputBlogType = {
   name: 'IT-KAMASUTRA',
@@ -20,16 +21,19 @@ const createBlogsTestManager = (app: Express) => {
       ...correctInputBlog,
       ...changedFields,
     };
-    const expectedBlog: BlogType = {
+    const expectedBlog: ViewBlogType = {
       id: expect.any(String),
+      isMembership: false,
+      createdAt: expect.stringMatching(ISODateStringRegExp),
       ...correctInputBlog,
       ...changedFields,
       ...expectedFileds,
     };
     const response = await request(app)
-    .post(Routes.Blogs)
-    .set('Authorization', authHeader)
-    .send(inputBlog);
+      .post(Routes.Blogs)
+      .set('Authorization', authHeader)
+      .send(inputBlog);
+      
     expect(response.status).toBe(HttpStatus.Created);
     expect(response.body).toEqual(expectedBlog);
     return response;
@@ -49,9 +53,9 @@ const createBlogsTestManager = (app: Express) => {
     }
 
     const response = await request(app)
-    .post(Routes.Blogs)
-    .set('Authorization', authHeader)
-    .send(inputBlog);
+      .post(Routes.Blogs)
+      .set('Authorization', authHeader)
+      .send(inputBlog);
     expect(response.status).toBe(HttpStatus.Bad_Request);
     expect(response.body).toEqual({
       errorsMessages: expect.arrayContaining([
@@ -77,14 +81,16 @@ const createBlogsTestManager = (app: Express) => {
 
     const expectedBlog: BlogType = {
       id: expect.any(String),
+      isMembership: false,
+      createdAt: expect.stringMatching(ISODateStringRegExp),
       ...dataForUpdate,
       ...expectedFileds,
     };
 
     const updateResponse = await request(app)
-    .put(`${Routes.Blogs}/${id}`)
-    .set('Authorization', authHeader)
-    .send(dataForUpdate);
+      .put(`${Routes.Blogs}/${id}`)
+      .set('Authorization', authHeader)
+      .send(dataForUpdate);
     expect(updateResponse.status).toBe(HttpStatus.No_Content);
 
     const getResponse = await request(app).get(`${Routes.Blogs}/${id}`);
@@ -107,9 +113,9 @@ const createBlogsTestManager = (app: Express) => {
     }
 
     const updateResponse = await request(app)
-    .put(`${Routes.Blogs}/${id}`)
-    .set('Authorization', authHeader)
-    .send(dataForUpdate);
+      .put(`${Routes.Blogs}/${id}`)
+      .set('Authorization', authHeader)
+      .send(dataForUpdate);
     expect(updateResponse.status).toBe(HttpStatus.Bad_Request);
 
     const getResponse = await request(app).get(`${Routes.Blogs}/${id}`);
@@ -126,3 +132,4 @@ const createBlogsTestManager = (app: Express) => {
 };
 
 export { createBlogsTestManager, correctInputBlog };
+export type BlogsTestManagerType = ReturnType<typeof createBlogsTestManager>;

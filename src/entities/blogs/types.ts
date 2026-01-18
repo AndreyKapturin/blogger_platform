@@ -1,18 +1,17 @@
 type BlogIdParamType = {
-  id: string
-}
+  id: string;
+};
 
 type BlogType = {
-  id: string;
   name: string;
   description: string;
   websiteUrl: string;
+  createdAt: string;
+  isMembership: boolean;
 };
 
-type InputBlogType = {
-  name: string;
-  description: string;
-  websiteUrl: string;
-};
+type ViewBlogType = BlogType & BlogIdParamType;
 
-export type { BlogType, InputBlogType, BlogIdParamType };
+type InputBlogType = Omit<BlogType, 'createdAt' | 'isMembership'>;
+
+export type { BlogType, InputBlogType, BlogIdParamType, ViewBlogType };
