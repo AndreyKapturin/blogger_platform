@@ -7,7 +7,7 @@ import {
 } from './constants';
 
 const idInParamsCheckMiddleware = param('id')
-.exists().withMessage('id is required') 
+.exists().withMessage('Id is required') 
 .isMongoId().withMessage('Id has incorrect format');
 
 const inputBlogValidationSchema = checkSchema(
@@ -54,8 +54,7 @@ const inputBlogValidationSchema = checkSchema(
         options: { max: MAX_BLOG_WEBSITE_URL_LENGTH },
       },
     },
-  },
-  ['body', 'params']
+  }
 );
 
 export { inputBlogValidationSchema, idInParamsCheckMiddleware };

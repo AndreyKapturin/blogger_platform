@@ -6,7 +6,6 @@ import { postsRepository } from '../../repository/postsRepository';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
 import { blogsRepository } from '../../../blogs/repository/blogsRepository';
 
-
 const updatePost = async (
   req: RequestWithParamsAndBody<PostIdParamType, InputPostType>,
   res: Response<APIErrorResult>

@@ -7,29 +7,37 @@ import { basicAuthMiddleware } from '../../core/middlewares/basicAuthMiddleware'
 const postsRouter = Router();
 
 postsRouter.get('/', postsController.getPosts);
-postsRouter.get('/:id', 
+
+postsRouter.get(
+  '/:id',
   idInParamsCheckMiddleware,
   validationResultMiddleware,
-  postsController.getPostById);
+  postsController.getPostById,
+);
+
 postsRouter.post(
   '/',
   basicAuthMiddleware,
   inputPostValidationSchema,
   validationResultMiddleware,
-  postsController.createPost
+  postsController.createPost,
 );
+
 postsRouter.put(
   '/:id',
   basicAuthMiddleware,
   idInParamsCheckMiddleware,
   inputPostValidationSchema,
   validationResultMiddleware,
-  postsController.updatePost
+  postsController.updatePost,
 );
-postsRouter.delete('/:id',
+
+postsRouter.delete(
+  '/:id',
   basicAuthMiddleware,
   idInParamsCheckMiddleware,
   validationResultMiddleware,
-  postsController.deletePost);
+  postsController.deletePost,
+);
 
 export { postsRouter };

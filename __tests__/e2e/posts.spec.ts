@@ -23,8 +23,8 @@ import { closeBbConnection } from '../../src/database/mongoDB';
 
 let blog: ViewBlogType;
 
-const notExistPostId = (new ObjectId()).toString();
-const notExistBlogId = (new ObjectId()).toString();
+const notExistPostId = new ObjectId().toString();
+const notExistBlogId = new ObjectId().toString();
 
 let app: Express;
 let blogsTestManager: BlogsTestManagerType;
@@ -88,7 +88,7 @@ describe(`POST ${Routes.Posts}`, () => {
       await postsTestManager.createCorrectPost(
         blog,
         { title: '   Express tutorial  ' },
-        { title: 'Express tutorial' }
+        { title: 'Express tutorial' },
       );
     });
 
@@ -109,7 +109,9 @@ describe(`POST ${Routes.Posts}`, () => {
     });
 
     it(`content length equal max: ${MAX_POST_CONTENT_LENGTH}`, async () => {
-      await postsTestManager.createCorrectPost(blog, { content: 'p'.repeat(MAX_POST_CONTENT_LENGTH) });
+      await postsTestManager.createCorrectPost(blog, {
+        content: 'p'.repeat(MAX_POST_CONTENT_LENGTH),
+      });
     });
 
     it(`shortDescription length equal max: ${MAX_POST_SHORT_DESCRIPTION_LENGTH}`, async () => {
@@ -127,7 +129,7 @@ describe(`POST ${Routes.Posts}`, () => {
         expect.arrayContaining([
           expect.objectContaining({ field: 'content' }),
           expect.objectContaining({ field: 'title' }),
-        ])
+        ]),
       );
     });
 
@@ -154,7 +156,9 @@ describe(`POST ${Routes.Posts}`, () => {
     });
 
     it(`content length more than ${MAX_POST_CONTENT_LENGTH}`, async () => {
-      await postsTestManager.createInorrectPost({ content: 'p'.repeat(MAX_POST_CONTENT_LENGTH + 1) });
+      await postsTestManager.createInorrectPost({
+        content: 'p'.repeat(MAX_POST_CONTENT_LENGTH + 1),
+      });
     });
 
     it(`shortDescription length more than ${MAX_POST_SHORT_DESCRIPTION_LENGTH}`, async () => {
@@ -189,11 +193,27 @@ describe(`PUT ${Routes.Posts}/:id`, () => {
       await postsTestManager.correctUpdatePost(blog, dataForUpdate);
     });
 
+    it('send double request', async () => {
+      const postResponse = await postsTestManager.createCorrectPost(blog);
+      
+      const updateResponse1 = await request(app)
+        .put(`${Routes.Posts}/${postResponse.body.id}`)
+        .set('Authorization', authHeader)
+        .send({ ...postResponse.body, title: 'Updated title' });
+      expect(updateResponse1.status).toBe(HttpStatus.No_Content);
+
+      const updateResponse2 = await request(app)
+        .put(`${Routes.Posts}/${postResponse.body.id}`)
+        .set('Authorization', authHeader)
+        .send({ ...postResponse.body, title: 'Updated title' });
+      expect(updateResponse2.status).toBe(HttpStatus.No_Content);
+    });
+
     it('title has spaces', async () => {
       await postsTestManager.correctUpdatePost(
         blog,
         { title: '   Express tutorial  ' },
-        { title: 'Express tutorial' }
+        { title: 'Express tutorial' },
       );
     });
 
@@ -214,7 +234,9 @@ describe(`PUT ${Routes.Posts}/:id`, () => {
     });
 
     it(`content length equal max: ${MAX_POST_CONTENT_LENGTH}`, async () => {
-      await postsTestManager.correctUpdatePost(blog, { content: 'p'.repeat(MAX_POST_CONTENT_LENGTH) });
+      await postsTestManager.correctUpdatePost(blog, {
+        content: 'p'.repeat(MAX_POST_CONTENT_LENGTH),
+      });
     });
 
     it(`shortDescription length equal max: ${MAX_POST_SHORT_DESCRIPTION_LENGTH}`, async () => {
@@ -242,7 +264,7 @@ describe(`PUT ${Routes.Posts}/:id`, () => {
         expect.arrayContaining([
           expect.objectContaining({ field: 'content' }),
           expect.objectContaining({ field: 'title' }),
-        ])
+        ]),
       );
     });
 
@@ -265,11 +287,15 @@ describe(`PUT ${Routes.Posts}/:id`, () => {
     }
 
     it(`title length more than ${MAX_POST_TITLE_LENGTH}`, async () => {
-      await postsTestManager.incorrectUpdatePost(blog, { title: 'p'.repeat(MAX_POST_TITLE_LENGTH + 1) });
+      await postsTestManager.incorrectUpdatePost(blog, {
+        title: 'p'.repeat(MAX_POST_TITLE_LENGTH + 1),
+      });
     });
 
     it(`content length more than ${MAX_POST_CONTENT_LENGTH}`, async () => {
-      await postsTestManager.incorrectUpdatePost(blog, { content: 'p'.repeat(MAX_POST_CONTENT_LENGTH + 1) });
+      await postsTestManager.incorrectUpdatePost(blog, {
+        content: 'p'.repeat(MAX_POST_CONTENT_LENGTH + 1),
+      });
     });
 
     it(`shortDescription length more than ${MAX_POST_SHORT_DESCRIPTION_LENGTH}`, async () => {

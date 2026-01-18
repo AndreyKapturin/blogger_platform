@@ -1,6 +1,6 @@
+import { getPosts } from './handlers/getPosts';
 import { getPostById } from './handlers/getPostById';
 import { createPost } from './handlers/createPost';
-import { getPosts } from './handlers/getPosts';
 import { updatePost } from './handlers/updatePost';
 import { deletePost } from './handlers/deletePost';
 

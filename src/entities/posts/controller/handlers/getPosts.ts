@@ -6,7 +6,7 @@ import { blogsRepository } from '../../../blogs/repository/blogsRepository';
 import { postToViewMapper } from '../utils/postToViewMapper';
 
 const getPosts = async (req: Request, res: Response<ViewPostType[]>) => {
-  const posts = await postsRepository.fildAll();
+  const posts = await postsRepository.findAll();
   const postsWithBlogName: ViewPostType[] = await Promise.all(
     posts.map(async (post) => {
       const blog = await blogsRepository.findById(post.blogId);

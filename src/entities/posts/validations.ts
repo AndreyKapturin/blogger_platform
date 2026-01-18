@@ -7,7 +7,7 @@ import {
 } from './constants';
 
 const idInParamsCheckMiddleware = param('id')
-.exists().withMessage('id is required') 
+.exists().withMessage('Id is required') 
 .isMongoId().withMessage('Id has incorrect format');
 
 const inputPostValidationSchema = checkSchema({

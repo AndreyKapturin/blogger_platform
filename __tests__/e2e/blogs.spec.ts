@@ -80,7 +80,7 @@ describe(`POST ${Routes.Blogs}`, () => {
     it('name has spaces', async () => {
       await blogsTestManager.createCorrectBlog(
         { name: '   IT-INCUBATOR  ' },
-        { name: 'IT-INCUBATOR' }
+        { name: 'IT-INCUBATOR' },
       );
     });
 
@@ -135,7 +135,7 @@ describe(`POST ${Routes.Blogs}`, () => {
         expect.arrayContaining([
           expect.objectContaining({ field: 'name' }),
           expect.objectContaining({ field: 'description' }),
-        ])
+        ]),
       );
     });
 
@@ -208,8 +208,24 @@ describe(`PUT ${Routes.Blogs}/:id`, () => {
     it('name has spaces', async () => {
       await blogsTestManager.correctUpdateBlog(
         { name: '   IT-INCUBATOR  ' },
-        { name: 'IT-INCUBATOR' }
+        { name: 'IT-INCUBATOR' },
       );
+    });
+
+    it('send double request', async () => {
+      const postResponse = await blogsTestManager.createCorrectBlog();
+      
+      const updateResponse1 = await request(app)
+        .put(`${Routes.Blogs}/${postResponse.body.id}`)
+        .set('Authorization', authHeader)
+        .send({ ...postResponse.body, name: 'Updated name' });
+      expect(updateResponse1.status).toBe(HttpStatus.No_Content)
+
+      const updateResponse2 = await request(app)
+        .put(`${Routes.Blogs}/${postResponse.body.id}`)
+        .set('Authorization', authHeader)
+        .send({ ...postResponse.body, name: 'Updated name' });
+      expect(updateResponse2.status).toBe(HttpStatus.No_Content)
     });
 
     it('name length equal 1', async () => {
@@ -273,7 +289,7 @@ describe(`PUT ${Routes.Blogs}/:id`, () => {
         expect.arrayContaining([
           expect.objectContaining({ field: 'name' }),
           expect.objectContaining({ field: 'description' }),
-        ])
+        ]),
       );
     });
 
@@ -355,24 +371,24 @@ describe(`DELETE ${Routes.Blogs}/:id`, () => {
         createBlogResponse.body,
         {
           title: 'Post 1',
-        }
+        },
       );
       const createPost2Response = await postsTestManager.createCorrectPost(
         createBlogResponse.body,
         {
           title: 'Post 2',
-        }
+        },
       );
 
       const post1GetResponse = await request(app).get(
-        `${Routes.Posts}/${createPost1Response.body.id}`
+        `${Routes.Posts}/${createPost1Response.body.id}`,
       );
       expect(post1GetResponse.status).toBe(HttpStatus.Ok);
       expect(post1GetResponse.body).toEqual(createPost1Response.body);
       expect(post1GetResponse.body.blogId).toEqual(createBlogResponse.body.id);
 
       const post2GetResponse = await request(app).get(
-        `${Routes.Posts}/${createPost2Response.body.id}`
+        `${Routes.Posts}/${createPost2Response.body.id}`,
       );
       expect(post2GetResponse.status).toBe(HttpStatus.Ok);
       expect(post2GetResponse.body).toEqual(createPost2Response.body);
