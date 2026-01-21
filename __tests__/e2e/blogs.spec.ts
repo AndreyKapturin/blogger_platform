@@ -214,18 +214,18 @@ describe(`PUT ${Routes.Blogs}/:id`, () => {
 
     it('send double request', async () => {
       const postResponse = await blogsTestManager.createCorrectBlog();
-      
+
       const updateResponse1 = await request(app)
         .put(`${Routes.Blogs}/${postResponse.body.id}`)
         .set('Authorization', authHeader)
         .send({ ...postResponse.body, name: 'Updated name' });
-      expect(updateResponse1.status).toBe(HttpStatus.No_Content)
+      expect(updateResponse1.status).toBe(HttpStatus.No_Content);
 
       const updateResponse2 = await request(app)
         .put(`${Routes.Blogs}/${postResponse.body.id}`)
         .set('Authorization', authHeader)
         .send({ ...postResponse.body, name: 'Updated name' });
-      expect(updateResponse2.status).toBe(HttpStatus.No_Content)
+      expect(updateResponse2.status).toBe(HttpStatus.No_Content);
     });
 
     it('name length equal 1', async () => {
@@ -269,6 +269,60 @@ describe(`PUT ${Routes.Blogs}/:id`, () => {
         await blogsTestManager.correctUpdateBlog({ websiteUrl: correctURL });
       });
     }
+
+    it('posts belonging to the blog are updated along with the blog', async () => {
+      const initialBlogName = 'Blog name';
+      const updatedBlogName = 'Updated name';
+      const createBlogResponse = await blogsTestManager.createCorrectBlog({
+        name: initialBlogName,
+      });
+      const createPost1Response = await postsTestManager.createCorrectPost(
+        createBlogResponse.body,
+        {
+          title: 'Post 1',
+        },
+      );
+      const createPost2Response = await postsTestManager.createCorrectPost(
+        createBlogResponse.body,
+        {
+          title: 'Post 2',
+        },
+      );
+
+      const post1GetResponse = await request(app).get(
+        `${Routes.Posts}/${createPost1Response.body.id}`,
+      );
+      expect(post1GetResponse.status).toBe(HttpStatus.Ok);
+      expect(post1GetResponse.body.blogName).toEqual(initialBlogName);
+
+      const post2GetResponse = await request(app).get(
+        `${Routes.Posts}/${createPost2Response.body.id}`,
+      );
+      expect(post2GetResponse.status).toBe(HttpStatus.Ok);
+      expect(post2GetResponse.body.blogName).toEqual(initialBlogName);
+
+      const updateBlogResponse = await request(app)
+        .put(`${Routes.Blogs}/${createBlogResponse.body.id}`)
+        .set('Authorization', authHeader)
+        .send({
+          name: updatedBlogName,
+          description: createBlogResponse.body.description,
+          websiteUrl: createBlogResponse.body.websiteUrl,
+        });
+      expect(updateBlogResponse.status).toBe(HttpStatus.No_Content);
+
+      const afterBlogUpdatePost1GetResponse = await request(app).get(
+        `${Routes.Posts}/${createPost1Response.body.id}`,
+      );
+      expect(afterBlogUpdatePost1GetResponse.status).toBe(HttpStatus.Ok);
+      expect(afterBlogUpdatePost1GetResponse.body.blogName).toEqual(updatedBlogName);
+
+      const afterBlogUpdatePost2GetResponse = await request(app).get(
+        `${Routes.Posts}/${createPost2Response.body.id}`,
+      );
+      expect(afterBlogUpdatePost2GetResponse.status).toBe(HttpStatus.Ok);
+      expect(afterBlogUpdatePost2GetResponse.body.blogName).toEqual(updatedBlogName);
+    });
   });
 
   describe(`should return ${HttpStatus.Not_Found} status code if blog not found`, () => {

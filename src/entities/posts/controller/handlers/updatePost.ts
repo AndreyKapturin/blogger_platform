@@ -28,6 +28,7 @@ const updatePost = async (
     content: req.body.content,
     shortDescription: req.body.shortDescription,
     blogId: blog._id.toString(),
+    blogName: blog.name,
   };
 
   const wasUpdated = await postsRepository.update(req.params.id, updatedPost);

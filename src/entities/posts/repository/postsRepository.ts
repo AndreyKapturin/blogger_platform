@@ -24,6 +24,7 @@ const update = async (postId: string, inputPost: InputPostType) => {
         content: inputPost.content,
         shortDescription: inputPost.shortDescription,
         blogId: inputPost.blogId,
+        blogName: inputPost.blogName,
       },
     },
   );
@@ -40,6 +41,14 @@ const removeRelated = async (blogId: string) => {
   return deleteREsult.deletedCount !== 0;
 };
 
+const updateRelated = async (blogId: string, blogName: string) => {
+  const updateREsult = await postsCollection.updateMany(
+    { blogId: blogId },
+    {$set: { blogName }},
+  );
+  return updateREsult.matchedCount !== 0;
+};
+
 const cleanAll = async () => {
   await postsCollection.deleteMany();
 };
@@ -51,6 +60,7 @@ const postsRepository = {
   update,
   remove,
   removeRelated,
+  updateRelated,
   cleanAll,
 };
 
