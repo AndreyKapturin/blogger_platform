@@ -6,6 +6,7 @@ import { testingRouter } from '../entities/testing/router';
 import { postsRouter } from '../entities/posts/router';
 import { docsRouter } from '../docs';
 import { connectToDB } from '../database/mongoDB';
+import { errorsHandler } from './errorsHandler';
 
 const createApp = async (): Promise<Express> => {
   await connectToDB();
@@ -15,6 +16,7 @@ const createApp = async (): Promise<Express> => {
   app.use(Routes.Testing, testingRouter);
   app.use(Routes.Posts, postsRouter);
   app.use(Routes.Docs, docsRouter);
+  app.use(errorsHandler);
   return app;
 };
 

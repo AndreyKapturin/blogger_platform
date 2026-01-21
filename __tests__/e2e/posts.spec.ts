@@ -166,12 +166,19 @@ describe(`POST ${Routes.Posts}`, () => {
         shortDescription: 'p'.repeat(MAX_POST_SHORT_DESCRIPTION_LENGTH + 1),
       });
     });
-
+  });
+  describe(`should return ${HttpStatus.Unprocessable_Entity} status code`, () => {
     it(`blog with passed blogId not existed`, async () => {
-      await postsTestManager.createInorrectPost({ blogId: notExistBlogId });
+      const createPostResponse = await request(app)
+        .post(Routes.Posts)
+        .set('Authorization', authHeader)
+        .send({
+          ...correctInputPostData,
+          blogId: notExistBlogId,
+        });
+      expect(createPostResponse.status).toBe(HttpStatus.Unprocessable_Entity);
     });
   });
-
   describe(`should return ${HttpStatus.Unauthorized}`, () => {
     it('if auth header incorrect', async () => {
       await request(app)
@@ -250,13 +257,13 @@ describe(`PUT ${Routes.Posts}/:id`, () => {
       await postsTestManager.correctUpdatePost(
         blog,
         {
-          blogId: newBlog.body.id
+          blogId: newBlog.body.id,
         },
         {
           blogId: newBlog.body.id,
-          blogName: newBlog.body.name
-        }
-      )
+          blogName: newBlog.body.name,
+        },
+      );
     });
   });
 
@@ -317,9 +324,21 @@ describe(`PUT ${Routes.Posts}/:id`, () => {
         shortDescription: 'p'.repeat(MAX_POST_SHORT_DESCRIPTION_LENGTH + 1),
       });
     });
+  });
 
+  describe(`should return ${HttpStatus.Unprocessable_Entity} status code`, () => {
     it(`blog with passed blogId not existed`, async () => {
-      await postsTestManager.incorrectUpdatePost(blog, { blogId: notExistBlogId });
+      const createPostResponse = await postsTestManager.createCorrectPost(blog);
+      const updateResponse = await request(app)
+        .put(`${Routes.Posts}/${createPostResponse.body.id}`)
+        .set('Authorization', authHeader)
+        .send({
+          title: createPostResponse.body.title,
+          content: createPostResponse.body.content,
+          shortDescription: createPostResponse.body.shortDescription,
+          blogId: notExistBlogId,
+        });
+      expect(updateResponse.status).toBe(HttpStatus.Unprocessable_Entity);
     });
   });
 

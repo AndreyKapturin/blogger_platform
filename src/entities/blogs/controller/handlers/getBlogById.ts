@@ -3,10 +3,10 @@ import { RequestWithParams } from '../../../../core/types/RequestTypes';
 import { BlogIdParamType, ViewBlogType } from '../../types';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
 import { blogToViewMapper } from '../utils/blogToViewMapper';
-import { blogsRepository } from '../../repository/blogsRepository';
+import { blogsService } from '../../application/service';
 
 const getBlogById = async (req: RequestWithParams<BlogIdParamType>, res: Response<ViewBlogType>) => {
-  const foundBlog = await blogsRepository.findById(req.params.id);
+  const foundBlog = await blogsService.getBlogById(req.params.id);
   if (!foundBlog) {
     res.sendStatus(HttpStatus.Not_Found);
     return;
