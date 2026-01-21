@@ -73,7 +73,7 @@ const createPostsTestManager = (app: Express) => {
   const correctUpdatePost = async (
     blog: ViewBlogType,
     changedFields: Partial<InputPostType>,
-    expectedFileds: Partial<InputPostType> = {}
+    expectedFileds: Partial<ViewPostType> = {}
   ) => {
     const createResponse = await createCorrectPost(blog);
     const { id, blogName, ...createdPost } = { ...createResponse.body };

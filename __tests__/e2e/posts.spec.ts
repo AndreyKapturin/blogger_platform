@@ -195,7 +195,7 @@ describe(`PUT ${Routes.Posts}/:id`, () => {
 
     it('send double request', async () => {
       const postResponse = await postsTestManager.createCorrectPost(blog);
-      
+
       const updateResponse1 = await request(app)
         .put(`${Routes.Posts}/${postResponse.body.id}`)
         .set('Authorization', authHeader)
@@ -243,6 +243,20 @@ describe(`PUT ${Routes.Posts}/:id`, () => {
       await postsTestManager.correctUpdatePost(blog, {
         shortDescription: 'p'.repeat(MAX_POST_SHORT_DESCRIPTION_LENGTH),
       });
+    });
+
+    it('blog replaced on existed blog', async () => {
+      const newBlog = await blogsTestManager.createCorrectBlog({ name: 'New blog' });
+      await postsTestManager.correctUpdatePost(
+        blog,
+        {
+          blogId: newBlog.body.id
+        },
+        {
+          blogId: newBlog.body.id,
+          blogName: newBlog.body.name
+        }
+      )
     });
   });
 
@@ -351,10 +365,6 @@ describe(`DELETE ${Routes.Posts}/:id`, () => {
         .expect(HttpStatus.Unauthorized);
     });
   });
-});
-
-it('true to be true', () => {
-  expect(true).toBe(true);
 });
 
 afterAll(async () => {

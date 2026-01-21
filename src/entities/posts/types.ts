@@ -1,6 +1,6 @@
 type PostIdParamType = {
-  id: string
-}
+  id: string;
+};
 
 type PostType = {
   title: string;
@@ -8,12 +8,11 @@ type PostType = {
   content: string;
   blogId: string;
   createdAt: string;
+  blogName: string;
 };
 
-type ViewPostType = PostType & PostIdParamType & {
-  blogName: string;
-}
+type ViewPostType = PostType & PostIdParamType;
 
-type InputPostType = Omit<PostType, 'createdAt'>
+type InputPostType = Omit<PostType, 'createdAt' | 'blogName'>;
 
 export type { PostIdParamType, ViewPostType, PostType, InputPostType };

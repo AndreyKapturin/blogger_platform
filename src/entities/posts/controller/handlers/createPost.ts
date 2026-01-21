@@ -30,11 +30,12 @@ const createPost = async (
     shortDescription: req.body.shortDescription,
     createdAt: new Date().toISOString(),
     blogId: blog._id.toString(),
+    blogName: blog.name,
   };
 
   const createdPost = await postsRepository.save(newPost);
 
-  res.status(HttpStatus.Created).json(postToViewMapper(createdPost, blog.name));
+  res.status(HttpStatus.Created).json(postToViewMapper(createdPost));
 };
 
 export { createPost };
