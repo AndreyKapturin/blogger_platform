@@ -1,9 +1,9 @@
 import { postsRepository } from '../../posts/repository/postsRepository';
 import { blogsRepository } from '../repository/blogsRepository';
-import { BlogType, InputBlogType } from '../types';
+import { BlogType, InputBlogType, ViewBlogQuery } from '../types';
 
-const getBlogs = async () => {
-  return await blogsRepository.findAll();
+const getBlogs = async (blogQuery: ViewBlogQuery) => {
+  return await blogsRepository.findAll(blogQuery);
 };
 
 const getBlogById = async (blogId: string) => {

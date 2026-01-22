@@ -3,8 +3,16 @@ import { Express } from 'express';
 import request from 'supertest';
 import { Routes } from '../../src/app/routes';
 import { HttpStatus } from '../../src/core/types/HttpStatus';
-import { InputBlogType } from '../../src/entities/blogs/types';
 import {
+  BlogSortField,
+  InputBlogType,
+  ViewBlogQuery,
+  ViewBlogType,
+} from '../../src/entities/blogs/types';
+import {
+  DEFAULT_BLOG_PAGE_SIZE,
+  DEFAULT_BLOG_SORT_BY,
+  DEFAULT_BLOG_SORT_DIRECTION,
   MAX_BLOG_DESCRIPTION_LENGTH,
   MAX_BLOG_NAME_LENGTH,
   MAX_BLOG_WEBSITE_URL_LENGTH,
@@ -18,6 +26,8 @@ import { createPostsTestManager, PostsTestManagerType } from './utils/PostsTestM
 import { authHeader } from '../../src/core/constants';
 import { ObjectId } from 'mongodb';
 import { closeBbConnection } from '../../src/database/mongoDB';
+import { Paginator } from '../../src/core/types/Pagination';
+import { SortDirection } from '../../src/core/types/Sorting';
 
 let app: Express;
 let blogsTestManager: BlogsTestManagerType;
@@ -40,7 +50,7 @@ describe(`GET ${Routes.Blogs}`, () => {
     it('and empty array if blogs not exist', async () => {
       const response = await request(app).get(Routes.Blogs);
       expect(response.status).toBe(HttpStatus.Ok);
-      expect(response.body).toEqual([]);
+      expect(response.body.items).toEqual([]);
     });
 
     it('and blogs array if blogs exist', async () => {
@@ -48,7 +58,7 @@ describe(`GET ${Routes.Blogs}`, () => {
       const blog2Response = await blogsTestManager.createCorrectBlog({ name: 'Blog 2' });
       const response = await request(app).get(Routes.Blogs);
       expect(response.status).toBe(HttpStatus.Ok);
-      expect(response.body).toEqual([blog1Response.body, blog2Response.body]);
+      expect(response.body.items).toEqual([blog2Response.body, blog1Response.body]);
     });
   });
 });
@@ -479,6 +489,81 @@ describe(`DELETE ${Routes.Blogs}/:id`, () => {
         .delete(`${Routes.Blogs}/${createRespone.body.id}`)
         .expect(HttpStatus.Unauthorized);
     });
+  });
+});
+
+describe(`GET ${Routes.Blogs}/ with filters`, () => {
+  let blog1: ViewBlogType;
+  let blog2: ViewBlogType;
+  let blog3: ViewBlogType;
+
+  beforeEach(async () => {
+    blog1 = (await blogsTestManager.createCorrectBlog({ name: 'Blog 1' })).body;
+    blog2 = (await blogsTestManager.createCorrectBlog({ name: 'Blog 2' })).body;
+    blog3 = (await blogsTestManager.createCorrectBlog({ name: 'Blog 3' })).body;
+  });
+
+  it('search by name', async () => {
+    const filters: Partial<ViewBlogQuery> = {
+      searchNameTerm: '2',
+    };
+    const response = await request(app).get(Routes.Blogs).query(filters);
+    const expectedBody: Paginator<ViewBlogType> = {
+      page: 1,
+      pagesCount: 1,
+      pageSize: DEFAULT_BLOG_PAGE_SIZE,
+      totalCount: 1,
+      items: [blog2],
+    };
+    expect(response.status).toBe(HttpStatus.Ok);
+    expect(response.body).toEqual(expectedBody);
+  });
+
+  it('search by unexisted name', async () => {
+    const filters: Partial<ViewBlogQuery> = {
+      searchNameTerm: 'nfksdanfsk',
+    };
+    const response = await request(app).get(Routes.Blogs).query(filters);
+    const expectedBody: Paginator<ViewBlogType> = {
+      page: 1,
+      pagesCount: 1,
+      pageSize: DEFAULT_BLOG_PAGE_SIZE,
+      totalCount: 0,
+      items: [],
+    };
+    expect(response.status).toBe(HttpStatus.Ok);
+    expect(response.body).toEqual(expectedBody);
+  });
+
+  it(`default sort: field - ${DEFAULT_BLOG_SORT_BY}, direction - ${DEFAULT_BLOG_SORT_DIRECTION}`, async () => {
+    const filters: Partial<ViewBlogQuery> = {};
+    const response = await request(app).get(Routes.Blogs).query(filters);
+    const expectedBody: Paginator<ViewBlogType> = {
+      page: 1,
+      pagesCount: 1,
+      pageSize: DEFAULT_BLOG_PAGE_SIZE,
+      totalCount: 3,
+      items: [blog3, blog2, blog1],
+    };
+    expect(response.status).toBe(HttpStatus.Ok);
+    expect(response.body).toEqual(expectedBody);
+  });
+
+  it(`${SortDirection.Asc} sort by ${BlogSortField.Name} field`, async () => {
+    const filters: Partial<ViewBlogQuery> = {
+      sortBy: BlogSortField.Name,
+      sortDirection: SortDirection.Asc,
+    };
+    const response = await request(app).get(Routes.Blogs).query(filters);
+    const expectedBody: Paginator<ViewBlogType> = {
+      page: 1,
+      pagesCount: 1,
+      pageSize: DEFAULT_BLOG_PAGE_SIZE,
+      totalCount: 3,
+      items: [blog1, blog2, blog3],
+    };
+    expect(response.status).toBe(HttpStatus.Ok);
+    expect(response.body).toEqual(expectedBody);
   });
 });
 
