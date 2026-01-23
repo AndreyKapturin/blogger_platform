@@ -7,6 +7,10 @@ const getPosts = async (postsQuery: ViewPostQuery) => {
   return postsRepository.findAll(postsQuery);
 };
 
+const getPostsForBlog = async (blogId: string, postsQuery: ViewPostQuery) => {
+  return postsRepository.findAllForBlog(blogId, postsQuery);
+};
+
 const getPostById = async (postId: string) => {
   const foundPost = await postsRepository.findById(postId);
   return foundPost;
@@ -52,6 +56,7 @@ const deletePost = async (postId: string) => {
 
 const postsService = {
   getPosts,
+  getPostsForBlog,
   getPostById,
   createPost,
   updatePost,

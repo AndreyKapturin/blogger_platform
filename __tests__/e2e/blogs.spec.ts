@@ -28,6 +28,13 @@ import { ObjectId } from 'mongodb';
 import { closeBbConnection } from '../../src/database/mongoDB';
 import { SortDirection } from '../../src/core/types/PaginationAndSorting';
 import { Paginator } from '../../src/core/types/PaginationAndSorting';
+import { PostSortField, ViewPostQuery, ViewPostType } from '../../src/entities/posts/types';
+import {
+  DEFAULT_POSTS_PAGE_SIZE,
+  DEFAULT_POSTS_SORT_BY,
+  DEFAULT_POSTS_SORT_DIRECTION,
+} from '../../src/entities/posts/constants';
+import { APIErrorResult } from '../../src/core/types/APIErrorResult';
 
 let app: Express;
 let blogsTestManager: BlogsTestManagerType;
@@ -136,6 +143,101 @@ describe(`GET ${Routes.Blogs}/ with filters`, () => {
     expect(response.status).toBe(HttpStatus.Ok);
     expect(response.body).toEqual(expectedBody);
   });
+});
+
+describe(`GET ${Routes.Blogs}/:id/posts with filters`, () => {
+  let blog1: ViewBlogType;
+  let blog2: ViewBlogType;
+  let blog3: ViewBlogType;
+  let post1: ViewPostType;
+  let post2: ViewPostType;
+  let post3: ViewPostType;
+  let post4: ViewPostType;
+
+  beforeEach(async () => {
+    blog1 = (await blogsTestManager.createCorrectBlog({ name: 'Blog 1' })).body;
+    blog2 = (await blogsTestManager.createCorrectBlog({ name: 'Blog 2' })).body;
+    blog3 = (await blogsTestManager.createCorrectBlog({ name: 'Blog 3' })).body;
+    post1 = (await postsTestManager.createCorrectPost(blog1, { title: 'Post 1' })).body;
+    post2 = (await postsTestManager.createCorrectPost(blog2, { title: 'Post 2' })).body;
+    post3 = (await postsTestManager.createCorrectPost(blog1, { title: 'Post 3' })).body;
+    post4 = (await postsTestManager.createCorrectPost(blog2, { title: 'Post 4' })).body;
+  });
+
+  it('blog has not posts', async () => {
+    const response = await request(app).get(`${Routes.Blogs}/${blog3.id}/posts`);
+
+    const expectedBody: Paginator<ViewPostType> = {
+      page: 1,
+      pagesCount: 1,
+      pageSize: DEFAULT_POSTS_PAGE_SIZE,
+      totalCount: 0,
+      items: [],
+    };
+
+    expect(response.status).toBe(HttpStatus.Ok);
+    expect(response.body).toEqual(expectedBody);
+  });
+
+  it('blog has posts', async () => {
+    const response = await request(app).get(`${Routes.Blogs}/${blog1.id}/posts`);
+
+    const expectedBody: Paginator<ViewPostType> = {
+      page: 1,
+      pagesCount: 1,
+      pageSize: DEFAULT_POSTS_PAGE_SIZE,
+      totalCount: 2,
+      items: [post3, post1],
+    };
+    expect(response.status).toBe(HttpStatus.Ok);
+    expect(response.body).toEqual(expectedBody);
+  });
+
+  it(`default sort: field - ${DEFAULT_POSTS_SORT_BY}, direction - ${DEFAULT_POSTS_SORT_DIRECTION}`, async () => {
+    const response = await request(app).get(`${Routes.Blogs}/${blog1.id}/posts`);
+    const expectedBody: Paginator<ViewPostType> = {
+      page: 1,
+      pagesCount: 1,
+      pageSize: DEFAULT_POSTS_PAGE_SIZE,
+      totalCount: 2,
+      items: [post3, post1],
+    };
+    expect(response.status).toBe(HttpStatus.Ok);
+    expect(response.body).toEqual(expectedBody);
+  });
+
+  it(`${SortDirection.Asc} sort by ${PostSortField.Title} field`, async () => {
+    const filters: Partial<ViewPostQuery> = {
+      sortBy: PostSortField.Title,
+      sortDirection: SortDirection.Asc,
+    };
+    const response = await request(app).get(`${Routes.Blogs}/${blog1.id}/posts`).query(filters);
+    const expectedBody: Paginator<ViewPostType> = {
+      page: 1,
+      pagesCount: 1,
+      pageSize: DEFAULT_POSTS_PAGE_SIZE,
+      totalCount: 2,
+      items: [post1, post3],
+    };
+    expect(response.status).toBe(HttpStatus.Ok);
+    expect(response.body).toEqual(expectedBody);
+  });
+
+  it('blog is not exist', async () => {
+    const response = await request(app).get(`${Routes.Blogs}/${notExistBlogId}/posts`);
+    expect(response.status).toBe(HttpStatus.Not_Found);
+  });
+
+  it(`incorrect filter`, async () => {
+    const filters = {
+      sortBy: 'incorrect field',
+      pageNumber: 'two',
+    };
+    const response = await request(app).get(`${Routes.Blogs}/${blog1.id}/posts`).query(filters);
+    expect(response.status).toBe(HttpStatus.Bad_Request);
+    expect(response.body.errorsMessages).toHaveLength(2);
+  });
+
 });
 
 describe(`GET ${Routes.Blogs}/:id`, () => {

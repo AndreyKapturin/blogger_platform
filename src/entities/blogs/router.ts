@@ -8,6 +8,7 @@ import {
 } from './validations';
 import { blogsController } from './controller';
 import { basicAuthMiddleware } from '../../core/middlewares/basicAuthMiddleware';
+import { paginationAndSortingPostsValidationSchema } from '../posts/validations';
 
 const blogsRouter = Router();
 
@@ -23,6 +24,13 @@ blogsRouter.get(
   idInParamsCheckMiddleware,
   validationResultMiddleware,
   blogsController.getBlogById,
+);
+blogsRouter.get(
+  '/:id/posts',
+  idInParamsCheckMiddleware,
+  paginationAndSortingPostsValidationSchema,
+  validationResultMiddleware,
+  blogsController.getPostsOfBlog,
 );
 blogsRouter.post(
   '/',
