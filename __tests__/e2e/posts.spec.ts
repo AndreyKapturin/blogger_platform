@@ -70,14 +70,20 @@ describe(`GET ${Routes.Posts}`, () => {
 });
 
 describe(`GET ${Routes.Posts}/ with filters`, () => {
+  let blog1: ViewBlogType;
+  let blog2: ViewBlogType;
   let post1: ViewPostType;
   let post2: ViewPostType;
   let post3: ViewPostType;
+  let post4: ViewPostType;
 
   beforeEach(async () => {
-    post1 = (await postsTestManager.createCorrectPost(blog, { title: 'Post 1' })).body;
-    post2 = (await postsTestManager.createCorrectPost(blog, { title: 'Post 2' })).body;
-    post3 = (await postsTestManager.createCorrectPost(blog, { title: 'Post 3' })).body;
+    blog1 = (await blogsTestManager.createCorrectBlog({ name: 'Blog 1' })).body;
+    blog2 = (await blogsTestManager.createCorrectBlog({ name: 'Blog 2' })).body;
+    post1 = (await postsTestManager.createCorrectPost(blog1, { title: 'Post 1' })).body;
+    post2 = (await postsTestManager.createCorrectPost(blog2, { title: 'Post 2' })).body;
+    post3 = (await postsTestManager.createCorrectPost(blog1, { title: 'Post 3' })).body;
+    post4 = (await postsTestManager.createCorrectPost(blog2, { title: 'Post 4' })).body;
   });
 
   it(`default sort: field - ${DEFAULT_POSTS_SORT_BY}, direction - ${DEFAULT_POSTS_SORT_DIRECTION}`, async () => {
@@ -86,8 +92,8 @@ describe(`GET ${Routes.Posts}/ with filters`, () => {
       page: 1,
       pagesCount: 1,
       pageSize: DEFAULT_POSTS_PAGE_SIZE,
-      totalCount: 3,
-      items: [post3, post2, post1],
+      totalCount: 4,
+      items: [post4, post3, post2, post1],
     };
     expect(response.status).toBe(HttpStatus.Ok);
     expect(response.body).toEqual(expectedBody);
@@ -103,8 +109,25 @@ describe(`GET ${Routes.Posts}/ with filters`, () => {
       page: 1,
       pagesCount: 1,
       pageSize: DEFAULT_POSTS_PAGE_SIZE,
-      totalCount: 3,
-      items: [post1, post2, post3],
+      totalCount: 4,
+      items: [post1, post2, post3, post4],
+    };
+    expect(response.status).toBe(HttpStatus.Ok);
+    expect(response.body).toEqual(expectedBody);
+  });
+
+  it(`${SortDirection.Asc} sort by ${PostSortField.BlogName} field`, async () => {
+    const filters: Partial<ViewPostQuery> = {
+      sortBy: PostSortField.BlogName,
+      sortDirection: SortDirection.Asc,
+    };
+    const response = await request(app).get(Routes.Posts).query(filters);
+    const expectedBody: Paginator<ViewPostType> = {
+      page: 1,
+      pagesCount: 1,
+      pageSize: DEFAULT_POSTS_PAGE_SIZE,
+      totalCount: 4,
+      items: [post1, post3, post2, post4],
     };
     expect(response.status).toBe(HttpStatus.Ok);
     expect(response.body).toEqual(expectedBody);
