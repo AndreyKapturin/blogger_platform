@@ -11,12 +11,15 @@ type Paginator<T> = {
   items: T[];
 };
 
-type PaginationAndSortQuery<T> = {
+type PaginationQuery = {
   pageNumber: number;
   pageSize: number;
   sortDirection: SortDirection;
+};
+
+type PaginationAndSortQuery<T> = PaginationQuery & {
   sortBy: T;
 };
 
 export { SortDirection };
-export type { Paginator, PaginationAndSortQuery };
+export type { Paginator, PaginationAndSortQuery, PaginationQuery };

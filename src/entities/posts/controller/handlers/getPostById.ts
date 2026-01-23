@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { RequestWithParams } from '../../../../core/types/RequestTypes';
 import { PostIdParamType, ViewPostType } from '../../types';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
-import { postToViewMapper } from '../utils/postToViewMapper';
+import { postToViewMapper } from '../mappers/postToViewMapper';
 import { postsService } from '../../application/service';
 
 const getPostById = async (

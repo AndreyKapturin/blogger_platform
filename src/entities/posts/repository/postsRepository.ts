@@ -1,9 +1,19 @@
 import { ObjectId, WithId } from 'mongodb';
 import { postsCollection } from '../../../database/mongoDB';
-import { InputPostType, PostType } from '../types';
+import { InputPostType, PostType, ViewPostQuery } from '../types';
 
-const findAll = async () => {
-  return await postsCollection.find().toArray();
+const findAll = async (postsQuery: ViewPostQuery) => {
+  const { sortBy, sortDirection, pageSize, pageNumber } = postsQuery;
+  const skip = (pageNumber - 1) * pageSize;
+  const items = await postsCollection
+    .find()
+    .sort({ [sortBy]: sortDirection })
+    .skip(skip)
+    .limit(pageSize)
+    .toArray();
+
+  const totalCount = await postsCollection.countDocuments();
+  return { items, totalCount };
 };
 
 const findById = async (postId: string) => {
@@ -42,10 +52,7 @@ const removeRelated = async (blogId: string) => {
 };
 
 const updateRelated = async (blogId: string, blogName: string) => {
-  const updateREsult = await postsCollection.updateMany(
-    { blogId: blogId },
-    {$set: { blogName }},
-  );
+  const updateREsult = await postsCollection.updateMany({ blogId: blogId }, { $set: { blogName } });
   return updateREsult.matchedCount !== 0;
 };
 

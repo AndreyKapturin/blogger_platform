@@ -1,11 +1,10 @@
 import { BusinessLogicError } from '../../../core/errors/BusinessLogicError';
 import { blogsRepository } from '../../blogs/repository/blogsRepository';
 import { postsRepository } from '../repository/postsRepository';
-import { InputPostType, PostType } from '../types';
+import { InputPostType, PostType, ViewPostQuery } from '../types';
 
-const getPosts = async () => {
-  const posts = await postsRepository.findAll();
-  return posts;
+const getPosts = async (postsQuery: ViewPostQuery) => {
+  return postsRepository.findAll(postsQuery);
 };
 
 const getPostById = async (postId: string) => {

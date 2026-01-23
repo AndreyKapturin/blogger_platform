@@ -5,7 +5,8 @@ import { blogsService } from '../../application/service';
 import { matchedData } from 'express-validator';
 import { RequestWithQuery } from '../../../../core/types/RequestTypes';
 import { Paginator } from '../../../../core/types/PaginationAndSorting';
-import { blogsToPaginator } from '../utils/blogsToPaginator';
+import { blogToViewMapper } from '../mappers/blogToViewMapper';
+import { toPaginateMapper } from '../../../../core/mappers/toPaginateMapper';
 
 const getBlogs = async (
   req: RequestWithQuery<ViewBlogQuery>,
@@ -15,7 +16,8 @@ const getBlogs = async (
     locations: ['query'],
   });
   const { items, totalCount } = await blogsService.getBlogs(cleanQuery);
-  const paginatedViewBlogs = blogsToPaginator(items, cleanQuery, totalCount);
+  const viewBlogs = items.map(blogToViewMapper);
+  const paginatedViewBlogs = toPaginateMapper(viewBlogs, cleanQuery, totalCount);
   res.status(HttpStatus.Ok).json(paginatedViewBlogs);
 };
 

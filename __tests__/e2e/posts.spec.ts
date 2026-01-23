@@ -3,7 +3,12 @@ import { Routes } from '../../src/app/routes';
 import { HttpStatus } from '../../src/core/types/HttpStatus';
 import { Express } from 'express';
 import request from 'supertest';
-import { InputPostType } from '../../src/entities/posts/types';
+import {
+  InputPostType,
+  PostSortField,
+  ViewPostQuery,
+  ViewPostType,
+} from '../../src/entities/posts/types';
 import { ViewBlogType } from '../../src/entities/blogs/types';
 import { BlogsTestManagerType, createBlogsTestManager } from './utils/blogsTestManager';
 import {
@@ -12,6 +17,9 @@ import {
   PostsTestManagerType,
 } from './utils/PostsTestManager';
 import {
+  DEFAULT_POSTS_PAGE_SIZE,
+  DEFAULT_POSTS_SORT_BY,
+  DEFAULT_POSTS_SORT_DIRECTION,
   MAX_POST_CONTENT_LENGTH,
   MAX_POST_SHORT_DESCRIPTION_LENGTH,
   MAX_POST_TITLE_LENGTH,
@@ -20,6 +28,7 @@ import { authHeader } from '../../src/core/constants';
 import { ObjectId } from 'mongodb';
 
 import { closeBbConnection } from '../../src/database/mongoDB';
+import { Paginator, SortDirection } from '../../src/core/types/PaginationAndSorting';
 
 let blog: ViewBlogType;
 
@@ -47,7 +56,7 @@ describe(`GET ${Routes.Posts}`, () => {
     it('and empty array if posts not exist', async () => {
       const response = await request(app).get(Routes.Posts);
       expect(response.status).toBe(HttpStatus.Ok);
-      expect(response.body).toEqual([]);
+      expect(response.body.items).toEqual([]);
     });
 
     it('and posts array if posts exist', async () => {
@@ -55,8 +64,50 @@ describe(`GET ${Routes.Posts}`, () => {
       const post2Response = await postsTestManager.createCorrectPost(blog, { title: 'Post 2' });
       const response = await request(app).get(Routes.Posts);
       expect(response.status).toBe(HttpStatus.Ok);
-      expect(response.body).toEqual([post1Response.body, post2Response.body]);
+      expect(response.body.items).toEqual([post2Response.body, post1Response.body]);
     });
+  });
+});
+
+describe(`GET ${Routes.Posts}/ with filters`, () => {
+  let post1: ViewPostType;
+  let post2: ViewPostType;
+  let post3: ViewPostType;
+
+  beforeEach(async () => {
+    post1 = (await postsTestManager.createCorrectPost(blog, { title: 'Post 1' })).body;
+    post2 = (await postsTestManager.createCorrectPost(blog, { title: 'Post 2' })).body;
+    post3 = (await postsTestManager.createCorrectPost(blog, { title: 'Post 3' })).body;
+  });
+
+  it(`default sort: field - ${DEFAULT_POSTS_SORT_BY}, direction - ${DEFAULT_POSTS_SORT_DIRECTION}`, async () => {
+    const response = await request(app).get(Routes.Posts);
+    const expectedBody: Paginator<ViewPostType> = {
+      page: 1,
+      pagesCount: 1,
+      pageSize: DEFAULT_POSTS_PAGE_SIZE,
+      totalCount: 3,
+      items: [post3, post2, post1],
+    };
+    expect(response.status).toBe(HttpStatus.Ok);
+    expect(response.body).toEqual(expectedBody);
+  });
+
+  it(`${SortDirection.Asc} sort by ${PostSortField.Title} field`, async () => {
+    const filters: Partial<ViewPostQuery> = {
+      sortBy: PostSortField.Title,
+      sortDirection: SortDirection.Asc,
+    };
+    const response = await request(app).get(Routes.Posts).query(filters);
+    const expectedBody: Paginator<ViewPostType> = {
+      page: 1,
+      pagesCount: 1,
+      pageSize: DEFAULT_POSTS_PAGE_SIZE,
+      totalCount: 3,
+      items: [post1, post2, post3],
+    };
+    expect(response.status).toBe(HttpStatus.Ok);
+    expect(response.body).toEqual(expectedBody);
   });
 });
 

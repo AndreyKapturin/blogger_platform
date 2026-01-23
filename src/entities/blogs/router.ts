@@ -4,8 +4,8 @@ import {
   inputBlogValidationSchema,
   paginationAndSortingBlogValidationSchema,
   searchQueryBlogValidationSchema,
+  idInParamsCheckMiddleware,
 } from './validations';
-import { idInParamsCheckMiddleware } from './validations/idInParamsCheckMiddleware';
 import { blogsController } from './controller';
 import { basicAuthMiddleware } from '../../core/middlewares/basicAuthMiddleware';
 

@@ -1,14 +1,10 @@
-import { checkSchema, param } from 'express-validator';
-import { customTrim } from '../../core/middlewares/validationMiddleware';
+import { checkSchema } from 'express-validator';
+import { customTrim } from '../../../core/middlewares/validationMiddleware';
 import {
   MAX_POST_CONTENT_LENGTH,
   MAX_POST_TITLE_LENGTH,
   MAX_POST_SHORT_DESCRIPTION_LENGTH,
-} from './constants';
-
-const idInParamsCheckMiddleware = param('id')
-.exists().withMessage('Id is required') 
-.isMongoId().withMessage('Id has incorrect format');
+} from '../constants';
 
 const inputPostValidationSchema = checkSchema({
   title: {
@@ -55,4 +51,4 @@ const inputPostValidationSchema = checkSchema({
   },
 });
 
-export { inputPostValidationSchema, idInParamsCheckMiddleware };
+export { inputPostValidationSchema };
