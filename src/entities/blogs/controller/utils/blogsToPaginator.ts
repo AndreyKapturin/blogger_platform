@@ -1,5 +1,5 @@
 import { WithId } from 'mongodb';
-import { Paginator } from '../../../../core/types/Pagination';
+import { Paginator } from '../../../../core/types/PaginationAndSorting';
 import { BlogType, ViewBlogQuery, ViewBlogType } from '../../types';
 import { blogToViewMapper } from './blogToViewMapper';
 

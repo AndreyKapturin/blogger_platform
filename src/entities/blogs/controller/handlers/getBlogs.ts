@@ -4,7 +4,7 @@ import { HttpStatus } from '../../../../core/types/HttpStatus';
 import { blogsService } from '../../application/service';
 import { matchedData } from 'express-validator';
 import { RequestWithQuery } from '../../../../core/types/RequestTypes';
-import { Paginator } from '../../../../core/types/Pagination';
+import { Paginator } from '../../../../core/types/PaginationAndSorting';
 import { blogsToPaginator } from '../utils/blogsToPaginator';
 
 const getBlogs = async (

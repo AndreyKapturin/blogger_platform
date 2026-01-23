@@ -1,5 +1,5 @@
 import { checkSchema } from 'express-validator';
-import { customTrim } from '../../../core/validation/validationMiddleware';
+import { customTrim } from '../../../core/middlewares/validationMiddleware';
 import {
   MAX_BLOG_DESCRIPTION_LENGTH,
   MAX_BLOG_NAME_LENGTH,

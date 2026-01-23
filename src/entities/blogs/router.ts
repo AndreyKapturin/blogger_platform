@@ -1,17 +1,20 @@
 import { Router } from 'express';
-import { validationResultMiddleware } from '../../core/validation/validationMiddleware';
-import { filterAndSortQueryBlogValidationSchema, inputBlogValidationSchema } from './validations';
+import { validationResultMiddleware } from '../../core/middlewares/validationMiddleware';
+import {
+  inputBlogValidationSchema,
+  paginationAndSortingBlogValidationSchema,
+  searchQueryBlogValidationSchema,
+} from './validations';
 import { idInParamsCheckMiddleware } from './validations/idInParamsCheckMiddleware';
 import { blogsController } from './controller';
 import { basicAuthMiddleware } from '../../core/middlewares/basicAuthMiddleware';
-import { paginatorValidationSchema } from '../../core/validation/paginatorValidation';
 
 const blogsRouter = Router();
 
 blogsRouter.get(
   '/',
-  filterAndSortQueryBlogValidationSchema,
-  paginatorValidationSchema,
+  searchQueryBlogValidationSchema,
+  paginationAndSortingBlogValidationSchema,
   validationResultMiddleware,
   blogsController.getBlogs,
 );

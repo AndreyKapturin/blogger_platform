@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { postsController } from './controller';
 import { idInParamsCheckMiddleware, inputPostValidationSchema } from './validations';
-import { validationResultMiddleware } from '../../core/validation/validationMiddleware';
+import { validationResultMiddleware } from '../../core/middlewares/validationMiddleware';
 import { basicAuthMiddleware } from '../../core/middlewares/basicAuthMiddleware';
 
 const postsRouter = Router();

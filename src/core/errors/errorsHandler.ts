@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import { BusinessLogicError } from '../core/errors/BusinessLogicError';
-import { HttpStatus } from '../core/types/HttpStatus';
+import { BusinessLogicError } from './BusinessLogicError';
+import { HttpStatus } from '../types/HttpStatus';
 
 const errorsHandler = (error: Error, req: Request, res: Response, next: NextFunction) => {
   if (error instanceof BusinessLogicError) {

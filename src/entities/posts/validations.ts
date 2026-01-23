@@ -1,5 +1,5 @@
 import { checkSchema, param } from 'express-validator';
-import { customTrim } from '../../core/validation/validationMiddleware';
+import { customTrim } from '../../core/middlewares/validationMiddleware';
 import {
   MAX_POST_CONTENT_LENGTH,
   MAX_POST_TITLE_LENGTH,

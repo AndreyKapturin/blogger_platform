@@ -26,8 +26,8 @@ import { createPostsTestManager, PostsTestManagerType } from './utils/PostsTestM
 import { authHeader } from '../../src/core/constants';
 import { ObjectId } from 'mongodb';
 import { closeBbConnection } from '../../src/database/mongoDB';
-import { Paginator } from '../../src/core/types/Pagination';
-import { SortDirection } from '../../src/core/types/Sorting';
+import { SortDirection } from '../../src/core/types/PaginationAndSorting';
+import { Paginator } from '../../src/core/types/PaginationAndSorting';
 
 let app: Express;
 let blogsTestManager: BlogsTestManagerType;

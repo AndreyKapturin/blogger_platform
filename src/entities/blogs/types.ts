@@ -1,5 +1,4 @@
-import { PaginationQuery } from '../../core/types/Pagination';
-import { SortDirection } from "../../core/types/Sorting";
+import { PaginationAndSortQuery } from '../../core/types/PaginationAndSorting';
 
 type BlogIdParamType = {
   id: string;
@@ -19,16 +18,11 @@ type InputBlogType = Omit<BlogType, 'createdAt' | 'isMembership'>;
 
 enum BlogSortField {
   Name = 'name',
-  Description = 'description',
-  WebsiteUrl = 'websiteUrl',
   CreatedAt = 'createdAt',
-  IsMembership = 'isMembership',
 }
 
-type ViewBlogQuery = PaginationQuery & {
-  sortDirection: SortDirection;
+type ViewBlogQuery = PaginationAndSortQuery<BlogSortField> & {
   searchNameTerm: string | null;
-  sortBy: BlogSortField;
 };
 
 export { BlogSortField };

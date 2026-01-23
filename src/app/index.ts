@@ -6,7 +6,7 @@ import { testingRouter } from '../entities/testing/router';
 import { postsRouter } from '../entities/posts/router';
 import { docsRouter } from '../docs';
 import { connectToDB } from '../database/mongoDB';
-import { errorsHandler } from './errorsHandler';
+import { errorsHandler } from '../core/errors/errorsHandler';
 
 const createApp = async (): Promise<Express> => {
   await connectToDB();

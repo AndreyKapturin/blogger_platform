@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { CustomSanitizer, ErrorFormatter, matchedData, validationResult } from 'express-validator';
+import { CustomSanitizer, ErrorFormatter, validationResult } from 'express-validator';
 import { HttpStatus } from '../types/HttpStatus';
 
 const _errorFormatter: ErrorFormatter = (error) => {
