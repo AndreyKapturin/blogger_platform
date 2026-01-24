@@ -1,4 +1,3 @@
-import { BusinessLogicError } from '../../../core/errors/BusinessLogicError';
 import { ResourceNotFoundError } from '../../../core/errors/ResourceNotFoundError';
 import { blogsRepository } from '../../blogs/repository/blogsRepository';
 import { postsRepository } from '../repository/postsRepository';
@@ -21,7 +20,7 @@ const getPostById = async (postId: string) => {
 
 const createPost = async (inputPost: InputPostType) => {
   const blog = await blogsRepository.findById(inputPost.blogId);
-  if (!blog) throw new BusinessLogicError(`Blog not found by ${inputPost.blogId} id`);
+  if (!blog) throw new ResourceNotFoundError(`Blog with id ${inputPost.blogId} not found`);
 
   const newPost: PostType = {
     title: inputPost.title,
@@ -38,7 +37,7 @@ const createPost = async (inputPost: InputPostType) => {
 
 const updatePost = async (postId: string, inputPost: InputPostType) => {
   const blog = await blogsRepository.findById(inputPost.blogId);
-  if (!blog) throw new BusinessLogicError(`Blog not found by ${inputPost.blogId} id`);
+  if (!blog) throw new ResourceNotFoundError(`Blog not found by ${inputPost.blogId} id`);
 
   const updatedPost = {
     title: inputPost.title,

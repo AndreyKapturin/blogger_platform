@@ -16,6 +16,7 @@ type PostType = {
 type ViewPostType = PostType & PostIdParamType;
 
 type InputPostType = Omit<PostType, 'createdAt' | 'blogName'>;
+type InputBlogPostType = Omit<InputPostType, 'blogId'>;
 
 enum PostSortField {
   Title = 'title',
@@ -26,4 +27,11 @@ enum PostSortField {
 type ViewPostQuery = PaginationAndSortQuery<PostSortField>;
 
 export { PostSortField };
-export type { PostIdParamType, ViewPostType, PostType, InputPostType, ViewPostQuery };
+export type {
+  PostIdParamType,
+  ViewPostType,
+  PostType,
+  InputPostType,
+  ViewPostQuery,
+  InputBlogPostType,
+};

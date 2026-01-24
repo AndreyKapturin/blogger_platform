@@ -9,6 +9,7 @@ import {
 import { blogsController } from './controller';
 import { basicAuthMiddleware } from '../../core/middlewares/basicAuthMiddleware';
 import { paginationAndSortingPostsValidationSchema } from '../posts/validations';
+import { inputBlogPostValidationSchema } from '../posts/validations/inputBlogPostValidationSchema';
 
 const blogsRouter = Router();
 
@@ -19,12 +20,14 @@ blogsRouter.get(
   validationResultMiddleware,
   blogsController.getBlogs,
 );
+
 blogsRouter.get(
   '/:id',
   idInParamsCheckMiddleware,
   validationResultMiddleware,
   blogsController.getBlogById,
 );
+
 blogsRouter.get(
   '/:id/posts',
   idInParamsCheckMiddleware,
@@ -32,6 +35,7 @@ blogsRouter.get(
   validationResultMiddleware,
   blogsController.getPostsOfBlog,
 );
+
 blogsRouter.post(
   '/',
   basicAuthMiddleware,
@@ -39,6 +43,16 @@ blogsRouter.post(
   validationResultMiddleware,
   blogsController.createBlog,
 );
+
+blogsRouter.post(
+  '/:id/posts',
+  basicAuthMiddleware,
+  idInParamsCheckMiddleware,
+  inputBlogPostValidationSchema,
+  validationResultMiddleware,
+  blogsController.createPostForBlog,
+);
+
 blogsRouter.put(
   '/:id',
   basicAuthMiddleware,
@@ -47,6 +61,7 @@ blogsRouter.put(
   validationResultMiddleware,
   blogsController.updateBlog,
 );
+
 blogsRouter.delete(
   '/:id',
   basicAuthMiddleware,

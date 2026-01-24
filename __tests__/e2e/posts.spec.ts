@@ -241,7 +241,7 @@ describe(`POST ${Routes.Posts}`, () => {
       });
     });
   });
-  describe(`should return ${HttpStatus.Unprocessable_Entity} status code`, () => {
+  describe(`should return ${HttpStatus.Not_Found} status code`, () => {
     it(`blog with passed blogId not existed`, async () => {
       const createPostResponse = await request(app)
         .post(Routes.Posts)
@@ -250,7 +250,7 @@ describe(`POST ${Routes.Posts}`, () => {
           ...correctInputPostData,
           blogId: notExistBlogId,
         });
-      expect(createPostResponse.status).toBe(HttpStatus.Unprocessable_Entity);
+      expect(createPostResponse.status).toBe(HttpStatus.Not_Found);
     });
   });
   describe(`should return ${HttpStatus.Unauthorized}`, () => {
@@ -400,7 +400,7 @@ describe(`PUT ${Routes.Posts}/:id`, () => {
     });
   });
 
-  describe(`should return ${HttpStatus.Unprocessable_Entity} status code`, () => {
+  describe(`should return ${HttpStatus.Not_Found} status code`, () => {
     it(`blog with passed blogId not existed`, async () => {
       const createPostResponse = await postsTestManager.createCorrectPost(blog);
       const updateResponse = await request(app)
@@ -412,7 +412,7 @@ describe(`PUT ${Routes.Posts}/:id`, () => {
           shortDescription: createPostResponse.body.shortDescription,
           blogId: notExistBlogId,
         });
-      expect(updateResponse.status).toBe(HttpStatus.Unprocessable_Entity);
+      expect(updateResponse.status).toBe(HttpStatus.Not_Found);
     });
   });
 
