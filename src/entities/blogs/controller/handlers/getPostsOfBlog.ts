@@ -14,15 +14,8 @@ const getPostsOfBlog = async (
   req: RequestWithParamsAndQuery<BlogIdParamType, ViewPostQuery>,
   res: Response<Paginator<ViewPostType>>,
 ) => {
-  const blogId = req.params.id;
-  const blog = await blogsService.getBlogById(blogId);
-
-  if (!blog) {
-    res.sendStatus(HttpStatus.Not_Found);
-    return;
-  }
   const cleanQuery = matchedData<ViewPostQuery>(req, { locations: ['query'] });
-  const { items, totalCount } = await postsService.getPostsForBlog(blogId, cleanQuery);
+  const { items, totalCount } = await postsService.getPostsForBlog(req.params.id, cleanQuery);
   const viewPosts = items.map(postToViewMapper);
   const paginatePosts = toPaginateMapper(viewPosts, cleanQuery, totalCount);
   res.status(HttpStatus.Ok).json(paginatePosts);

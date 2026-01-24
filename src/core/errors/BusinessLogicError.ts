@@ -1,7 +1,2 @@
-class BusinessLogicError extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}
-
+class BusinessLogicError extends Error {}
 export { BusinessLogicError };

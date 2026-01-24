@@ -1,4 +1,5 @@
 import { BusinessLogicError } from '../../../core/errors/BusinessLogicError';
+import { ResourceNotFoundError } from '../../../core/errors/ResourceNotFoundError';
 import { blogsRepository } from '../../blogs/repository/blogsRepository';
 import { postsRepository } from '../repository/postsRepository';
 import { InputPostType, PostType, ViewPostQuery } from '../types';
@@ -8,6 +9,8 @@ const getPosts = async (postsQuery: ViewPostQuery) => {
 };
 
 const getPostsForBlog = async (blogId: string, postsQuery: ViewPostQuery) => {
+  const blog = await blogsRepository.findById(blogId);
+  if (!blog) throw new ResourceNotFoundError(`Blog with id ${blogId} not found`);
   return postsRepository.findAllForBlog(blogId, postsQuery);
 };
 
