@@ -4,7 +4,7 @@ import { blogsRouter } from '../entities/blogs/router';
 import { jsonBodyMiddleware } from '../core/middlewares/jsonBodyMiddleware';
 import { testingRouter } from '../entities/testing/router';
 import { postsRouter } from '../entities/posts/router';
-import { docsRouter } from '../docs';
+import { docsRouter } from '../core/docs';
 import { connectToDB } from '../database/mongoDB';
 import { errorsHandler } from '../core/errors/errorsHandler';
 
