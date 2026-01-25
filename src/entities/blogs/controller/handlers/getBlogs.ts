@@ -1,12 +1,24 @@
-import { Request, Response } from 'express';
-import { ViewBlogType } from '../../types';
-import { blogsRepository } from '../../repository/blogsRepository';
+import { Response } from 'express';
+import { ViewBlogQuery, ViewBlogType } from '../../types';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
-import { blogToViewMapper } from '../utils/blogToViewMapper';
+import { blogsService } from '../../application/service';
+import { matchedData } from 'express-validator';
+import { RequestWithQuery } from '../../../../core/types/RequestTypes';
+import { Paginator } from '../../../../core/types/PaginationAndSorting';
+import { blogToViewMapper } from '../mappers/blogToViewMapper';
+import { toPaginateMapper } from '../../../../core/mappers/toPaginateMapper';
 
-const getBlogs = async (req: Request, res: Response<ViewBlogType[]>) => {
-  const blogs = await blogsRepository.findAll();
-  res.status(HttpStatus.Ok).json(blogs.map(blogToViewMapper));
+const getBlogs = async (
+  req: RequestWithQuery<ViewBlogQuery>,
+  res: Response<Paginator<ViewBlogType>>,
+) => {
+  const cleanQuery = matchedData<ViewBlogQuery>(req, {
+    locations: ['query'],
+  });
+  const { items, totalCount } = await blogsService.getBlogs(cleanQuery);
+  const viewBlogs = items.map(blogToViewMapper);
+  const paginatedViewBlogs = toPaginateMapper(viewBlogs, cleanQuery, totalCount);
+  res.status(HttpStatus.Ok).json(paginatedViewBlogs);
 };
 
 export { getBlogs };

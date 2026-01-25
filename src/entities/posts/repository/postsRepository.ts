@@ -1,10 +1,39 @@
-import { ObjectId, WithId } from 'mongodb';
+import { Filter, ObjectId, WithId } from 'mongodb';
 import { postsCollection } from '../../../database/mongoDB';
-import { InputPostType, PostType } from '../types';
+import { InputUpdatePostType, PostType, ViewPostQuery } from '../types';
 
-const findAll = async () => {
-  return await postsCollection.find().toArray();
+const findAll = async (postsQuery: ViewPostQuery) => {
+  const { sortBy, sortDirection, pageSize, pageNumber } = postsQuery;
+  const skip = (pageNumber - 1) * pageSize;
+  const items = await postsCollection
+    .find()
+    .sort({ [sortBy]: sortDirection })
+    .skip(skip)
+    .limit(pageSize)
+    .toArray();
+
+  const totalCount = await postsCollection.countDocuments();
+  return { items, totalCount };
 };
+
+const findAllForBlog = async (blogId: string, postsQuery: ViewPostQuery) => {
+  const { sortBy, sortDirection, pageSize, pageNumber } = postsQuery;
+  const skip = (pageNumber - 1) * pageSize;
+
+  const filter: Filter<PostType> = {
+    blogId,
+  };
+
+  const items = await postsCollection
+    .find(filter)
+    .sort({ [sortBy]: sortDirection })
+    .skip(skip)
+    .limit(pageSize)
+    .toArray();
+
+  const totalCount = await postsCollection.countDocuments(filter);
+  return { items, totalCount };
+}
 
 const findById = async (postId: string) => {
   return await postsCollection.findOne({ _id: new ObjectId(postId) });
@@ -15,7 +44,7 @@ const save = async (inputPost: PostType): Promise<WithId<PostType>> => {
   return { ...inputPost, _id: insertedId };
 };
 
-const update = async (postId: string, inputPost: InputPostType) => {
+const update = async (postId: string, inputPost: InputUpdatePostType) => {
   const updateResult = await postsCollection.updateOne(
     { _id: new ObjectId(postId) },
     {
@@ -24,6 +53,7 @@ const update = async (postId: string, inputPost: InputPostType) => {
         content: inputPost.content,
         shortDescription: inputPost.shortDescription,
         blogId: inputPost.blogId,
+        blogName: inputPost.blogName,
       },
     },
   );
@@ -40,17 +70,24 @@ const removeRelated = async (blogId: string) => {
   return deleteREsult.deletedCount !== 0;
 };
 
+const updateRelated = async (blogId: string, blogName: string) => {
+  const updateREsult = await postsCollection.updateMany({ blogId: blogId }, { $set: { blogName } });
+  return updateREsult.matchedCount !== 0;
+};
+
 const cleanAll = async () => {
   await postsCollection.deleteMany();
 };
 
 const postsRepository = {
   findAll,
+  findAllForBlog,
   findById,
   save,
   update,
   remove,
   removeRelated,
+  updateRelated,
   cleanAll,
 };
 

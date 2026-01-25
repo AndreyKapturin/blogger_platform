@@ -1,20 +1,24 @@
-import { Request, Response } from 'express';
-import { ViewPostType } from '../../types';
-import { postsRepository } from '../../repository/postsRepository';
+import { Response } from 'express';
+import { ViewPostQuery, ViewPostType } from '../../types';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
-import { blogsRepository } from '../../../blogs/repository/blogsRepository';
-import { postToViewMapper } from '../utils/postToViewMapper';
+import { postToViewMapper } from '../mappers/postToViewMapper';
+import { postsService } from '../../application/service';
+import { RequestWithQuery } from '../../../../core/types/RequestTypes';
+import { Paginator } from '../../../../core/types/PaginationAndSorting';
+import { matchedData } from 'express-validator';
+import { toPaginateMapper } from '../../../../core/mappers/toPaginateMapper';
 
-const getPosts = async (req: Request, res: Response<ViewPostType[]>) => {
-  const posts = await postsRepository.findAll();
-  const postsWithBlogName: ViewPostType[] = await Promise.all(
-    posts.map(async (post) => {
-      const blog = await blogsRepository.findById(post.blogId);
-      const blogName = blog ? blog.name : 'Blog does not exist';
-      return postToViewMapper(post, blogName);
-    })
-  );
-  res.status(HttpStatus.Ok).json(postsWithBlogName);
+const getPosts = async (
+  req: RequestWithQuery<ViewPostQuery>,
+  res: Response<Paginator<ViewPostType>>,
+) => {
+  const cleanQuery = matchedData<ViewPostQuery>(req, {
+    locations: ['query'],
+  });
+  const { items, totalCount } = await postsService.getPosts(cleanQuery);
+  const viewPosts = items.map(postToViewMapper);
+  const paginatePosts = toPaginateMapper(viewPosts, cleanQuery, totalCount);
+  res.status(HttpStatus.Ok).json(paginatePosts);
 };
 
 export { getPosts };

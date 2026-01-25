@@ -1,6 +1,8 @@
+import { PaginationAndSortQuery } from '../../core/types/PaginationAndSorting';
+
 type PostIdParamType = {
-  id: string
-}
+  id: string;
+};
 
 type PostType = {
   title: string;
@@ -8,12 +10,30 @@ type PostType = {
   content: string;
   blogId: string;
   createdAt: string;
+  blogName: string;
 };
 
-type ViewPostType = PostType & PostIdParamType & {
-  blogName: string;
+type ViewPostType = PostType & PostIdParamType;
+
+type InputUpdatePostType = Omit<PostType, 'createdAt'>;
+type InputPostType = Omit<InputUpdatePostType, 'blogName'>;
+type InputBlogPostType = Omit<InputPostType, 'blogId'>;
+
+enum PostSortField {
+  Title = 'title',
+  BlogName = 'blogName',
+  CreatedAt = 'createdAt',
 }
 
-type InputPostType = Omit<PostType, 'createdAt'>
+type ViewPostQuery = PaginationAndSortQuery<PostSortField>;
 
-export type { PostIdParamType, ViewPostType, PostType, InputPostType };
+export { PostSortField };
+export type {
+  PostIdParamType,
+  ViewPostType,
+  PostType,
+  InputUpdatePostType,
+  InputPostType,
+  ViewPostQuery,
+  InputBlogPostType,
+};

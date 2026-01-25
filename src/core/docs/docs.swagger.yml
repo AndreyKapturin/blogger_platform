@@ -1,0 +1,90 @@
+components: 
+  schemas: 
+    ValidationFieldErrorSchema:
+      type: object
+      required: 
+        - message
+      properties:
+        message:
+          type: string
+        field:
+          type: string
+          nullable: true
+  
+    APIErrorResultSchema:
+      type: object
+      required:
+        - errorsMessages
+      properties:
+        errorsMessages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationFieldErrorSchema'
+    
+    BasePaginatorSchema:
+      type: object
+      required: 
+        - pagesCount
+        - page
+        - pageSize
+        - totalCount
+        - items
+      properties: 
+        pagesCount:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        totalCount:
+          type: integer
+        items: {}
+    
+    SortDirection:
+      type: string
+      description: direction of items sorting
+      enum:
+        - asc
+        - desc
+      default: desc
+
+  parameters:
+    PageNumberQueryParam:
+      in: query
+      name: pageNumber
+      description: current page number
+      schema: 
+        type: integer
+        default: 1
+
+    PageSizeQueryParam:
+      in: query
+      name: pageSize
+      description: items quantity per page
+      schema: 
+        type: integer
+        default: 10
+
+    SortDirectionQueryParam:
+      in: query
+      name: sortDirection
+      description: direction of items sorting
+      schema: 
+        $ref: '#/components/schemas/SortDirection'
+
+  responses: 
+    ValidationErrorResponse:
+      description: Validation error
+      content: 
+        application/json: 
+          schema: 
+            $ref: '#/components/schemas/APIErrorResultSchema'
+
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+      description: |
+        Basic HTTP authentication. 
+        Enter your username and password in the dialog.
+        The credentials will be encoded as `username:password` and sent in the `Authorization` header as `Basic <base64-encoded-string>`.

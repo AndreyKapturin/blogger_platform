@@ -1,4 +1,4 @@
-import { ValidationFieldError } from "./validationError"
+import { ValidationFieldError } from "./ValidationError"
 
 export type APIErrorResult = {
   errorsMessages: ValidationFieldError[]

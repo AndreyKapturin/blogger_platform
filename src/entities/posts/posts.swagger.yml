@@ -96,8 +96,6 @@ components:
       properties: 
         id:
           type: string
-          description: Mongo ObjectId format
-          example: '696c891bdfcde0419df1674d'
         title:
           type: string
         shortDescription:
@@ -106,13 +104,21 @@ components:
           type: string
         blogId:
           type: string
-          description: Mongo ObjectId format
-          example: '696c891bdfcde0419df1674d'
         blogName:
           type: string
         createdAt:
           type: string
           format: date-time
+
+    ViewPostsPaginationSchema:
+      allOf:
+        - $ref: '#/components/schemas/BasePaginatorSchema'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/ViewPostSchema'
 
     InputPostSchema:
       type: object
@@ -124,15 +130,21 @@ components:
       properties: 
         title:
           type: string
-          maxLength: 30
         shortDescription:
           type: string
-          maxLength: 100
         content:
           type: string
-          maxLength: 1000
         blogId:
           type: string
+  
+    PostsSortFieldSchema:
+      type: string
+      description: available fields for posts sorting
+      enum: 
+        - title
+        - blogName
+        - createdAt
+      default: createdAt
 
   parameters:
     PostIdPathParam:
@@ -143,3 +155,28 @@ components:
       schema:
         type: string
         example: '696c891bdfcde0419df1674d'
+    
+    PostsSortByQueryParam:
+      in: query
+      name: sortBy
+      description: sorting post field name
+      schema: 
+        allOf: 
+          - $ref: '#/components/schemas/PostsSortFieldSchema'
+        type: string
+        default: createdAt
+
+  responses: 
+    PaginatedPostsResponse:
+      description: Paginated posts
+      content: 
+        application/json: 
+          schema: 
+            $ref: '#/components/schemas/ViewPostsPaginationSchema'
+
+    SuccessfullyCreatePost:
+      description: Successfully create post
+      content: 
+        application/json: 
+          schema: 
+            $ref: '#/components/schemas/ViewPostSchema'
