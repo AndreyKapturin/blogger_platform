@@ -1,12 +1,21 @@
 import { Router } from 'express';
 import { postsController } from './controller';
-import { idInParamsCheckMiddleware, inputPostValidationSchema } from './validations';
-import { validationResultMiddleware } from '../../core/validation/validationMiddleware';
+import {
+  idInParamsCheckMiddleware,
+  inputPostValidationSchema,
+  paginationAndSortingPostsValidationSchema,
+} from './validations';
+import { validationResultMiddleware } from '../../core/middlewares/validationMiddleware';
 import { basicAuthMiddleware } from '../../core/middlewares/basicAuthMiddleware';
 
 const postsRouter = Router();
 
-postsRouter.get('/', postsController.getPosts);
+postsRouter.get(
+  '/',
+  paginationAndSortingPostsValidationSchema,
+  validationResultMiddleware,
+  postsController.getPosts,
+);
 
 postsRouter.get(
   '/:id',

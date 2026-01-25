@@ -23,8 +23,8 @@ const validationResultMiddleware = (req: Request, res: Response, next: NextFunct
 };
 
 const customTrim: CustomSanitizer = (input) => {
-  if (input === undefined) return
-  if (typeof input === 'string') return input.trim()
-}
+  if (input === undefined) return;
+  if (typeof input === 'string') return input.trim();
+};
 
 export { validationResultMiddleware, customTrim };

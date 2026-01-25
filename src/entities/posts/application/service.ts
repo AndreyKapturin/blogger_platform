@@ -1,11 +1,16 @@
-import { BusinessLogicError } from '../../../core/errors/BusinessLogicError';
+import { ResourceNotFoundError } from '../../../core/errors/ResourceNotFoundError';
 import { blogsRepository } from '../../blogs/repository/blogsRepository';
 import { postsRepository } from '../repository/postsRepository';
-import { InputPostType, PostType } from '../types';
+import { InputPostType, PostType, ViewPostQuery } from '../types';
 
-const getPosts = async () => {
-  const posts = await postsRepository.findAll();
-  return posts;
+const getPosts = async (postsQuery: ViewPostQuery) => {
+  return postsRepository.findAll(postsQuery);
+};
+
+const getPostsForBlog = async (blogId: string, postsQuery: ViewPostQuery) => {
+  const blog = await blogsRepository.findById(blogId);
+  if (!blog) throw new ResourceNotFoundError(`Blog with id ${blogId} not found`);
+  return postsRepository.findAllForBlog(blogId, postsQuery);
 };
 
 const getPostById = async (postId: string) => {
@@ -15,7 +20,7 @@ const getPostById = async (postId: string) => {
 
 const createPost = async (inputPost: InputPostType) => {
   const blog = await blogsRepository.findById(inputPost.blogId);
-  if (!blog) throw new BusinessLogicError(`Blog not found by ${inputPost.blogId} id`);
+  if (!blog) throw new ResourceNotFoundError(`Blog with id ${inputPost.blogId} not found`);
 
   const newPost: PostType = {
     title: inputPost.title,
@@ -32,7 +37,7 @@ const createPost = async (inputPost: InputPostType) => {
 
 const updatePost = async (postId: string, inputPost: InputPostType) => {
   const blog = await blogsRepository.findById(inputPost.blogId);
-  if (!blog) throw new BusinessLogicError(`Blog not found by ${inputPost.blogId} id`);
+  if (!blog) throw new ResourceNotFoundError(`Blog not found by ${inputPost.blogId} id`);
 
   const updatedPost = {
     title: inputPost.title,
@@ -53,6 +58,7 @@ const deletePost = async (postId: string) => {
 
 const postsService = {
   getPosts,
+  getPostsForBlog,
   getPostById,
   createPost,
   updatePost,

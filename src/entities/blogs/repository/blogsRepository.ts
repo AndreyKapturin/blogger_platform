@@ -1,9 +1,26 @@
-import { ObjectId, WithId } from 'mongodb';
+import { Filter, ObjectId, WithId } from 'mongodb';
 import { blogsCollection } from '../../../database/mongoDB';
-import { InputBlogType, BlogType } from '../types';
+import { InputBlogType, BlogType, ViewBlogQuery } from '../types';
 
-const findAll = async () => {
-  return await blogsCollection.find().toArray();
+const findAll = async (blogQuery: ViewBlogQuery) => {
+  const filter: Filter<BlogType> = {};
+  const { searchNameTerm, sortBy, sortDirection, pageSize, pageNumber } = blogQuery;
+
+  const skip = (pageNumber - 1) * pageSize;
+
+  if (searchNameTerm) {
+    filter.name = { $regex: searchNameTerm, $options: 'i' };
+  }
+
+  const items = await blogsCollection
+    .find(filter)
+    .sort({ [sortBy]: sortDirection })
+    .skip(skip)
+    .limit(pageSize)
+    .toArray();
+
+  const totalCount = await blogsCollection.countDocuments(filter);
+  return { items, totalCount };
 };
 
 const findById = async (blogId: string) => {

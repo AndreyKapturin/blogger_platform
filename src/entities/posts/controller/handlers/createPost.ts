@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { RequestWithBody } from '../../../../core/types/RequestTypes';
 import { InputPostType, ViewPostType } from '../../types';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
-import { postToViewMapper } from '../utils/postToViewMapper';
+import { postToViewMapper } from '../mappers/postToViewMapper';
 import { postsService } from '../../application/service';
 
 const createPost = async (

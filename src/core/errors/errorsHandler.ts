@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
-import { BusinessLogicError } from '../core/errors/BusinessLogicError';
-import { HttpStatus } from '../core/types/HttpStatus';
+import { HttpStatus } from '../types/HttpStatus';
+import { ResourceNotFoundError } from './ResourceNotFoundError';
 
 const errorsHandler = (error: Error, req: Request, res: Response, next: NextFunction) => {
-  if (error instanceof BusinessLogicError) {
-    res.status(HttpStatus.Unprocessable_Entity).json({
+  if (error instanceof ResourceNotFoundError) {
+    res.status(HttpStatus.Not_Found).json({
       errorsMessages: [
         {
           message: error.message,

@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { RequestWithParams } from '../../../../core/types/RequestTypes';
 import { BlogIdParamType, ViewBlogType } from '../../types';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
-import { blogToViewMapper } from '../utils/blogToViewMapper';
+import { blogToViewMapper } from '../mappers/blogToViewMapper';
 import { blogsService } from '../../application/service';
 
 const getBlogById = async (req: RequestWithParams<BlogIdParamType>, res: Response<ViewBlogType>) => {

@@ -3,13 +3,19 @@ paths:
     get:
       tags: [Blogs]
       summary: Get list a blogs
+      parameters: 
+        - $ref: '#/components/parameters/SearchBlogNameTermQueryParam'
+        - $ref: '#/components/parameters/SortDirectionQueryParam'
+        - $ref: '#/components/parameters/PageSizeQueryParam'
+        - $ref: '#/components/parameters/PageNumberQueryParam'
+        - $ref: '#/components/parameters/BlogsSortByQueryParam'
       responses: 
         '200':
           description: Successful
           content: 
             application/json: 
               schema: 
-                $ref: '#/components/schemas/ViewBlogSchema'
+                $ref: '#/components/schemas/ViewBlogsPaginationSchema'
 
     post:
       tags: [Blogs]
@@ -33,6 +39,44 @@ paths:
           $ref: '#/components/responses/ValidationErrorResponse'
         '401':
           description: Unauthorized
+
+  /blogs/{id}/posts:
+    get:
+      tags: [Blogs]
+      summary: Get posts for blog
+      parameters: 
+        - $ref: '#/components/parameters/BlogIdPathParam'
+        - $ref: '#/components/parameters/PostsSortByQueryParam'
+        - $ref: '#/components/parameters/SortDirectionQueryParam'
+        - $ref: '#/components/parameters/PageSizeQueryParam'
+        - $ref: '#/components/parameters/PageNumberQueryParam'
+      responses: 
+        '200':
+          $ref: '#/components/responses/PaginatedPostsResponse'
+        '404':
+          description: Blog not found
+    post:
+      tags: [Blogs]
+      summary: Create post for blog
+      security:
+        - BasicAuth: []
+      parameters: 
+        - $ref: '#/components/parameters/BlogIdPathParam'
+      requestBody: 
+        description: Data for create post
+        content: 
+          application/json: 
+            schema: 
+              $ref: '#/components/schemas/InputBlogPostSchema'
+      responses: 
+        '201':
+          $ref: '#/components/responses/SuccessfullyCreatePost'
+        '400':
+          $ref: '#/components/responses/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Blog not found  
 
   /blogs/{id}:
     get:
@@ -67,6 +111,8 @@ paths:
           description: Successfully update blog
         '400':
           $ref: '#/components/responses/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
         '404':
           description: Blog not found
     delete:
@@ -79,8 +125,11 @@ paths:
       responses: 
         '204':
           description: Successfully delete blog
+        '401':
+          description: Unauthorized
         '404':
           description: Blog not found
+
 
 components: 
   schemas: 
@@ -97,7 +146,6 @@ components:
         id:
           type: string
           description: Mongo ObjectId format
-          example: '696c891bdfcde0419df1674d'
         name:
           type: string
         description:
@@ -110,7 +158,17 @@ components:
         isMembership:
           type: boolean
           default: false
-    
+          
+    ViewBlogsPaginationSchema:
+      allOf:
+        - $ref: '#/components/schemas/BasePaginatorSchema'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/ViewBlogSchema'
+
     InputBlogSchema:
       type: object
       required: 
@@ -128,6 +186,28 @@ components:
           type: string
           maxLength: 100
 
+    InputBlogPostSchema:
+      type: object
+      required: 
+        - title
+        - shortDescription
+        - content
+      properties: 
+        title:
+          type: string
+        shortDescription:
+          type: string
+        content:
+          type: string
+
+    BlogsSortFieldSchema:
+      type: string
+      description: available fields for blogs sorting
+      enum: 
+        - name
+        - createdAt
+      default: createdAt
+    
   parameters:
     BlogIdPathParam:
       in: path
@@ -137,3 +217,21 @@ components:
       schema:
         type: string
         example: '696c891bdfcde0419df1674d'
+
+    SearchBlogNameTermQueryParam:
+      in: query
+      name: searchNameTerm
+      description: blog name substring for searching
+      schema:
+        type: string
+        example: Node JS tutorial
+    
+    BlogsSortByQueryParam:
+      in: query
+      name: sortBy
+      description: sorting blog field name
+      schema: 
+        allOf: 
+          - $ref: '#/components/schemas/BlogsSortFieldSchema'
+        type: string
+        default: createdAt

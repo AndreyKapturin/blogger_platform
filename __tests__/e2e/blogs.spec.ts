@@ -3,8 +3,16 @@ import { Express } from 'express';
 import request from 'supertest';
 import { Routes } from '../../src/app/routes';
 import { HttpStatus } from '../../src/core/types/HttpStatus';
-import { InputBlogType } from '../../src/entities/blogs/types';
 import {
+  BlogSortField,
+  InputBlogType,
+  ViewBlogQuery,
+  ViewBlogType,
+} from '../../src/entities/blogs/types';
+import {
+  DEFAULT_BLOG_PAGE_SIZE,
+  DEFAULT_BLOG_SORT_BY,
+  DEFAULT_BLOG_SORT_DIRECTION,
   MAX_BLOG_DESCRIPTION_LENGTH,
   MAX_BLOG_NAME_LENGTH,
   MAX_BLOG_WEBSITE_URL_LENGTH,
@@ -18,6 +26,21 @@ import { createPostsTestManager, PostsTestManagerType } from './utils/PostsTestM
 import { authHeader } from '../../src/core/constants';
 import { ObjectId } from 'mongodb';
 import { closeBbConnection } from '../../src/database/mongoDB';
+import { SortDirection } from '../../src/core/types/PaginationAndSorting';
+import { Paginator } from '../../src/core/types/PaginationAndSorting';
+import {
+  InputBlogPostType,
+  PostSortField,
+  ViewPostQuery,
+  ViewPostType,
+} from '../../src/entities/posts/types';
+import {
+  DEFAULT_POSTS_PAGE_SIZE,
+  DEFAULT_POSTS_SORT_BY,
+  DEFAULT_POSTS_SORT_DIRECTION,
+} from '../../src/entities/posts/constants';
+import { APIErrorResult } from '../../src/core/types/APIErrorResult';
+import { ISODateStringRegExp } from './utils/constants';
 
 let app: Express;
 let blogsTestManager: BlogsTestManagerType;
@@ -40,7 +63,7 @@ describe(`GET ${Routes.Blogs}`, () => {
     it('and empty array if blogs not exist', async () => {
       const response = await request(app).get(Routes.Blogs);
       expect(response.status).toBe(HttpStatus.Ok);
-      expect(response.body).toEqual([]);
+      expect(response.body.items).toEqual([]);
     });
 
     it('and blogs array if blogs exist', async () => {
@@ -48,8 +71,177 @@ describe(`GET ${Routes.Blogs}`, () => {
       const blog2Response = await blogsTestManager.createCorrectBlog({ name: 'Blog 2' });
       const response = await request(app).get(Routes.Blogs);
       expect(response.status).toBe(HttpStatus.Ok);
-      expect(response.body).toEqual([blog1Response.body, blog2Response.body]);
+      expect(response.body.items).toEqual([blog2Response.body, blog1Response.body]);
     });
+  });
+});
+
+describe(`GET ${Routes.Blogs}/ with filters`, () => {
+  let blog1: ViewBlogType;
+  let blog2: ViewBlogType;
+  let blog3: ViewBlogType;
+
+  beforeEach(async () => {
+    blog1 = (await blogsTestManager.createCorrectBlog({ name: 'Blog 1' })).body;
+    blog2 = (await blogsTestManager.createCorrectBlog({ name: 'Blog 2' })).body;
+    blog3 = (await blogsTestManager.createCorrectBlog({ name: 'Blog 3' })).body;
+  });
+
+  it('search by name', async () => {
+    const filters: Partial<ViewBlogQuery> = {
+      searchNameTerm: '2',
+    };
+    const response = await request(app).get(Routes.Blogs).query(filters);
+    const expectedBody: Paginator<ViewBlogType> = {
+      page: 1,
+      pagesCount: 1,
+      pageSize: DEFAULT_BLOG_PAGE_SIZE,
+      totalCount: 1,
+      items: [blog2],
+    };
+    expect(response.status).toBe(HttpStatus.Ok);
+    expect(response.body).toEqual(expectedBody);
+  });
+
+  it('search by unexisted name', async () => {
+    const filters: Partial<ViewBlogQuery> = {
+      searchNameTerm: 'nfksdanfsk',
+    };
+    const response = await request(app).get(Routes.Blogs).query(filters);
+    const expectedBody: Paginator<ViewBlogType> = {
+      page: 1,
+      pagesCount: 1,
+      pageSize: DEFAULT_BLOG_PAGE_SIZE,
+      totalCount: 0,
+      items: [],
+    };
+    expect(response.status).toBe(HttpStatus.Ok);
+    expect(response.body).toEqual(expectedBody);
+  });
+
+  it(`default sort: field - ${DEFAULT_BLOG_SORT_BY}, direction - ${DEFAULT_BLOG_SORT_DIRECTION}`, async () => {
+    const filters: Partial<ViewBlogQuery> = {};
+    const response = await request(app).get(Routes.Blogs).query(filters);
+    const expectedBody: Paginator<ViewBlogType> = {
+      page: 1,
+      pagesCount: 1,
+      pageSize: DEFAULT_BLOG_PAGE_SIZE,
+      totalCount: 3,
+      items: [blog3, blog2, blog1],
+    };
+    expect(response.status).toBe(HttpStatus.Ok);
+    expect(response.body).toEqual(expectedBody);
+  });
+
+  it(`${SortDirection.Asc} sort by ${BlogSortField.Name} field`, async () => {
+    const filters: Partial<ViewBlogQuery> = {
+      sortBy: BlogSortField.Name,
+      sortDirection: SortDirection.Asc,
+    };
+    const response = await request(app).get(Routes.Blogs).query(filters);
+    const expectedBody: Paginator<ViewBlogType> = {
+      page: 1,
+      pagesCount: 1,
+      pageSize: DEFAULT_BLOG_PAGE_SIZE,
+      totalCount: 3,
+      items: [blog1, blog2, blog3],
+    };
+    expect(response.status).toBe(HttpStatus.Ok);
+    expect(response.body).toEqual(expectedBody);
+  });
+});
+
+describe(`GET ${Routes.Blogs}/:id/posts with filters`, () => {
+  let blog1: ViewBlogType;
+  let blog2: ViewBlogType;
+  let blog3: ViewBlogType;
+  let post1: ViewPostType;
+  let post2: ViewPostType;
+  let post3: ViewPostType;
+  let post4: ViewPostType;
+
+  beforeEach(async () => {
+    blog1 = (await blogsTestManager.createCorrectBlog({ name: 'Blog 1' })).body;
+    blog2 = (await blogsTestManager.createCorrectBlog({ name: 'Blog 2' })).body;
+    blog3 = (await blogsTestManager.createCorrectBlog({ name: 'Blog 3' })).body;
+    post1 = (await postsTestManager.createCorrectPost(blog1, { title: 'Post 1' })).body;
+    post2 = (await postsTestManager.createCorrectPost(blog2, { title: 'Post 2' })).body;
+    post3 = (await postsTestManager.createCorrectPost(blog1, { title: 'Post 3' })).body;
+    post4 = (await postsTestManager.createCorrectPost(blog2, { title: 'Post 4' })).body;
+  });
+
+  it('blog has not posts', async () => {
+    const response = await request(app).get(`${Routes.Blogs}/${blog3.id}/posts`);
+
+    const expectedBody: Paginator<ViewPostType> = {
+      page: 1,
+      pagesCount: 1,
+      pageSize: DEFAULT_POSTS_PAGE_SIZE,
+      totalCount: 0,
+      items: [],
+    };
+
+    expect(response.status).toBe(HttpStatus.Ok);
+    expect(response.body).toEqual(expectedBody);
+  });
+
+  it('blog has posts', async () => {
+    const response = await request(app).get(`${Routes.Blogs}/${blog1.id}/posts`);
+
+    const expectedBody: Paginator<ViewPostType> = {
+      page: 1,
+      pagesCount: 1,
+      pageSize: DEFAULT_POSTS_PAGE_SIZE,
+      totalCount: 2,
+      items: [post3, post1],
+    };
+    expect(response.status).toBe(HttpStatus.Ok);
+    expect(response.body).toEqual(expectedBody);
+  });
+
+  it(`default sort: field - ${DEFAULT_POSTS_SORT_BY}, direction - ${DEFAULT_POSTS_SORT_DIRECTION}`, async () => {
+    const response = await request(app).get(`${Routes.Blogs}/${blog1.id}/posts`);
+    const expectedBody: Paginator<ViewPostType> = {
+      page: 1,
+      pagesCount: 1,
+      pageSize: DEFAULT_POSTS_PAGE_SIZE,
+      totalCount: 2,
+      items: [post3, post1],
+    };
+    expect(response.status).toBe(HttpStatus.Ok);
+    expect(response.body).toEqual(expectedBody);
+  });
+
+  it(`${SortDirection.Asc} sort by ${PostSortField.Title} field`, async () => {
+    const filters: Partial<ViewPostQuery> = {
+      sortBy: PostSortField.Title,
+      sortDirection: SortDirection.Asc,
+    };
+    const response = await request(app).get(`${Routes.Blogs}/${blog1.id}/posts`).query(filters);
+    const expectedBody: Paginator<ViewPostType> = {
+      page: 1,
+      pagesCount: 1,
+      pageSize: DEFAULT_POSTS_PAGE_SIZE,
+      totalCount: 2,
+      items: [post1, post3],
+    };
+    expect(response.status).toBe(HttpStatus.Ok);
+    expect(response.body).toEqual(expectedBody);
+  });
+
+  it('blog is not exist', async () => {
+    const response = await request(app).get(`${Routes.Blogs}/${notExistBlogId}/posts`);
+    expect(response.status).toBe(HttpStatus.Not_Found);
+  });
+
+  it(`incorrect filter`, async () => {
+    const filters = {
+      sortBy: 'incorrect field',
+      pageNumber: 'two',
+    };
+    const response = await request(app).get(`${Routes.Blogs}/${blog1.id}/posts`).query(filters);
+    expect(response.status).toBe(HttpStatus.Bad_Request);
+    expect(response.body.errorsMessages).toHaveLength(2);
   });
 });
 
@@ -190,6 +382,96 @@ describe(`POST ${Routes.Blogs}`, () => {
   describe(`should return ${HttpStatus.Unauthorized}`, () => {
     it('if auth header incorrect', async () => {
       await request(app).post(Routes.Blogs).send(correctInputBlog).expect(HttpStatus.Unauthorized);
+    });
+  });
+});
+
+describe(`POST ${Routes.Blogs}/:id/posts`, () => {
+  describe(`should create post for blog, return ${HttpStatus.Created} status code and post`, () => {
+    it('all data is correct', async () => {
+      const blog = (await blogsTestManager.createCorrectBlog({ name: 'Blog 1' })).body;
+      const inputPost: InputBlogPostType = {
+        title: 'bla',
+        content: 'bla bla bla'.repeat(3),
+        shortDescription: 'bla bla bla',
+      };
+
+      const createPostResponse = await request(app)
+        .post(`${Routes.Blogs}/${blog.id}/posts`)
+        .set('Authorization', authHeader)
+        .send(inputPost);
+
+      const expectedBody: ViewPostType = {
+        id: expect.any(String),
+        title: inputPost.title,
+        content: inputPost.content,
+        shortDescription: inputPost.shortDescription,
+        blogId: blog.id,
+        blogName: blog.name,
+        createdAt: expect.stringMatching(ISODateStringRegExp),
+      };
+
+      expect(createPostResponse.status).toBe(HttpStatus.Created);
+      expect(createPostResponse.body).toEqual(expectedBody);
+    });
+  });
+
+  describe(`should return ${HttpStatus.Bad_Request}`, () => {
+    it('several fields has error', async () => {
+      const blog = (await blogsTestManager.createCorrectBlog({ name: 'Blog 1' })).body;
+      const inputPost = {
+        content: 10,
+        shortDescription: 'bla bla bla',
+      };
+
+      const createPostResponse = await request(app)
+        .post(`${Routes.Blogs}/${blog.id}/posts`)
+        .set('Authorization', authHeader)
+        .send(inputPost);
+
+      expect(createPostResponse.status).toBe(HttpStatus.Bad_Request);
+      expect(createPostResponse.body).toEqual({
+        errorsMessages: expect.arrayContaining([
+          expect.objectContaining({
+            field: expect.any(String),
+            message: expect.any(String),
+          }),
+        ]),
+      });
+      expect(createPostResponse.body.errorsMessages).toHaveLength(2);
+    });
+  });
+
+  describe(`should return ${HttpStatus.Unauthorized}`, () => {
+    it('if auth header incorrect', async () => {
+      const blog = (await blogsTestManager.createCorrectBlog({ name: 'Blog 1' })).body;
+      const inputPost: InputBlogPostType = {
+        title: 'bla',
+        content: 'bla bla bla'.repeat(3),
+        shortDescription: 'bla bla bla',
+      };
+
+      const createPostResponse = await request(app)
+        .post(`${Routes.Blogs}/${blog.id}/posts`)
+        .send(inputPost);
+      expect(createPostResponse.status).toBe(HttpStatus.Unauthorized);
+    });
+  });
+
+  describe(`should return ${HttpStatus.Not_Found} status code if blog not found`, () => {
+    it('blog not exist', async () => {
+      const inputPost: InputBlogPostType = {
+        title: 'bla',
+        content: 'bla bla bla'.repeat(3),
+        shortDescription: 'bla bla bla',
+      };
+
+      const createPostResponse = await request(app)
+        .post(`${Routes.Blogs}/${notExistBlogId}/posts`)
+        .set('Authorization', authHeader)
+        .send(inputPost);
+
+      expect(createPostResponse.status).toBe(HttpStatus.Not_Found);
     });
   });
 });
