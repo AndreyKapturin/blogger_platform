@@ -1,6 +1,6 @@
 import { Filter, ObjectId, WithId } from 'mongodb';
 import { postsCollection } from '../../../database/mongoDB';
-import { InputPostType, PostType, ViewPostQuery } from '../types';
+import { InputUpdatePostType, PostType, ViewPostQuery } from '../types';
 
 const findAll = async (postsQuery: ViewPostQuery) => {
   const { sortBy, sortDirection, pageSize, pageNumber } = postsQuery;
@@ -44,7 +44,7 @@ const save = async (inputPost: PostType): Promise<WithId<PostType>> => {
   return { ...inputPost, _id: insertedId };
 };
 
-const update = async (postId: string, inputPost: InputPostType) => {
+const update = async (postId: string, inputPost: InputUpdatePostType) => {
   const updateResult = await postsCollection.updateOne(
     { _id: new ObjectId(postId) },
     {
