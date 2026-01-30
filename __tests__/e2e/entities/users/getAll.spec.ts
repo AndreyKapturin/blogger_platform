@@ -1,12 +1,13 @@
 import { Express } from 'express';
 import { Routes } from '../../../../src/app/routes';
 import { createApp } from '../../../../src/app';
-import requset from 'supertest';
+import request from 'supertest';
 import { HttpStatus } from '../../../../src/core/types/HttpStatus';
 import { Paginator } from '../../../../src/core/types/PaginationAndSorting';
 import { ViewUserType } from '../../../../src/entities/users/types';
-import { EmailStringRegExp, ISODateStringRegExp, LoginStringRegExp } from '../../utils/constants';
+import { EmailStringRegExp, ISODateStringRegExp } from '../../utils/constants';
 import { closeBbConnection } from '../../../../src/database/mongoDB';
+import { LoginStringRegExp } from '../../../../src/core/constants';
 
 let app: Express;
 
@@ -31,7 +32,7 @@ const expectedPaginatedUsersBody = expect.objectContaining<Paginator<ViewUserTyp
 
 describe(`GET ${Routes.Users}`, () => {
   it('should return paginated users', async () => {
-    const response = await requset(app).get(Routes.Users);
+    const response = await request(app).get(Routes.Users);
     expect(response.status).toBe(HttpStatus.Ok);
     expect(response.body).toEqual(expectedPaginatedUsersBody);
   });

@@ -1,4 +1,4 @@
-import { Filter, WithId } from 'mongodb';
+import { Filter, ObjectId, WithId } from 'mongodb';
 import { usersCollection } from '../../../../database/mongoDB';
 import { UserType, ViewUsersQuery, ViewUserType } from '../../types';
 import { toPaginateMapper } from '../../../../core/mappers/toPaginateMapper';
@@ -32,6 +32,12 @@ const getPaginatedUsers = async (usersQuery: ViewUsersQuery) => {
   return paginatedUsers;
 };
 
+const findUserById = async (userId: string) => {
+  const foundUser = await usersCollection.findOne({ _id: new ObjectId(userId) });
+  if (!foundUser) return null;
+  return _userToViewMapper(foundUser);
+};
+
 const _userToViewMapper = (mongoUser: WithId<UserType>): ViewUserType => {
   return {
     id: mongoUser._id.toString(),
@@ -43,6 +49,7 @@ const _userToViewMapper = (mongoUser: WithId<UserType>): ViewUserType => {
 
 const usersQueryRepository = {
   getPaginatedUsers,
+  findUserById,
 };
 
 export { usersQueryRepository };
