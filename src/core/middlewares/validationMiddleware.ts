@@ -17,6 +17,8 @@ const validationResultMiddleware = (req: Request, res: Response, next: NextFunct
     next();
   } else {
     const arrayResult = result.formatWith(_errorFormatter).array({ onlyFirstError: true });
+    console.log(arrayResult);
+    
     res.status(HttpStatus.Bad_Request).json({ errorsMessages: arrayResult });
     return;
   }
