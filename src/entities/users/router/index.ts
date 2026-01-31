@@ -13,6 +13,7 @@ const usersRouter = Router();
 
 usersRouter.get(
   '/',
+  basicAuthMiddleware,
   searchQueryUsersValidationSchema,
   paginationAndSortingUsersValidationSchema,
   validationResultMiddleware,

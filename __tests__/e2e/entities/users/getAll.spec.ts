@@ -7,7 +7,7 @@ import { Paginator } from '../../../../src/core/types/PaginationAndSorting';
 import { ViewUserType } from '../../../../src/entities/users/types';
 import { EmailStringRegExp, ISODateStringRegExp } from '../../utils/constants';
 import { closeBbConnection } from '../../../../src/database/mongoDB';
-import { LoginStringRegExp } from '../../../../src/core/constants';
+import { authHeader, LoginStringRegExp } from '../../../../src/core/constants';
 
 let app: Express;
 
@@ -32,7 +32,9 @@ const expectedPaginatedUsersBody = expect.objectContaining<Paginator<ViewUserTyp
 
 describe(`GET ${Routes.Users}`, () => {
   it('should return paginated users', async () => {
-    const response = await request(app).get(Routes.Users);
+    const response = await request(app)
+      .get(Routes.Users)
+      .set('Authorization', authHeader);
     expect(response.status).toBe(HttpStatus.Ok);
     expect(response.body).toEqual(expectedPaginatedUsersBody);
   });
