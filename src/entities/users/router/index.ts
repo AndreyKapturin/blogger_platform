@@ -5,7 +5,9 @@ import { validationResultMiddleware } from '../../../core/middlewares/validation
 import { searchQueryUsersValidationSchema } from '../validations/searchQueryUsersValidationSchema';
 import { inputUserValidationSchema } from '../validations/inputUserValidationSchema';
 import { createUserHandler } from './handlers/createUserHandler';
+import { deleteUserHandler } from './handlers/deleteUserHandler';
 import { basicAuthMiddleware } from '../../../core/middlewares/basicAuthMiddleware';
+import { idInParamsCheckMiddleware } from '../../../core/validation/idInParamsCheckMiddleware';
 
 const usersRouter = Router();
 
@@ -22,6 +24,13 @@ usersRouter.post('/',
   inputUserValidationSchema,
   validationResultMiddleware,
   createUserHandler
+);
+
+usersRouter.delete('/:id',
+  basicAuthMiddleware,
+  idInParamsCheckMiddleware,
+  validationResultMiddleware,
+  deleteUserHandler
 );
 
 export { usersRouter };

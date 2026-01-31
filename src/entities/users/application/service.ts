@@ -1,7 +1,8 @@
+import { genSalt, hash } from 'bcrypt';
 import { BusinessLogicError } from '../../../core/errors/BusinessLogicError';
+import { ResourceNotFoundError } from '../../../core/errors/ResourceNotFoundError';
 import { usersRepository } from '../repositories/commandRepository';
 import { InputUserType, UserType } from '../types';
-import { hash, genSalt } from 'bcrypt';
 
 const createUser = async (inputUser: InputUserType) => {
   const isUserExist = await usersRepository.checkUserByIdOrLogin(inputUser.login, inputUser.email);
@@ -21,8 +22,15 @@ const createUser = async (inputUser: InputUserType) => {
   return userId;
 };
 
+const deleteUserById = async (userId: string) => {
+  const isDeletedUser = await usersRepository.deleteUser(userId);
+  if (!isDeletedUser) throw new ResourceNotFoundError(`User not found by ${userId} id`);
+  return true;
+}
+
 const usersService = {
   createUser,
+  deleteUserById,
 };
 
 export { usersService };

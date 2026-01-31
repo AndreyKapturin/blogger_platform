@@ -1,3 +1,4 @@
+import { ObjectId } from 'mongodb';
 import { usersCollection } from '../../../../database/mongoDB';
 import { UserType } from '../../types';
 
@@ -11,6 +12,11 @@ const save = async (user: UserType) => {
   return insertedId.toString();
 }
 
+const deleteUser = async (userId: string) => {
+  const { deletedCount } = await usersCollection.deleteOne({ _id: new ObjectId(userId)});
+  return Boolean(deletedCount);
+}
+
 const cleanAll = async () => {
   await usersCollection.deleteMany();
 };
@@ -18,6 +24,7 @@ const cleanAll = async () => {
 const usersRepository = {
   checkUserByIdOrLogin,
   save,
+  deleteUser,
   cleanAll,
 };
 
