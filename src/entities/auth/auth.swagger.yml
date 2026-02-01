@@ -1,0 +1,77 @@
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login user
+      requestBody: 
+        description: User credentials
+        content: 
+          application/json: 
+            schema: 
+              $ref: '#/components/schemas/InputLoginUserSchema'
+      responses: 
+        '204':
+          description: Successfully create user
+        '400':
+          $ref: '#/components/responses/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
+      
+components: 
+  schemas: 
+    InputLoginUserSchema:
+      type: object
+      required: 
+        - loginOrEmail
+        - password
+      properties: 
+        loginOrEmail:
+          oneOf:
+            - type: string
+              minLength: 3
+              maxLength: 10
+              pattern: ^[a-zA-Z0-9_-]*$
+              description: User login
+            - type: string
+              format: email
+              pattern: ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$
+              description: User email
+        password:
+          type: string
+
+  parameters:
+    UserIdPathParam:
+      in: path
+      name: id
+      required: true
+      description: Mongo ObjectId format unique identifier of the user
+      schema:
+        type: string
+        example: '696c891bdfcde0419df1674d'
+    
+    UsersSortByQueryParam:
+      in: query
+      name: sortBy
+      description: sorting users field name
+      schema: 
+        allOf: 
+          - $ref: '#/components/schemas/UsersSortFieldSchema'
+        type: string
+        default: createdAt
+    
+    SearchLoginTermQueryParam:
+      in: query
+      name: searchLoginTerm
+      description: login substring for searching
+      schema:
+        type: string
+        example: Andr
+
+    SearchEmailTermQueryParam:
+      in: query
+      name: searchEmailTerm
+      description: email substring for searching
+      schema:
+        type: string
+        example: andrew@
+

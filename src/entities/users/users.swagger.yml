@@ -1,0 +1,160 @@
+paths:
+  /users:
+    get:
+      tags: [Users]
+      summary: Get list a users
+      security:
+        - BasicAuth: []
+      parameters: 
+        - $ref: '#/components/parameters/SearchLoginTermQueryParam'
+        - $ref: '#/components/parameters/SearchEmailTermQueryParam'
+        - $ref: '#/components/parameters/SortDirectionQueryParam'
+        - $ref: '#/components/parameters/PageSizeQueryParam'
+        - $ref: '#/components/parameters/PageNumberQueryParam'
+        - $ref: '#/components/parameters/UsersSortByQueryParam'
+      responses: 
+        '200':
+          description: Successful
+          content: 
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/ViewUsersPaginationSchema'
+
+    post:
+      tags: [Users]
+      summary: Create a new user
+      security:
+        - BasicAuth: []
+      requestBody: 
+        description: Data for create user
+        content: 
+          application/json: 
+            schema: 
+              $ref: '#/components/schemas/InputUserSchema'
+      responses: 
+        '201':
+          description: Successfully create user
+          content: 
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/ViewUserSchema'
+        '400':
+          $ref: '#/components/responses/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
+
+  /users/{id}:  
+    delete:
+      tags: [Users]
+      summary: Delete user by id
+      security:
+        - BasicAuth: []
+      parameters: 
+        - $ref: '#/components/parameters/UserIdPathParam'
+      responses: 
+        '204':
+          description: Successfully delete user
+        '401':
+          description: Unauthorized
+        '404':
+          description: User not found
+
+      
+components: 
+  schemas: 
+    ViewUserSchema:
+      type: object
+      required: 
+        - id
+        - login
+        - email
+        - createdAt
+      properties: 
+        id:
+          type: string
+        login:
+          type: string
+        email:
+          type: string
+          format: email
+        createdAt:
+          type: string
+          format: date-time
+    
+    ViewUsersPaginationSchema:
+      allOf:
+        - $ref: '#/components/schemas/BasePaginatorSchema'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/ViewUserSchema'
+
+    InputUserSchema:
+      type: object
+      required: 
+        - login
+        - password
+        - email
+      properties: 
+        login:
+          type: string
+          minLength: 3
+          maxLength: 10
+          pattern: ^[a-zA-Z0-9_-]*$
+          description: Must be unique
+        email:
+          type: string
+          format: email
+          pattern: ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$
+          description: Must be unique
+        password:
+          type: string
+          minLength: 6
+          maxLength: 20
+
+    UsersSortFieldSchema:
+      type: string
+      description: available fields for users sorting
+      enum: 
+        - login
+        - createdAt
+      default: createdAt
+
+  parameters:
+    UserIdPathParam:
+      in: path
+      name: id
+      required: true
+      description: Mongo ObjectId format unique identifier of the user
+      schema:
+        type: string
+        example: '696c891bdfcde0419df1674d'
+    
+    UsersSortByQueryParam:
+      in: query
+      name: sortBy
+      description: sorting users field name
+      schema: 
+        allOf: 
+          - $ref: '#/components/schemas/UsersSortFieldSchema'
+        type: string
+        default: createdAt
+    
+    SearchLoginTermQueryParam:
+      in: query
+      name: searchLoginTerm
+      description: login substring for searching
+      schema:
+        type: string
+        example: Andr
+
+    SearchEmailTermQueryParam:
+      in: query
+      name: searchEmailTerm
+      description: email substring for searching
+      schema:
+        type: string
+        example: andrew@
+
