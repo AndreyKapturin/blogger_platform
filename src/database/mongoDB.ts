@@ -2,9 +2,11 @@ import { Collection, Db, MongoClient, ServerApiVersion } from 'mongodb';
 import { MONGO_CONNECTION_URI, MONGO_DB_NAME } from '../core/config';
 import { BlogType } from '../entities/blogs/types';
 import { PostType } from '../entities/posts/types';
+import { UserType } from '../entities/users/types';
 
 const BLOGS_COLLECTION_NAME = 'blogs';
 const POSTS_COLLECTION_NAME = 'posts';
+const USERS_COLLECTION_NAME = 'users';
 
 const client = new MongoClient(MONGO_CONNECTION_URI, {
   serverApi: {
@@ -17,6 +19,7 @@ const client = new MongoClient(MONGO_CONNECTION_URI, {
 let dbInstance: Db;
 let blogsCollection: Collection<BlogType>;
 let postsCollection: Collection<PostType>;
+let usersCollection: Collection<UserType>;
 
 async function connectToDB() {
   try {
@@ -25,6 +28,7 @@ async function connectToDB() {
     await dbInstance.command({ ping: 1 });
     blogsCollection = dbInstance.collection(BLOGS_COLLECTION_NAME)
     postsCollection = dbInstance.collection(POSTS_COLLECTION_NAME)
+    usersCollection = dbInstance.collection(USERS_COLLECTION_NAME)
     console.log('Pinged your deployment. You successfully connected to MongoDB!');
   } catch (error) {
     await client.close();
@@ -37,4 +41,4 @@ const closeBbConnection = async () => {
 }
 
 
-export { connectToDB, closeBbConnection, blogsCollection, postsCollection }
+export { connectToDB, closeBbConnection, blogsCollection, postsCollection, usersCollection }
