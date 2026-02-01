@@ -3,7 +3,7 @@ import { customTrim } from '../../../core/middlewares/validationMiddleware';
 import { MAX_USER_LOGIN_LENGTH, MAX_USER_PASSWORD_LENGTH, MIN_USER_LOGIN_LENGTH, MIN_USER_PASSWORD_LENGTH } from '../constants';
 import { LoginStringRegExp } from '../../../core/constants';
 
-const _customLoginValidator: CustomValidator = (input) => LoginStringRegExp.test(input);
+const customLoginValidator: CustomValidator = (input) => LoginStringRegExp.test(input);
 
 const loginValidationSchema = body('login')
   .customSanitizer(customTrim)
@@ -11,7 +11,7 @@ const loginValidationSchema = body('login')
     .withMessage('Login must have string type')
   .isLength({ min: MIN_USER_LOGIN_LENGTH, max: MAX_USER_LOGIN_LENGTH })
     .withMessage(`Login must have length in range ${MIN_USER_LOGIN_LENGTH} - ${MAX_USER_LOGIN_LENGTH}`)
-  .custom(_customLoginValidator)
+  .custom(customLoginValidator)
     .withMessage('Invalid characters. Use A‑Z, a‑z, 0‑9, _, -');
 
 const passwordValidationSchema = body('password')
@@ -34,4 +34,4 @@ const inputUserValidationSchema = [
   emailValidationSchema
 ];
 
-export { inputUserValidationSchema };
+export { inputUserValidationSchema, customLoginValidator, passwordValidationSchema };

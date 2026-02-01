@@ -7,15 +7,21 @@ const checkUserByIdOrLogin = async (login: string, email: string) => {
   return Boolean(documentCount);
 };
 
+const findUserByLoginOrEmail = async (loginOrEmail: string) => {
+  return usersCollection.findOne({
+    $or: [{ login: loginOrEmail }, { email: loginOrEmail }],
+  });
+};
+
 const save = async (user: UserType) => {
   const { insertedId } = await usersCollection.insertOne(user);
   return insertedId.toString();
-}
+};
 
 const deleteUser = async (userId: string) => {
-  const { deletedCount } = await usersCollection.deleteOne({ _id: new ObjectId(userId)});
+  const { deletedCount } = await usersCollection.deleteOne({ _id: new ObjectId(userId) });
   return Boolean(deletedCount);
-}
+};
 
 const cleanAll = async () => {
   await usersCollection.deleteMany();
@@ -23,6 +29,7 @@ const cleanAll = async () => {
 
 const usersRepository = {
   checkUserByIdOrLogin,
+  findUserByLoginOrEmail,
   save,
   deleteUser,
   cleanAll,
