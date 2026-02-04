@@ -1,11 +1,11 @@
-import { blogsRepository } from '../../blogs/repository/blogsRepository';
-import { postsRepository } from '../../posts/repository/postsRepository';
-import { usersRepository } from '../../users/repositories/commandRepository';
+import { blogsCommandRepository } from '../../blogs/repositories/blogsCommandRepository';
+import { postsCommandRepository } from '../../posts/repositories/postsCommandRepository';
+import { usersCommandRepository } from '../../users/repositories/usersCommandRepository';
 
 const cleanDatabase = async () => {
-  await blogsRepository.cleanAll();
-  await postsRepository.cleanAll();
-  await usersRepository.cleanAll();
+  await blogsCommandRepository.cleanAll();
+  await postsCommandRepository.cleanAll();
+  await usersCommandRepository.cleanAll();
 };
 
 export { cleanDatabase };

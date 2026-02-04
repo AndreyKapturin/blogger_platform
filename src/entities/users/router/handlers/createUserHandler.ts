@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { RequestWithBody } from '../../../../core/types/RequestTypes';
 import { InputUserType, ViewUserType } from '../../types';
 import { usersService } from '../../application/service';
-import { usersQueryRepository } from '../../repositories/queryRepository';
+import { usersQueryRepository } from '../../repositories/usersQueryRepository';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
 
 const createUserHandler = async (

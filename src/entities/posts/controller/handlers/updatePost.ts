@@ -3,7 +3,7 @@ import { RequestWithParamsAndBody } from '../../../../core/types/RequestTypes';
 import { InputPostType, PostIdParamType } from '../../types';
 import { APIErrorResult } from '../../../../core/types/APIErrorResult';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
-import { postsService } from '../../application/service';
+import { postsService } from '../../application/postsService';
 
 const updatePost = async (
   req: RequestWithParamsAndBody<PostIdParamType, InputPostType>,

@@ -2,16 +2,15 @@ import { Response } from 'express';
 import { RequestWithParams } from '../../../../core/types/RequestTypes';
 import { BlogIdParamType, ViewBlogType } from '../../types';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
-import { blogToViewMapper } from '../mappers/blogToViewMapper';
-import { blogsService } from '../../application/service';
+import { blogsQueryRepository } from '../../repositories/blogsQueryRepository';
 
 const getBlogById = async (req: RequestWithParams<BlogIdParamType>, res: Response<ViewBlogType>) => {
-  const foundBlog = await blogsService.getBlogById(req.params.id);
+  const foundBlog = await blogsQueryRepository.findById(req.params.id);
   if (!foundBlog) {
     res.sendStatus(HttpStatus.Not_Found);
     return;
   }
-  res.status(HttpStatus.Ok).json(blogToViewMapper(foundBlog));
+  res.status(HttpStatus.Ok).json(foundBlog);
 };
 
 export { getBlogById };

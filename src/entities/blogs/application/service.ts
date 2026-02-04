@@ -1,14 +1,6 @@
-import { postsRepository } from '../../posts/repository/postsRepository';
-import { blogsRepository } from '../repository/blogsRepository';
-import { BlogType, InputBlogType, ViewBlogQuery } from '../types';
-
-const getBlogs = async (blogQuery: ViewBlogQuery) => {
-  return await blogsRepository.findAll(blogQuery);
-};
-
-const getBlogById = async (blogId: string) => {
-  return await blogsRepository.findById(blogId);
-};
+import { postsCommandRepository } from '../../posts/repositories/postsCommandRepository';
+import { blogsCommandRepository } from '../repositories/blogsCommandRepository';
+import { BlogType, InputBlogType } from '../types';
 
 const createBlog = async (inputBlog: InputBlogType) => {
   const newBlog: BlogType = {
@@ -18,7 +10,7 @@ const createBlog = async (inputBlog: InputBlogType) => {
     createdAt: new Date().toISOString(),
     isMembership: false,
   };
-  const createdBlog = await blogsRepository.save(newBlog);
+  const createdBlog = await blogsCommandRepository.save(newBlog);
   return createdBlog;
 };
 
@@ -28,25 +20,23 @@ const updateBlog = async (blogId: string, inputBlog: InputBlogType) => {
     description: inputBlog.description,
     websiteUrl: inputBlog.websiteUrl,
   };
-  const wasUpdated = await blogsRepository.update(blogId, updatedBlog);
+  const wasUpdated = await blogsCommandRepository.update(blogId, updatedBlog);
   if (wasUpdated) {
-    await postsRepository.updateRelated(blogId, updatedBlog.name);
+    await postsCommandRepository.updateRelated(blogId, updatedBlog.name);
   }
   return wasUpdated;
 };
 
 const deleteBlog = async (blogId: string) => {
-  const wasDeleted = await blogsRepository.remove(blogId);
+  const wasDeleted = await blogsCommandRepository.remove(blogId);
   if (wasDeleted) {
-    await postsRepository.removeRelated(blogId);
+    await postsCommandRepository.removeRelated(blogId);
   }
   return wasDeleted;
 };
 
 const blogsService = {
   createBlog,
-  getBlogs,
-  getBlogById,
   updateBlog,
   deleteBlog,
 };

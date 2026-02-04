@@ -1,23 +1,17 @@
 import { Response } from 'express';
 import { ViewBlogQuery, ViewBlogType } from '../../types';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
-import { blogsService } from '../../application/service';
 import { matchedData } from 'express-validator';
 import { RequestWithQuery } from '../../../../core/types/RequestTypes';
 import { Paginator } from '../../../../core/types/PaginationAndSorting';
-import { blogToViewMapper } from '../mappers/blogToViewMapper';
-import { toPaginateMapper } from '../../../../core/mappers/toPaginateMapper';
+import { blogsQueryRepository } from '../../repositories/blogsQueryRepository';
 
 const getBlogs = async (
   req: RequestWithQuery<ViewBlogQuery>,
   res: Response<Paginator<ViewBlogType>>,
 ) => {
-  const cleanQuery = matchedData<ViewBlogQuery>(req, {
-    locations: ['query'],
-  });
-  const { items, totalCount } = await blogsService.getBlogs(cleanQuery);
-  const viewBlogs = items.map(blogToViewMapper);
-  const paginatedViewBlogs = toPaginateMapper(viewBlogs, cleanQuery, totalCount);
+  const cleanQuery = matchedData<ViewBlogQuery>(req, { locations: ['query'] });
+  const paginatedViewBlogs = await blogsQueryRepository.findAllWithPagination(cleanQuery);
   res.status(HttpStatus.Ok).json(paginatedViewBlogs);
 };
 

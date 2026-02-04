@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { RequestWithParams } from '../../../../core/types/RequestTypes';
 import { PostIdParamType } from '../../types';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
-import { postsService } from '../../application/service';
+import { postsService } from '../../application/postsService';
 
 const deletePost = async (req: RequestWithParams<PostIdParamType>, res: Response) => {
   const wasDeleted = await postsService.deletePost(req.params.id);

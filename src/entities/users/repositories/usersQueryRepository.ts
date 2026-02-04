@@ -1,7 +1,7 @@
 import { Filter, ObjectId, WithId } from 'mongodb';
-import { usersCollection } from '../../../../database/mongoDB';
-import { UserType, ViewUsersQuery, ViewUserType } from '../../types';
-import { toPaginateMapper } from '../../../../core/mappers/toPaginateMapper';
+import { usersCollection } from '../../../database/mongoDB';
+import { UserType, ViewUsersQuery, ViewUserType } from '../types';
+import { toPaginateMapper } from '../../../core/mappers/toPaginateMapper';
 
 const getPaginatedUsers = async (usersQuery: ViewUsersQuery) => {
   const filter: Filter<UserType> = {};
