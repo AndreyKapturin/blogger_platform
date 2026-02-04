@@ -9,12 +9,14 @@ const getPaginatedUsers = async (usersQuery: ViewUsersQuery) => {
     usersQuery;
   const skip = (pageNumber - 1) * pageSize;
 
-  if (searchLoginTerm) {
-    filter.login = { $regExp: searchLoginTerm, options: 'i' };
-  }
-
-  if (searchEmailTerm) {
-    filter.email = { $regExp: searchEmailTerm, options: 'i' };
+  if (searchLoginTerm || searchEmailTerm) {
+    filter.$or = [];
+    if (searchLoginTerm) {
+      filter.$or.push({ login: { $regex: searchLoginTerm, $options: 'i' } });
+    }
+    if (searchEmailTerm) {
+      filter.$or.push({ email: { $regex: searchEmailTerm, $options: 'i' } });
+    }
   }
 
   const foundUsers = await usersCollection
