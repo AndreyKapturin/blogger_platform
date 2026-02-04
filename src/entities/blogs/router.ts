@@ -4,12 +4,13 @@ import {
   inputBlogValidationSchema,
   paginationAndSortingBlogValidationSchema,
   searchQueryBlogValidationSchema,
-  idInParamsCheckMiddleware,
 } from './validations';
+
 import { blogsController } from './controller';
 import { basicAuthMiddleware } from '../../core/middlewares/basicAuthMiddleware';
 import { paginationAndSortingPostsValidationSchema } from '../posts/validations';
 import { inputBlogPostValidationSchema } from '../posts/validations/inputBlogPostValidationSchema';
+import { idInParamsCheckMiddleware } from '../../core/validation/idInParamsCheckMiddleware';
 
 const blogsRouter = Router();
 

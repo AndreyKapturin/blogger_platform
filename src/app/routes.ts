@@ -1,6 +1,8 @@
 export enum Routes {
+  Auth = '/auth',
   Blogs = '/blogs',
-  Posts = '/posts',
   Docs = '/docs',
+  Posts = '/posts',
   Testing = '/testing',
+  Users = '/users',
 }

@@ -7,14 +7,18 @@ import { postsRouter } from '../entities/posts/router';
 import { docsRouter } from '../core/docs';
 import { connectToDB } from '../database/mongoDB';
 import { errorsHandler } from '../core/errors/errorsHandler';
+import { usersRouter } from '../entities/users/router';
+import { authRouter } from '../entities/auth/router';
 
 const createApp = async (): Promise<Express> => {
   await connectToDB();
   const app = express();
   app.use(jsonBodyMiddleware);
+  app.use(Routes.Auth, authRouter);
   app.use(Routes.Blogs, blogsRouter);
-  app.use(Routes.Testing, testingRouter);
   app.use(Routes.Posts, postsRouter);
+  app.use(Routes.Users, usersRouter);
+  app.use(Routes.Testing, testingRouter);
   app.use(Routes.Docs, docsRouter);
   app.use(errorsHandler);
   return app;
