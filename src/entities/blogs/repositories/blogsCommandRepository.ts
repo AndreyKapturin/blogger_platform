@@ -1,7 +1,6 @@
-import { ObjectId } from 'mongodb';
+import { ObjectId, WithId } from 'mongodb';
 import { blogsCollection } from '../../../database/mongoDB';
-import { InputBlogType, BlogType } from '../types';
-import { _blogToViewMapper } from './blogsQueryRepository';
+import { InputBlogType, BlogType, ViewBlogType } from '../types';
 
 const findById = async (blogId: string) => {
   const foundBlog = await blogsCollection.findOne({ _id: new ObjectId(blogId) });
@@ -33,6 +32,17 @@ const remove = async (blogId: string) => {
 
 const cleanAll = async () => {
   await blogsCollection.deleteMany();
+};
+
+const _blogToViewMapper = (mongoBlog: WithId<BlogType>): ViewBlogType => {
+  return {
+    id: mongoBlog._id.toString(),
+    name: mongoBlog.name,
+    createdAt: mongoBlog.createdAt,
+    isMembership: mongoBlog.isMembership,
+    description: mongoBlog.description,
+    websiteUrl: mongoBlog.websiteUrl,
+  };
 };
 
 const blogsCommandRepository = {

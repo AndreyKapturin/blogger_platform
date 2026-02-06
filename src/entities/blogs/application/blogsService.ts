@@ -1,3 +1,4 @@
+import { Result, ResultStatus } from '../../../core/types/Result';
 import { postsCommandRepository } from '../../posts/repositories/postsCommandRepository';
 import { blogsCommandRepository } from '../repositories/blogsCommandRepository';
 import { BlogType, InputBlogType } from '../types';
@@ -10,8 +11,16 @@ const createBlog = async (inputBlog: InputBlogType) => {
     createdAt: new Date().toISOString(),
     isMembership: false,
   };
-  const createdBlog = await blogsCommandRepository.save(newBlog);
-  return createdBlog;
+
+  const createdBlogId = await blogsCommandRepository.save(newBlog);
+
+  const result: Result<string> = {
+    status: ResultStatus.Success,
+    data: createdBlogId,
+    extensions: [],
+  };
+
+  return result;
 };
 
 const updateBlog = async (blogId: string, inputBlog: InputBlogType) => {
@@ -29,10 +38,31 @@ const updateBlog = async (blogId: string, inputBlog: InputBlogType) => {
 
 const deleteBlog = async (blogId: string) => {
   const wasDeleted = await blogsCommandRepository.remove(blogId);
+
   if (wasDeleted) {
     await postsCommandRepository.removeRelated(blogId);
+
+    const result: Result = {
+      status: ResultStatus.Success,
+      data: null,
+      extensions: [],
+    };
+
+    return result;
   }
-  return wasDeleted;
+
+  const result: Result = {
+    status: ResultStatus.NotFound,
+    errorMessage: 'Blog not found',
+    extensions: [
+      {
+        field: 'blogId',
+        message: `Blog with id ${blogId} not found`,
+      },
+    ],
+  };
+
+  return result;
 };
 
 const blogsService = {

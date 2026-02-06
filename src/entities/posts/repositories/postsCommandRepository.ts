@@ -24,13 +24,13 @@ const update = async (postId: string, inputPost: InputUpdatePostType) => {
 };
 
 const remove = async (postId: string) => {
-  const deleteREsult = await postsCollection.deleteOne({ _id: new ObjectId(postId) });
-  return deleteREsult.deletedCount === 1;
+  const deleteResult = await postsCollection.deleteOne({ _id: new ObjectId(postId) });
+  return deleteResult.deletedCount === 1;
 };
 
 const removeRelated = async (blogId: string) => {
-  const deleteREsult = await postsCollection.deleteMany({ blogId });
-  return deleteREsult.deletedCount !== 0;
+  const deleteResult = await postsCollection.deleteMany({ blogId });
+  return deleteResult.deletedCount !== 0;
 };
 
 const updateRelated = async (blogId: string, blogName: string) => {

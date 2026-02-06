@@ -1,0 +1,7 @@
+QUESTION #1
+Можно ли вернуть result object из query repository?
+Или для этого нужен query service?
+
+QUESTION #2
+Стоит ли это вынести в service?
+Или для этого нужен query service?

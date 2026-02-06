@@ -31,7 +31,7 @@ const findById = async (blogId: string) => {
   return foundBlog ? _blogToViewMapper(foundBlog) : null;
 };
 
-export const _blogToViewMapper = (mongoBlog: WithId<BlogType>): ViewBlogType => {
+const _blogToViewMapper = (mongoBlog: WithId<BlogType>): ViewBlogType => {
   return {
     id: mongoBlog._id.toString(),
     name: mongoBlog.name,

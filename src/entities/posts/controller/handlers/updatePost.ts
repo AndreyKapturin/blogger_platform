@@ -4,13 +4,24 @@ import { InputPostType, PostIdParamType } from '../../types';
 import { APIErrorResult } from '../../../../core/types/APIErrorResult';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
 import { postsService } from '../../application/postsService';
+import { ResultStatus } from '../../../../core/types/Result';
+import { resultStatusToHttpStatus } from '../../../../core/mappers/resultStatusToHttpStatus';
+import { extensionResultToAPIError } from '../../../../core/mappers/extensionResultToAPIError';
 
 const updatePost = async (
   req: RequestWithParamsAndBody<PostIdParamType, InputPostType>,
   res: Response<APIErrorResult>,
 ) => {
-  const wasUpdated = await postsService.updatePost(req.params.id, req.body);
-  res.sendStatus(wasUpdated ? HttpStatus.No_Content : HttpStatus.Not_Found);
+  const updatePostResult = await postsService.updatePost(req.params.id, req.body);
+
+  if (updatePostResult.status !== ResultStatus.Success) {
+    res
+      .status(resultStatusToHttpStatus(updatePostResult.status))
+      .json(extensionResultToAPIError(updatePostResult.extensions));
+    return;
+  }
+
+  res.sendStatus(HttpStatus.No_Content);
 };
 
 export { updatePost };

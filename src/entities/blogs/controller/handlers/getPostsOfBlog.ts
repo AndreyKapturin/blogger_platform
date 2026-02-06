@@ -12,6 +12,7 @@ const getPostsOfBlog = async (
   req: RequestWithParamsAndQuery<BlogIdParamType, ViewPostQuery>,
   res: Response<Paginator<ViewPostType>>,
 ) => {
+  // QUESTION #2
   const blogId = req.params.id;
   const blog = await blogsQueryRepository.findById(blogId);
 
