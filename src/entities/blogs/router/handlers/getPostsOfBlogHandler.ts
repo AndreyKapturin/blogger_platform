@@ -8,7 +8,7 @@ import { matchedData } from 'express-validator';
 import { blogsQueryRepository } from '../../repositories/blogsQueryRepository';
 import { postsQueryRepository } from '../../../posts/repositories/postsQueryRepository';
 
-const getPostsOfBlog = async (
+const getPostsOfBlogHandler = async (
   req: RequestWithParamsAndQuery<BlogIdParamType, ViewPostQuery>,
   res: Response<Paginator<ViewPostType>>,
 ) => {
@@ -26,4 +26,4 @@ const getPostsOfBlog = async (
   res.status(HttpStatus.Ok).json(paginatedViewPosts);
 };
 
-export { getPostsOfBlog };
+export { getPostsOfBlogHandler };

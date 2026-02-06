@@ -9,7 +9,7 @@ import { resultStatusToHttpStatus } from '../../../../core/mappers/resultStatusT
 import { APIErrorResult } from '../../../../core/types/APIErrorResult';
 import { extensionResultToAPIError } from '../../../../core/mappers/extensionResultToAPIError';
 
-const createBlog = async (
+const createBlogHandler = async (
   req: RequestWithBody<InputBlogType>,
   res: Response<ViewBlogType | APIErrorResult>,
 ) => {
@@ -26,4 +26,4 @@ const createBlog = async (
   res.status(HttpStatus.Created).json(blog!);
 };
 
-export { createBlog };
+export { createBlogHandler };

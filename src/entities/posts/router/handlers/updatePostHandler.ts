@@ -8,7 +8,7 @@ import { ResultStatus } from '../../../../core/types/Result';
 import { resultStatusToHttpStatus } from '../../../../core/mappers/resultStatusToHttpStatus';
 import { extensionResultToAPIError } from '../../../../core/mappers/extensionResultToAPIError';
 
-const updatePost = async (
+const updatePostHandler = async (
   req: RequestWithParamsAndBody<PostIdParamType, InputPostType>,
   res: Response<APIErrorResult>,
 ) => {
@@ -24,4 +24,4 @@ const updatePost = async (
   res.sendStatus(HttpStatus.No_Content);
 };
 
-export { updatePost };
+export { updatePostHandler };

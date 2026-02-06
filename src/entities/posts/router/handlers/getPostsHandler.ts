@@ -6,7 +6,7 @@ import { Paginator } from '../../../../core/types/PaginationAndSorting';
 import { matchedData } from 'express-validator';
 import { postsQueryRepository } from '../../repositories/postsQueryRepository';
 
-const getPosts = async (
+const getPostsHandler = async (
   req: RequestWithQuery<ViewPostQuery>,
   res: Response<Paginator<ViewPostType>>,
 ) => {
@@ -15,4 +15,4 @@ const getPosts = async (
   res.status(HttpStatus.Ok).json(paginateViewPosts);
 };
 
-export { getPosts };
+export { getPostsHandler };

@@ -1,12 +1,16 @@
 import { Router } from 'express';
-import { postsController } from './controller';
 import {
   inputPostValidationSchema,
   paginationAndSortingPostsValidationSchema,
-} from './validations';
-import { validationResultMiddleware } from '../../core/middlewares/validationMiddleware';
-import { basicAuthMiddleware } from '../../core/middlewares/basicAuthMiddleware';
-import { idInParamsCheckMiddleware } from '../../core/validation/idInParamsCheckMiddleware';
+} from '../validations';
+import { validationResultMiddleware } from '../../../core/middlewares/validationMiddleware';
+import { basicAuthMiddleware } from '../../../core/middlewares/basicAuthMiddleware';
+import { idInParamsCheckMiddleware } from '../../../core/validation/idInParamsCheckMiddleware';
+import { createPostHandler } from './handlers/createPostHandler';
+import { deletePostHandler } from './handlers/deletePostHandler';
+import { getPostByIdHandler } from './handlers/getPostByIdHandler';
+import { getPostsHandler } from './handlers/getPostsHandler';
+import { updatePostHandler } from './handlers/updatePostHandler';
 
 const postsRouter = Router();
 
@@ -14,14 +18,14 @@ postsRouter.get(
   '/',
   paginationAndSortingPostsValidationSchema,
   validationResultMiddleware,
-  postsController.getPosts,
+  getPostsHandler,
 );
 
 postsRouter.get(
   '/:id',
   idInParamsCheckMiddleware,
   validationResultMiddleware,
-  postsController.getPostById,
+  getPostByIdHandler,
 );
 
 postsRouter.post(
@@ -29,7 +33,7 @@ postsRouter.post(
   basicAuthMiddleware,
   inputPostValidationSchema,
   validationResultMiddleware,
-  postsController.createPost,
+  createPostHandler,
 );
 
 postsRouter.put(
@@ -38,7 +42,7 @@ postsRouter.put(
   idInParamsCheckMiddleware,
   inputPostValidationSchema,
   validationResultMiddleware,
-  postsController.updatePost,
+  updatePostHandler,
 );
 
 postsRouter.delete(
@@ -46,7 +50,7 @@ postsRouter.delete(
   basicAuthMiddleware,
   idInParamsCheckMiddleware,
   validationResultMiddleware,
-  postsController.deletePost,
+  deletePostHandler,
 );
 
 export { postsRouter };

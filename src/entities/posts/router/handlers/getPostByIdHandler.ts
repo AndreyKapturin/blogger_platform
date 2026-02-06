@@ -4,7 +4,7 @@ import { PostIdParamType, ViewPostType } from '../../types';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
 import { postsQueryRepository } from '../../repositories/postsQueryRepository';
 
-const getPostById = async (
+const getPostByIdHandler = async (
   req: RequestWithParams<PostIdParamType>,
   res: Response<ViewPostType>,
 ) => {
@@ -17,4 +17,4 @@ const getPostById = async (
   res.status(HttpStatus.Ok).json(foundPost);
 };
 
-export { getPostById };
+export { getPostByIdHandler };

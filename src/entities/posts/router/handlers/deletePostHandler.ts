@@ -7,7 +7,7 @@ import { ResultStatus } from '../../../../core/types/Result';
 import { resultStatusToHttpStatus } from '../../../../core/mappers/resultStatusToHttpStatus';
 import { extensionResultToAPIError } from '../../../../core/mappers/extensionResultToAPIError';
 
-const deletePost = async (req: RequestWithParams<PostIdParamType>, res: Response) => {
+const deletePostHandler = async (req: RequestWithParams<PostIdParamType>, res: Response) => {
   const deletePostResult = await postsService.deletePost(req.params.id);
 
   if (deletePostResult.status !== ResultStatus.Success) {
@@ -20,4 +20,4 @@ const deletePost = async (req: RequestWithParams<PostIdParamType>, res: Response
   res.sendStatus(HttpStatus.No_Content);
 };
 
-export { deletePost };
+export { deletePostHandler };

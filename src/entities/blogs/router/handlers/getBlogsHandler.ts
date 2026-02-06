@@ -6,7 +6,7 @@ import { RequestWithQuery } from '../../../../core/types/RequestTypes';
 import { Paginator } from '../../../../core/types/PaginationAndSorting';
 import { blogsQueryRepository } from '../../repositories/blogsQueryRepository';
 
-const getBlogs = async (
+const getBlogsHandler = async (
   req: RequestWithQuery<ViewBlogQuery>,
   res: Response<Paginator<ViewBlogType>>,
 ) => {
@@ -15,4 +15,4 @@ const getBlogs = async (
   res.status(HttpStatus.Ok).json(paginatedViewBlogs);
 };
 
-export { getBlogs };
+export { getBlogsHandler };

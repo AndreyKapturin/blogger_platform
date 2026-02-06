@@ -10,7 +10,7 @@ import { resultStatusToHttpStatus } from '../../../../core/mappers/resultStatusT
 import { extensionResultToAPIError } from '../../../../core/mappers/extensionResultToAPIError';
 import { APIErrorResult } from '../../../../core/types/APIErrorResult';
 
-const createPostForBlog = async (
+const createPostForBlogHandler = async (
   req: RequestWithParamsAndBody<BlogIdParamType, InputBlogPostType>,
   res: Response<ViewPostType | APIErrorResult>,
 ) => {
@@ -34,4 +34,4 @@ const createPostForBlog = async (
   res.status(HttpStatus.Created).json(createdPost!);
 };
 
-export { createPostForBlog };
+export { createPostForBlogHandler };

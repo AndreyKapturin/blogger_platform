@@ -4,7 +4,7 @@ import { BlogIdParamType, InputBlogType } from '../../types';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
 import { blogsService } from '../../application/blogsService';
 
-const updateBlog = async (
+const updateBlogHandler = async (
   req: RequestWithParamsAndBody<BlogIdParamType, InputBlogType>,
   res: Response,
 ) => {
@@ -12,4 +12,4 @@ const updateBlog = async (
   res.sendStatus(wasUpdated ? HttpStatus.No_Content : HttpStatus.Not_Found);
 };
 
-export { updateBlog };
+export { updateBlogHandler };
