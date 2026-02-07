@@ -1,7 +1,7 @@
 import { usersCommandRepository } from '../../users/repositories/usersCommandRepository';
 import { Result, ResultStatus } from '../../../core/types/Result';
 import { InputLoginType } from '../types';
-import { compare } from 'bcrypt';
+import { comparePassword } from '../../../core/utils/crypto/passwordUtils';
 
 const login = async (credentials: InputLoginType): Promise<Result> => {
   const user = await usersCommandRepository.findUserByLoginOrEmail(credentials.loginOrEmail);
@@ -19,7 +19,7 @@ const login = async (credentials: InputLoginType): Promise<Result> => {
     };
   }
 
-  const isValidPassword = await compare(credentials.password, user.passwordHash);
+  const isValidPassword = await comparePassword(credentials.password, user.passwordHash);
 
   if (!isValidPassword) {
     return {

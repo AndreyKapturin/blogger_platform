@@ -1,7 +1,7 @@
-import { genSalt, hash } from 'bcrypt';
 import { usersCommandRepository } from '../repositories/usersCommandRepository';
 import { InputUserType, UserType } from '../types';
 import { Result, ResultStatus } from '../../../core/types/Result';
+import { hashPassword } from '../../../core/utils/crypto/passwordUtils';
 
 const createUser = async (inputUser: InputUserType): Promise<Result<string>> => {
   const isUserExist = await usersCommandRepository.checkUserByLoginOrEmail(
@@ -20,8 +20,7 @@ const createUser = async (inputUser: InputUserType): Promise<Result<string>> => 
     };
   }
 
-  const salt = await genSalt(10);
-  const passwordHash = await hash(inputUser.password, salt);
+  const passwordHash = await hashPassword(inputUser.password);
 
   const user: UserType = {
     email: inputUser.email,
