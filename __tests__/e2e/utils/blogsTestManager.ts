@@ -1,10 +1,12 @@
 import { Routes } from '../../../src/app/routes';
 import { HttpStatus } from '../../../src/core/types/HttpStatus';
-import { BlogType, InputBlogType, ViewBlogType } from '../../../src/entities/blogs/types';
-import request from 'supertest';
+import { InputBlogType, ViewBlogType } from '../../../src/entities/blogs/types';
+import request, { Response } from 'supertest';
 import { Express } from 'express';
 import { authHeader } from '../../../src/core/constants';
 import { ISODateStringRegExp } from './constants';
+import { faker } from '@faker-js/faker';
+import { MAX_BLOG_NAME_LENGTH } from '../../../src/entities/blogs/constants';
 
 const correctInputBlog: InputBlogType = {
   name: 'IT-KAMASUTRA',
@@ -15,7 +17,7 @@ const correctInputBlog: InputBlogType = {
 const createBlogsTestManager = (app: Express) => {
   const createCorrectBlog = async (
     changedFields: Partial<InputBlogType> = {},
-    expectedFileds: Partial<InputBlogType> = {}
+    expectedFileds: Partial<InputBlogType> = {},
   ) => {
     const inputBlog: InputBlogType = {
       ...correctInputBlog,
@@ -33,15 +35,31 @@ const createBlogsTestManager = (app: Express) => {
       .post(Routes.Blogs)
       .set('Authorization', authHeader)
       .send(inputBlog);
-      
+
     expect(response.status).toBe(HttpStatus.Created);
     expect(response.body).toEqual(expectedBlog);
     return response;
   };
 
+  const createManyBlogs = async (count: number): Promise<ViewBlogType[]> => {
+    const inputBlogsData: InputBlogType[] = Array.from({ length: count }).map(() => {
+      return {
+        name: faker.lorem.word({ length: MAX_BLOG_NAME_LENGTH - 1 }),
+        description: faker.lorem.words({ min: 10, max: 30 }),
+        websiteUrl: faker.internet.url({ protocol: 'https' }),
+      };
+    });
+
+    const createBlogResponses = await Promise.all(inputBlogsData.map(inputBlog => {
+      return createCorrectBlog(inputBlog)
+    }))
+
+    return createBlogResponses.map((response) => response.body);
+  };
+
   const createInorrectBlog = async (
     changedFields: Partial<InputBlogType> = {},
-    excludedFileds: (keyof InputBlogType)[] = []
+    excludedFileds: (keyof InputBlogType)[] = [],
   ) => {
     const inputBlog: InputBlogType = {
       ...correctInputBlog,
@@ -70,16 +88,18 @@ const createBlogsTestManager = (app: Express) => {
 
   const correctUpdateBlog = async (
     changedFields: Partial<InputBlogType>,
-    expectedFileds: Partial<InputBlogType> = {}
+    expectedFileds: Partial<InputBlogType> = {},
   ) => {
-    const createResponse = await createCorrectBlog();
-    const { id, ...createdBlog } = { ...createResponse.body };
-    const dataForUpdate = {
-      ...createdBlog,
+    const initialBlogResponse = await createCorrectBlog();
+    const { id, ...createdBlog } = initialBlogResponse.body;
+    const dataForUpdate: InputBlogType = {
+      name: createdBlog.name,
+      description: createdBlog.description,
+      websiteUrl: createdBlog.websiteUrl,
       ...changedFields,
     };
 
-    const expectedBlog: BlogType = {
+    const expectedBlog: ViewBlogType = {
       id: expect.any(String),
       isMembership: false,
       createdAt: expect.stringMatching(ISODateStringRegExp),
@@ -99,7 +119,7 @@ const createBlogsTestManager = (app: Express) => {
 
   const incorrectUpdateBlog = async (
     changedFields: Partial<InputBlogType>,
-    excludedFileds: (keyof InputBlogType)[] = []
+    excludedFileds: (keyof InputBlogType)[] = [],
   ) => {
     const createResponse = await createCorrectBlog();
     const { id, ...createdBlog } = { ...createResponse.body };
@@ -125,6 +145,7 @@ const createBlogsTestManager = (app: Express) => {
 
   return {
     createCorrectBlog,
+    createManyBlogs,
     createInorrectBlog,
     correctUpdateBlog,
     incorrectUpdateBlog,
