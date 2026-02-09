@@ -1,16 +1,48 @@
-import { usersRepository } from "../../users/repositories/commandRepository";
-import { InputLoginType } from "../types";
-import {compare} from 'bcrypt';
+import { usersCommandRepository } from '../../users/repositories/usersCommandRepository';
+import { Result, ResultStatus } from '../../../core/types/Result';
+import { InputLoginType } from '../types';
+import { comparePassword } from '../../../core/utils/crypto/passwordUtils';
 
-const login = async (credentials: InputLoginType) => {
-  const user = await usersRepository.findUserByLoginOrEmail(credentials.loginOrEmail);
-  if (!user) return false;
-  const isValidPassword = await compare(credentials.password, user.passwordHash);
-  return isValidPassword;
+const login = async (credentials: InputLoginType): Promise<Result> => {
+  const user = await usersCommandRepository.findUserByLoginOrEmail(credentials.loginOrEmail);
+
+  if (!user) {
+    return {
+      status: ResultStatus.InvalidCredentials,
+      errorMessage: 'Invalid credentials',
+      extensions: [
+        {
+          field: null,
+          message: 'Invalid credentials',
+        },
+      ],
+    };
+  }
+
+  const isValidPassword = await comparePassword(credentials.password, user.passwordHash);
+
+  if (!isValidPassword) {
+    return {
+      status: ResultStatus.InvalidCredentials,
+      errorMessage: 'Invalid credentials',
+      extensions: [
+        {
+          field: null,
+          message: 'Invalid credentials',
+        },
+      ],
+    };
+  }
+
+  return {
+    status: ResultStatus.Success,
+    data: null,
+    extensions: [],
+  };
 };
 
 const authService = {
-  login
+  login,
 };
 
 export { authService };

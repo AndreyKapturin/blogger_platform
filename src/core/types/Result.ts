@@ -1,0 +1,40 @@
+enum ResultStatus {
+  Success = 'Success',
+  NotFound = 'NotFound',
+  InvalidCredentials = 'InvalidCredentials',
+}
+
+type ExtensionResultMessage = {
+  field: string | null;
+  message: string;
+};
+
+// type Result<T = null> = {
+//   status: ResultStatus;
+//   data: T;
+//   errorMessage?: string;
+//   extensions: ExtensionResultMessage[];
+// };
+type Result<T = null> = 
+  | 
+    {
+      status: ResultStatus.Success;
+      data: T;
+      errorMessage?: string;
+      extensions: ExtensionResultMessage[];
+    }
+  |
+    {
+      status: ResultStatus.InvalidCredentials;
+      errorMessage?: string;
+      extensions: ExtensionResultMessage[];
+    }
+  |
+    {
+      status: ResultStatus.NotFound;
+      errorMessage?: string;
+      extensions: ExtensionResultMessage[];
+    };
+  
+export { ResultStatus };
+export type { ExtensionResultMessage, Result };

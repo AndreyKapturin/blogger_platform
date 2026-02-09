@@ -1,54 +1,21 @@
-import { checkSchema } from 'express-validator';
+import { body } from 'express-validator';
 import { customTrim } from '../../../core/middlewares/validationMiddleware';
-import {
-  MAX_POST_CONTENT_LENGTH,
-  MAX_POST_TITLE_LENGTH,
-  MAX_POST_SHORT_DESCRIPTION_LENGTH,
-} from '../constants';
+import { inputBlogPostValidationSchema } from './inputBlogPostValidationSchema';
 
-const inputPostValidationSchema = checkSchema({
-  title: {
-    customSanitizer: {
-      options: customTrim,
-    },
-    exists: true,
-    notEmpty: true,
-    isString: true,
-    isLength: {
-      options: { max: MAX_POST_TITLE_LENGTH },
-    },
-  },
-  shortDescription: {
-    customSanitizer: {
-      options: customTrim,
-    },
-    exists: true,
-    notEmpty: true,
-    isString: true,
-    isLength: {
-      options: { max: MAX_POST_SHORT_DESCRIPTION_LENGTH },
-    },
-  },
-  content: {
-    customSanitizer: {
-      options: customTrim,
-    },
-    exists: true,
-    notEmpty: true,
-    isString: true,
-    isLength: {
-      options: { max: MAX_POST_CONTENT_LENGTH },
-    },
-  },
-  blogId: {
-    customSanitizer: {
-      options: customTrim,
-    },
-    exists: true,
-    notEmpty: true,
-    isString: true,
-    isMongoId: true,
-  },
-});
+const blogIdValidation = body('blogId')
+  .customSanitizer(customTrim)
+  .exists()
+    .withMessage('"blogId" is required in body')
+  .notEmpty()
+    .withMessage('"blogId" should not empty string')
+  .isString()
+    .withMessage('"blogId" must be string')
+  .isMongoId()
+    .withMessage('"blogId" must be mongo ObjectId format')
+
+const inputPostValidationSchema = [
+  ...inputBlogPostValidationSchema,
+  blogIdValidation,
+]
 
 export { inputPostValidationSchema };
