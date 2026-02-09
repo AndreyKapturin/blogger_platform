@@ -3,9 +3,12 @@ import { HttpStatus } from '../../../src/core/types/HttpStatus';
 import { ViewBlogType } from '../../../src/entities/blogs/types';
 import request from 'supertest';
 import { Express } from 'express';
-import { InputPostType, ViewPostType } from '../../../src/entities/posts/types';
+import { InputPostType, PostSortField, ViewPostQuery, ViewPostType } from '../../../src/entities/posts/types';
 import { authHeader } from '../../../src/core/constants';
 import { ISODateStringRegExp } from './constants';
+import { faker } from '@faker-js/faker';
+import { DEFAULT_POSTS_PAGE_SIZE, DEFAULT_POSTS_SORT_BY, DEFAULT_POSTS_SORT_DIRECTION, MAX_POST_TITLE_LENGTH } from '../../../src/entities/posts/constants';
+import { Paginator, SortDirection } from '../../../src/core/types/PaginationAndSorting';
 
 const correctInputPostData: Partial<InputPostType> = {
   title: 'How create node js app?',
@@ -13,7 +16,60 @@ const correctInputPostData: Partial<InputPostType> = {
   shortDescription: 'p'.repeat(50),
 };
 
+const createExpectedPost = <K extends PostSortField>(fieldName: K, value: ViewPostType[K]): ViewPostType => {
+  return {
+    id: expect.any(String),
+    title: expect.any(String),
+    shortDescription: expect.any(String),
+    createdAt: expect.stringMatching(ISODateStringRegExp),
+    content: expect.any(String),
+    blogName: expect.any(String),
+    blogId: expect.any(String),
+    [fieldName]: value
+  };
+};
+
 const createPostsTestManager = (app: Express) => {
+  const getPaginatedPosts = async (
+  localPosts: ViewPostType[],
+  blogId: string,
+  query: Partial<ViewPostQuery> = {},
+) => {
+  let items = localPosts.filter((post) => post.blogId === blogId);
+
+  const sortBy = query.sortBy ?? DEFAULT_POSTS_SORT_BY;
+  const sortDirection = query.sortDirection ?? DEFAULT_POSTS_SORT_DIRECTION;
+  const isDescSortDirection = sortDirection === SortDirection.Desc;
+
+  items.sort((a, b) => {
+    if (a[sortBy] > b[sortBy]) return isDescSortDirection ? -1 : 1;
+    if (a[sortBy] < b[sortBy]) return isDescSortDirection ? 1 : -1;
+    return 0;
+  });
+
+  const totalCount = items.length;
+  const pageSize = query.pageSize ?? DEFAULT_POSTS_PAGE_SIZE;
+  const pagesCount = Math.ceil(totalCount / pageSize) || 1;
+  const page = query.pageNumber ?? 1;
+  const skip = (page - 1) * pageSize;
+  items = items
+    .slice(skip, skip + pageSize)
+    .map(item => createExpectedPost(sortBy, item[sortBy]));
+
+  const expectedBody: Paginator<ViewPostType> = {
+    page,
+    pagesCount,
+    pageSize,
+    totalCount,
+    items,
+  };
+
+  const response = await request(app).get(`${Routes.Blogs}/${blogId}/posts`).query(query);
+  expect(response.status).toBe(HttpStatus.Ok);
+  expect(response.body).toEqual(expectedBody);
+  return response;
+};
+
   const createCorrectPost = async (
     blog: ViewBlogType,
     changedFields: Partial<InputPostType> = {},
@@ -39,6 +95,23 @@ const createPostsTestManager = (app: Express) => {
     expect(response.status).toBe(HttpStatus.Created);
     expect(response.body).toEqual(expectedPost);
     return response;
+  };
+
+  const createManyPosts = async (blog: ViewBlogType, count: number): Promise<ViewPostType[]> => {
+    const inputPostsData: InputPostType[] = Array.from({ length: count }).map(() => {
+      return {
+        blogId: blog.id,
+        title: faker.lorem.word({ length: MAX_POST_TITLE_LENGTH - 1 }),
+        content: faker.lorem.words({min: 3, max: 6}),
+        shortDescription: faker.lorem.words({min: 5, max: 10}),
+      };
+    });
+
+    const createPostResponses = await Promise.all(inputPostsData.map(inputPost => {
+      return createCorrectPost(blog, inputPost);
+    }))
+
+    return createPostResponses.map((response) => response.body);
   };
 
   const createInorrectPost = async (
@@ -127,7 +200,9 @@ const createPostsTestManager = (app: Express) => {
   };
 
   return {
+    getPaginatedPosts,
     createCorrectPost,
+    createManyPosts,
     createInorrectPost,
     correctUpdatePost,
     incorrectUpdatePost,

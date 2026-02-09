@@ -2,23 +2,21 @@ import { Express } from 'express';
 import { Routes } from '../../../../src/app/routes';
 import { HttpStatus } from '../../../../src/core/types/HttpStatus';
 import { BlogsTestManagerType, createBlogsTestManager } from '../../utils/blogsTestManager';
-import { createPostsTestManager, PostsTestManagerType } from '../../utils/PostsTestManager';
 import { ObjectId } from 'mongodb';
 import { createApp } from '../../../../src/app';
 import { InputBlogPostType, ViewPostType } from '../../../../src/entities/posts/types';
 import request from 'supertest';
 import { authHeader } from '../../../../src/core/constants';
 import { ISODateStringRegExp } from '../../utils/constants';
+import { closeBbConnection } from '../../../../src/database/mongoDB';
 
 let app: Express;
 let blogsTestManager: BlogsTestManagerType;
-let postsTestManager: PostsTestManagerType;
 const notExistBlogId = new ObjectId().toString();
 
 beforeAll(async () => {
   app = await createApp();
   blogsTestManager = createBlogsTestManager(app);
-  postsTestManager = createPostsTestManager(app);
 });
 
 describe(`POST ${Routes.Blogs}/:id/posts`, () => {
@@ -109,4 +107,8 @@ describe(`POST ${Routes.Blogs}/:id/posts`, () => {
       expect(createPostResponse.status).toBe(HttpStatus.Not_Found);
     });
   });
+});
+
+afterAll(async () => {
+  await closeBbConnection();
 });

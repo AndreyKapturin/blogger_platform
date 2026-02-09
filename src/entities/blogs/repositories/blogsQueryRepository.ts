@@ -26,6 +26,8 @@ const findAllWithPagination = async (blogQuery: ViewBlogQuery) => {
   return paginatedViewBlogs
 };
 
+const getRawBlogsHandler = async () => blogsCollection.find().map(_blogToViewMapper).toArray();
+
 const findById = async (blogId: string) => {
   const foundBlog = await blogsCollection.findOne({ _id: new ObjectId(blogId) });
   return foundBlog ? _blogToViewMapper(foundBlog) : null;
@@ -43,6 +45,7 @@ const _blogToViewMapper = (mongoBlog: WithId<BlogType>): ViewBlogType => {
 };
 
 const blogsQueryRepository = {
+  getRawBlogsHandler,
   findAllWithPagination,
   findById,
 };
