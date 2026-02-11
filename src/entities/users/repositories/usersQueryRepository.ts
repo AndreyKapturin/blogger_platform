@@ -1,10 +1,10 @@
 import { Filter, ObjectId, WithId } from 'mongodb';
 import { usersCollection } from '../../../database/mongoDB';
-import { UserType, ViewUsersQuery, ViewUserType } from '../types';
+import { MongoUserType, ViewUsersQuery, ViewUserType } from '../types';
 import { toPaginateMapper } from '../../../core/mappers/toPaginateMapper';
 
 const getPaginatedUsers = async (usersQuery: ViewUsersQuery) => {
-  const filter: Filter<UserType> = {};
+  const filter: Filter<MongoUserType> = {};
   const { sortBy, sortDirection, searchLoginTerm, searchEmailTerm, pageNumber, pageSize } =
     usersQuery;
   const skip = (pageNumber - 1) * pageSize;
@@ -40,7 +40,7 @@ const findUserById = async (userId: string) => {
   return _userToViewMapper(foundUser);
 };
 
-const _userToViewMapper = (mongoUser: WithId<UserType>): ViewUserType => {
+const _userToViewMapper = (mongoUser: WithId<MongoUserType>): ViewUserType => {
   return {
     id: mongoUser._id.toString(),
     email: mongoUser.email,
