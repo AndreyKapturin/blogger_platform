@@ -10,8 +10,12 @@ paths:
             schema: 
               $ref: '#/components/schemas/InputLoginUserSchema'
       responses: 
-        '204':
-          description: Successfully create user
+        '200':
+          description: Successfully login user
+          content: 
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/AccessTokenSchema'
         '400':
           $ref: '#/components/responses/ValidationErrorResponse'
         '401':
@@ -38,6 +42,15 @@ components:
               description: User email
         password:
           type: string
+
+    AccessTokenSchema:
+      type: object
+      required: 
+        - accessToken
+      properties: 
+        accessToken:
+          type: string
+          description: JWT access token
 
   parameters:
     UserIdPathParam:
