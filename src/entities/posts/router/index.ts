@@ -11,6 +11,9 @@ import { deletePostHandler } from './handlers/deletePostHandler';
 import { getPostByIdHandler } from './handlers/getPostByIdHandler';
 import { getPostsHandler } from './handlers/getPostsHandler';
 import { updatePostHandler } from './handlers/updatePostHandler';
+import { commentValidation } from '../../comments/validations/inputCommentValidationSchema';
+import { createPostCommentHandler } from './handlers/createPostCommentHandler';
+import { bearerAuthMiddlewate } from '../../../core/middlewares/bearerAuthMiddlewate';
 
 const postsRouter = Router();
 
@@ -34,6 +37,15 @@ postsRouter.post(
   inputPostValidationSchema,
   validationResultMiddleware,
   createPostHandler,
+);
+
+postsRouter.post(
+  '/:id/comments',
+  bearerAuthMiddlewate,
+  idInParamsCheckMiddleware,
+  commentValidation,
+  validationResultMiddleware,
+  createPostCommentHandler,
 );
 
 postsRouter.put(
