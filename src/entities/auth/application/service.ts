@@ -2,8 +2,9 @@ import { usersCommandRepository } from '../../users/repositories/usersCommandRep
 import { Result, ResultStatus } from '../../../core/types/Result';
 import { InputLoginType } from '../types';
 import { comparePassword } from '../../../core/utils/crypto/passwordUtils';
+import { createAccessToken } from '../../../core/utils/jwt/jwtUtils';
 
-const login = async (credentials: InputLoginType): Promise<Result> => {
+const login = async (credentials: InputLoginType): Promise<Result<string>> => {
   const user = await usersCommandRepository.findUserByLoginOrEmail(credentials.loginOrEmail);
 
   if (!user) {
@@ -34,9 +35,11 @@ const login = async (credentials: InputLoginType): Promise<Result> => {
     };
   }
 
+  const accessToken = await createAccessToken({ userId: user.id });
+
   return {
     status: ResultStatus.Success,
-    data: null,
+    data: accessToken,
     extensions: [],
   };
 };

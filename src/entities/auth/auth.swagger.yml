@@ -10,13 +10,36 @@ paths:
             schema: 
               $ref: '#/components/schemas/InputLoginUserSchema'
       responses: 
-        '204':
-          description: Successfully create user
+        '200':
+          description: Successfully login user
+          content: 
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/AccessTokenSchema'
         '400':
           $ref: '#/components/responses/ValidationErrorResponse'
         '401':
           description: Unauthorized
-      
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get user info by access token
+      security: 
+        - BearerAuth: []
+      responses: 
+        '200':
+          description: User info
+          content: 
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/ViewUserMeSchema'
+        '401':
+          description: Unauthorized
+        '404':
+          description: User not found
+
+
 components: 
   schemas: 
     InputLoginUserSchema:
@@ -38,6 +61,15 @@ components:
               description: User email
         password:
           type: string
+
+    AccessTokenSchema:
+      type: object
+      required: 
+        - accessToken
+      properties: 
+        accessToken:
+          type: string
+          description: JWT access token
 
   parameters:
     UserIdPathParam:

@@ -1,6 +1,6 @@
-import { ObjectId } from 'mongodb';
+import { ObjectId, WithId } from 'mongodb';
 import { usersCollection } from '../../../database/mongoDB';
-import { UserType } from '../types';
+import { MongoUserType, UserType } from '../types';
 
 const checkUserByLoginOrEmail = async (login: string, email: string) => {
   const documentCount = await usersCollection.countDocuments({ login, email }, { limit: 1 });
@@ -8,12 +8,13 @@ const checkUserByLoginOrEmail = async (login: string, email: string) => {
 };
 
 const findUserByLoginOrEmail = async (loginOrEmail: string) => {
-  return usersCollection.findOne({
+  const foundUser = await usersCollection.findOne({
     $or: [{ login: loginOrEmail }, { email: loginOrEmail }],
   });
+  return foundUser ? _cleanObjectIdMapper(foundUser) : null;
 };
 
-const save = async (user: UserType) => {
+const save = async (user: MongoUserType) => {
   const { insertedId } = await usersCollection.insertOne(user);
   return insertedId.toString();
 };
@@ -25,6 +26,16 @@ const deleteUser = async (userId: string) => {
 
 const cleanAll = async () => {
   await usersCollection.deleteMany();
+};
+
+const _cleanObjectIdMapper = (mongoUser: WithId<MongoUserType>): UserType => {
+  return {
+    id: mongoUser._id.toString(),
+    email: mongoUser.email,
+    login: mongoUser.login,
+    createdAt: mongoUser.createdAt,
+    passwordHash: mongoUser.passwordHash,
+  };
 };
 
 const usersCommandRepository = {
