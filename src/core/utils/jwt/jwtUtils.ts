@@ -12,7 +12,7 @@ const createAccessToken = async (payload: AccessTokenPayload) => {
   )
 }
 
-const verifyAccessToken = async (token: string, ) => verify(token, JWT_SECRET);
+const verifyAccessToken = async (token: string) =>  verify(token, JWT_SECRET) as AccessTokenPayload;
 
 export {
   createAccessToken,

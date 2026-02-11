@@ -13,6 +13,12 @@ type MongoUserType = {
 
 type UserType = MongoUserType & UserIdParamType;
 
+type UserMeType = {
+  login: string;
+  email: string;
+  userId: string;
+};
+
 type InputUserType = {
   login: string;
   password: string;
@@ -37,4 +43,12 @@ type ViewUsersQuery = PaginationAndSortQuery<UsersSortFields> & {
 };
 
 export { UsersSortFields };
-export type { UserIdParamType, MongoUserType, InputUserType, ViewUsersQuery, ViewUserType, UserType };
+export type {
+  UserIdParamType,
+  MongoUserType,
+  InputUserType,
+  ViewUsersQuery,
+  ViewUserType,
+  UserType,
+  UserMeType,
+};

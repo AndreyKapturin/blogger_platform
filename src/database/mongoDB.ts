@@ -3,6 +3,7 @@ import { MONGO_CONNECTION_URI, MONGO_DB_NAME } from '../core/config';
 import { BlogType } from '../entities/blogs/types';
 import { PostType } from '../entities/posts/types';
 import { MongoUserType } from '../entities/users/types';
+import { log } from '../core/utils/logger/loggerUtils';
 
 const BLOGS_COLLECTION_NAME = 'blogs';
 const POSTS_COLLECTION_NAME = 'posts';
@@ -29,7 +30,7 @@ async function connectToDB() {
     blogsCollection = dbInstance.collection(BLOGS_COLLECTION_NAME)
     postsCollection = dbInstance.collection(POSTS_COLLECTION_NAME)
     usersCollection = dbInstance.collection(USERS_COLLECTION_NAME)
-    console.log('Pinged your deployment. You successfully connected to MongoDB!');
+    log('Pinged your deployment. You successfully connected to MongoDB!');
   } catch (error) {
     await client.close();
     throw new Error(`Database connection error: ${error}`);
