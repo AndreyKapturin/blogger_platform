@@ -9,12 +9,6 @@ type ExtensionResultMessage = {
   message: string;
 };
 
-// type Result<T = null> = {
-//   status: ResultStatus;
-//   data: T;
-//   errorMessage?: string;
-//   extensions: ExtensionResultMessage[];
-// };
 type Result<T = null> = 
   | 
     {
