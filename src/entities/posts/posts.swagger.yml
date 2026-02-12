@@ -80,6 +80,34 @@ paths:
           description: Successfully delete post
         '404':
           description: Post not found
+
+  /posts/{id}/comments:
+    post:
+      tags: [Posts]
+      summary: Add comment for post
+      security:
+        - BearerAuth: []
+      parameters: 
+        - $ref: '#/components/parameters/PostIdPathParam'
+      requestBody: 
+        description: Data for create comment
+        content: 
+          application/json: 
+            schema: 
+              $ref: '#/components/schemas/InputCommentSchema'
+      responses: 
+        '201':
+          description: Successfully create comment
+          content: 
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/ViewCommentSchema'
+        '400':
+          $ref: '#/components/responses/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Post not found
       
 components: 
   schemas: 
