@@ -1,5 +1,19 @@
 paths:
-  /comments:
+  /comments/{id}:
+    get:
+      tags: [Comments]
+      summary: Get comment by id
+      parameters: 
+        - $ref: '#/components/parameters/CommentIdPathParam'
+      responses: 
+        '200':
+          description: Successful
+          content: 
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/ViewCommentSchema'
+        '404':
+          description: Comment not found
     put:
       tags: [Comments]
       summary: Update comment by id
