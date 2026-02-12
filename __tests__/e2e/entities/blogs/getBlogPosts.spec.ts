@@ -7,7 +7,7 @@ import { SortDirection } from '../../../../src/core/types/PaginationAndSorting';
 import { ViewBlogType } from '../../../../src/entities/blogs/types';
 import { closeBbConnection } from '../../../../src/database/mongoDB';
 import { BlogsTestManagerType, createBlogsTestManager } from '../../utils/blogsTestManager';
-import { createPostsTestManager, PostsTestManagerType } from '../../utils/PostsTestManager';
+import { createPostsTestManager, PostsTestManagerType } from '../../utils/postsTestManager';
 import { PostSortField, ViewPostType } from '../../../../src/entities/posts/types';
 import { ObjectId } from 'mongodb';
 

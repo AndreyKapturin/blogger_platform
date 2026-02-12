@@ -6,7 +6,7 @@ import { Routes } from '../../../../src/app/routes';
 import { HttpStatus } from '../../../../src/core/types/HttpStatus';
 import request from 'supertest';
 import { authHeader } from '../../../../src/core/constants';
-import { createPostsTestManager, PostsTestManagerType } from '../../utils/PostsTestManager';
+import { createPostsTestManager, PostsTestManagerType } from '../../utils/postsTestManager';
 import { closeBbConnection } from '../../../../src/database/mongoDB';
 
 let app: Express;

@@ -7,6 +7,11 @@ const checkUserByLoginOrEmail = async (login: string, email: string) => {
   return Boolean(documentCount);
 };
 
+const findUserById = async (userId: string) => {
+  const foundUser = await usersCollection.findOne({ _id: new ObjectId(userId) });
+  return foundUser ? _cleanObjectIdMapper(foundUser) : null;
+};
+
 const findUserByLoginOrEmail = async (loginOrEmail: string) => {
   const foundUser = await usersCollection.findOne({
     $or: [{ login: loginOrEmail }, { email: loginOrEmail }],
@@ -40,6 +45,7 @@ const _cleanObjectIdMapper = (mongoUser: WithId<MongoUserType>): UserType => {
 
 const usersCommandRepository = {
   checkUserByLoginOrEmail,
+  findUserById,
   findUserByLoginOrEmail,
   save,
   deleteUser,
