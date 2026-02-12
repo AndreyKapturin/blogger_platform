@@ -39,12 +39,7 @@ beforeAll(async () => {
   blog = (await blogsTestManager.createCorrectBlog()).body;
   post = (await postsTestManager.createCorrectPost(blog)).body;
   user = (await usersTestManager.createUser({ password: userPassword })).created;
-  userAccessToken = (
-    await request(app).post(`${Routes.Auth}/login`).send({
-      loginOrEmail: user.login,
-      password: userPassword,
-    })
-  ).body.accessToken;
+  userAccessToken = await usersTestManager.loginUser(user.login, userPassword);
 });
 
 describe(`POST ${Routes.Posts}/:id/comments`, () => {
@@ -92,10 +87,7 @@ describe(`POST ${Routes.Posts}/:id/comments`, () => {
     const createCommentResponse = await request(app)
       .post(`${Routes.Posts}/${post.id}/comments`)
       .set('Authorization', `Bearer ${invalidAccessToken}`)
-      .send({
-        content: 'p'.repeat(MIN_COMMENT_CONTENT_LENGTH - 1),
-      });
-
+      .send({ content: validCommentContent });
     expect(createCommentResponse.status).toBe(HttpStatus.Unauthorized);
   });
 
