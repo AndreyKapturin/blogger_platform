@@ -31,16 +31,21 @@ describe(`POST ${Routes.Auth}/login`, () => {
   it.each([
     { loginOrEmail: inputUser.email },
     { loginOrEmail: inputUser.login },
-  ])(`should return ${HttpStatus.No_Content} if passed valid credentials`, async ({loginOrEmail}) => {
+  ])(`should return ${HttpStatus.Ok} if passed valid credentials`, async ({loginOrEmail}) => {
     const inputLoginWithEmail: InputLoginType = {
       loginOrEmail,
       password: inputUser.password
     }
 
-    await request(app)
+    const loginResponse = await request(app)
       .post(`${Routes.Auth}/login`)
-      .send(inputLoginWithEmail)
-      .expect(HttpStatus.No_Content);
+      .send(inputLoginWithEmail);
+    
+    expect(loginResponse.status).toBe(HttpStatus.Ok);
+    expect(loginResponse.body).toEqual({
+      accessToken: expect.any(String)
+    });
+
   });
 
   it.each([

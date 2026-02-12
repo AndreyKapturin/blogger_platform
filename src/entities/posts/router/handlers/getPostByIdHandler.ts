@@ -8,7 +8,6 @@ const getPostByIdHandler = async (
   req: RequestWithParams<PostIdParamType>,
   res: Response<ViewPostType>,
 ) => {
-  // QUESTION #1
   const foundPost = await postsQueryRepository.findById(req.params.id);
   if (!foundPost) {
     res.sendStatus(HttpStatus.Not_Found);

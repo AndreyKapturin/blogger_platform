@@ -1,6 +1,20 @@
-import { ObjectId } from 'mongodb';
+import { ObjectId, WithId } from 'mongodb';
 import { postsCollection } from '../../../database/mongoDB';
-import { InputUpdatePostType, PostType } from '../types';
+import { InputUpdatePostType, PostType, ViewPostType } from '../types';
+
+const findById = async (postId: string) => {
+  const foundPost = await postsCollection.findOne({ _id: new ObjectId(postId) });
+  if (!foundPost) return null;
+  return _cleanObjectIdMapper(foundPost);
+};
+
+const checkById = async (postId: string) => {
+  const documentsCount = await postsCollection.countDocuments(
+    { _id: new ObjectId(postId) },
+    { limit: 1 },
+  );
+  return Boolean(documentsCount);
+};
 
 const save = async (inputPost: PostType): Promise<string> => {
   const { insertedId } = await postsCollection.insertOne(inputPost);
@@ -40,7 +54,21 @@ const updateRelated = async (blogId: string, blogName: string) => {
 
 const cleanAll = async () => postsCollection.deleteMany();
 
+const _cleanObjectIdMapper = (mongoUser: WithId<PostType>): ViewPostType => {
+  return {
+    id: mongoUser._id.toString(),
+    title: mongoUser.title,
+    content: mongoUser.content,
+    shortDescription: mongoUser.shortDescription,
+    blogName: mongoUser.blogName,
+    blogId: mongoUser.blogId,
+    createdAt: mongoUser.createdAt,
+  };
+};
+
 const postsCommandRepository = {
+  findById,
+  checkById,
   save,
   update,
   remove,

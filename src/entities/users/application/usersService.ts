@@ -1,5 +1,5 @@
 import { usersCommandRepository } from '../repositories/usersCommandRepository';
-import { InputUserType, UserType } from '../types';
+import { InputUserType, MongoUserType } from '../types';
 import { Result, ResultStatus } from '../../../core/types/Result';
 import { hashPassword } from '../../../core/utils/crypto/passwordUtils';
 
@@ -22,7 +22,7 @@ const createUser = async (inputUser: InputUserType): Promise<Result<string>> => 
 
   const passwordHash = await hashPassword(inputUser.password);
 
-  const user: UserType = {
+  const user: MongoUserType = {
     email: inputUser.email,
     login: inputUser.login,
     passwordHash,

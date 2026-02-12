@@ -2,6 +2,7 @@ enum ResultStatus {
   Success = 'Success',
   NotFound = 'NotFound',
   InvalidCredentials = 'InvalidCredentials',
+  PermissionError = 'PermissionError',
 }
 
 type ExtensionResultMessage = {
@@ -9,12 +10,6 @@ type ExtensionResultMessage = {
   message: string;
 };
 
-// type Result<T = null> = {
-//   status: ResultStatus;
-//   data: T;
-//   errorMessage?: string;
-//   extensions: ExtensionResultMessage[];
-// };
 type Result<T = null> = 
   | 
     {
@@ -32,6 +27,12 @@ type Result<T = null> =
   |
     {
       status: ResultStatus.NotFound;
+      errorMessage?: string;
+      extensions: ExtensionResultMessage[];
+    }
+  |
+    {
+      status: ResultStatus.PermissionError;
       errorMessage?: string;
       extensions: ExtensionResultMessage[];
     };

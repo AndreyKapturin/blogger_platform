@@ -11,6 +11,11 @@ import { deletePostHandler } from './handlers/deletePostHandler';
 import { getPostByIdHandler } from './handlers/getPostByIdHandler';
 import { getPostsHandler } from './handlers/getPostsHandler';
 import { updatePostHandler } from './handlers/updatePostHandler';
+import { inputCommentValidationSchema } from '../../comments/validations/inputCommentValidationSchema';
+import { createPostCommentHandler } from './handlers/createPostCommentHandler';
+import { bearerAuthMiddlewate } from '../../../core/middlewares/bearerAuthMiddlewate';
+import { getPostCommentsHandler } from './handlers/getPostCommentsHandler';
+import { paginationAndSortingCommentValidationSchema } from '../../comments/validations/paginationAndSortingCommentValidationSchema';
 
 const postsRouter = Router();
 
@@ -28,12 +33,29 @@ postsRouter.get(
   getPostByIdHandler,
 );
 
+postsRouter.get(
+  '/:id/comments',
+  idInParamsCheckMiddleware,
+  paginationAndSortingCommentValidationSchema,
+  validationResultMiddleware,
+  getPostCommentsHandler,
+);
+
 postsRouter.post(
   '/',
   basicAuthMiddleware,
   inputPostValidationSchema,
   validationResultMiddleware,
   createPostHandler,
+);
+
+postsRouter.post(
+  '/:id/comments',
+  bearerAuthMiddlewate,
+  idInParamsCheckMiddleware,
+  inputCommentValidationSchema,
+  validationResultMiddleware,
+  createPostCommentHandler,
 );
 
 postsRouter.put(

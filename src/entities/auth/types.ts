@@ -3,4 +3,8 @@ type InputLoginType = {
   password: string;
 };
 
-export type { InputLoginType };
+type AccessToken = {
+  accessToken: string
+}
+
+export type { InputLoginType, AccessToken };
