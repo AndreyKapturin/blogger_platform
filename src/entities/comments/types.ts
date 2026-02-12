@@ -1,3 +1,5 @@
+import { PaginationAndSortQuery } from "../../core/types/PaginationAndSorting";
+
 type CommentIdParamType = {
   id: string;
 };
@@ -37,10 +39,18 @@ type MongoCommentType = {
   createdAt: string;
 };
 
+enum CommentsSortField {
+  CreatedAt = 'createdAt',
+}
+
+type ViewCommentsQuery = PaginationAndSortQuery<CommentsSortField>;
+
+export { CommentsSortField };
 export type {
   CommentIdParamType,
   InputCommentType,
   CommentType,
   ViewCommentType,
   MongoCommentType,
+  ViewCommentsQuery,
 };

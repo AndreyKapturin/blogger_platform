@@ -6,7 +6,15 @@ const findById = async (postId: string) => {
   const foundPost = await postsCollection.findOne({ _id: new ObjectId(postId) });
   if (!foundPost) return null;
   return _cleanObjectIdMapper(foundPost);
-}
+};
+
+const checkById = async (postId: string) => {
+  const documentsCount = await postsCollection.countDocuments(
+    { _id: new ObjectId(postId) },
+    { limit: 1 },
+  );
+  return Boolean(documentsCount);
+};
 
 const save = async (inputPost: PostType): Promise<string> => {
   const { insertedId } = await postsCollection.insertOne(inputPost);
@@ -55,11 +63,12 @@ const _cleanObjectIdMapper = (mongoUser: WithId<PostType>): ViewPostType => {
     blogName: mongoUser.blogName,
     blogId: mongoUser.blogId,
     createdAt: mongoUser.createdAt,
-  }
-}
+  };
+};
 
 const postsCommandRepository = {
   findById,
+  checkById,
   save,
   update,
   remove,
