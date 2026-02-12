@@ -17,7 +17,7 @@ beforeAll(async () => {
   app = await createApp();
   await request(app).delete(`${Routes.Testing}/all-data`).expect(HttpStatus.No_Content);
   usersTestManager = createUsersTestManager(app);
-  users = await usersTestManager.createManyUsers(100);
+  users = (await usersTestManager.createManyUsers(100)).map((user) => user.created);
 });
 
 describe(`GET ${Routes.Users}`, () => {

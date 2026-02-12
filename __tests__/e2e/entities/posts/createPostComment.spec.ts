@@ -38,7 +38,7 @@ beforeAll(async () => {
 
   blog = (await blogsTestManager.createCorrectBlog()).body;
   post = (await postsTestManager.createCorrectPost(blog)).body;
-  user = await usersTestManager.createUser({ password: userPassword });
+  user = (await usersTestManager.createUser({ password: userPassword })).created;
   userAccessToken = (
     await request(app).post(`${Routes.Auth}/login`).send({
       loginOrEmail: user.login,
