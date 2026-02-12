@@ -23,6 +23,16 @@ components:
           type: string
           format: date-time
 
+    ViewCommentsPaginationSchema:
+      allOf:
+        - $ref: '#/components/schemas/BasePaginatorSchema'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/ViewCommentSchema'
+    
     InputCommentSchema:
       type: object
       required: 
@@ -32,3 +42,18 @@ components:
           type: string
           minLength: 30
           maxLength: 300
+
+    CommentsSortFieldSchema:
+      type: string
+      description: available fields for comments sorting
+      enum: 
+        - createdAt
+      default: createdAt
+
+  parameters:
+    CommentsSortByQueryParam:
+      in: query
+      name: sortBy
+      description: sorting comments field name
+      schema: 
+        $ref: '#/components/schemas/CommentsSortFieldSchema'

@@ -82,6 +82,24 @@ paths:
           description: Post not found
 
   /posts/{id}/comments:
+    get:
+      tags: [Posts]
+      summary: Get paginated comments for post
+      parameters: 
+        - $ref: '#/components/parameters/PostIdPathParam'
+        - $ref: '#/components/parameters/CommentsSortByQueryParam'
+        - $ref: '#/components/parameters/SortDirectionQueryParam'
+        - $ref: '#/components/parameters/PageSizeQueryParam'
+        - $ref: '#/components/parameters/PageNumberQueryParam'
+      responses:
+        '200':
+          description: Paginated post comments
+          content: 
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/ViewCommentsPaginationSchema'
+        '404':
+          description: Post not found
     post:
       tags: [Posts]
       summary: Add comment for post
