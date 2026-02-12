@@ -39,6 +39,23 @@ paths:
         '404':
           description: Comment not found
 
+    delete:
+      tags: [Comments]
+      summary: Delete comment by id
+      security: 
+        - BearerAuth: []
+      parameters: 
+        - $ref: '#/components/parameters/CommentIdPathParam'
+      responses: 
+        '204':
+          description: Successfully delete comment
+        '401':
+          description: Unauthorized
+        '403':
+          description: If try delete comment of another user
+        '404':
+          description: Comment not found
+
 components: 
   schemas: 
     ViewCommentSchema:
