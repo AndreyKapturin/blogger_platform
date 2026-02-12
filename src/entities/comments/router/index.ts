@@ -5,6 +5,7 @@ import { updateCommentHandler } from './handlers/updateCommentHandler';
 import { inputCommentValidationSchema } from '../validations/inputCommentValidationSchema';
 import { bearerAuthMiddlewate } from '../../../core/middlewares/bearerAuthMiddlewate';
 import { getCommentByIdHandler } from './handlers/getCommentByIdHandler';
+import { deleteCommentByIdHandler } from './handlers/deleteCommentByIdHandler';
 
 const commentsRouter = Router();
 
@@ -22,6 +23,14 @@ commentsRouter.put(
   validationResultMiddleware,
   bearerAuthMiddlewate,
   updateCommentHandler
+)
+
+commentsRouter.delete(
+  '/:id',
+  idInParamsCheckMiddleware,
+  validationResultMiddleware,
+  bearerAuthMiddlewate,
+  deleteCommentByIdHandler
 )
 
 export { commentsRouter };

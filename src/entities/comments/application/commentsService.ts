@@ -95,9 +95,50 @@ const updateComment = async (commentId: string, userId: string, content: string)
   }
 }
 
+
+const deleteComment = async (commentId: string, userId: string): Promise<Result> => {
+  const comment = await commentsCommandRepository.findById(commentId);
+
+  if (!comment) {
+    return {
+      status: ResultStatus.NotFound,
+      errorMessage: `Comment with id ${commentId} not found`,
+      extensions: [
+        {
+          field: null,
+          message: `Comment with id ${commentId} not found`,
+        }
+      ]
+    }
+  }
+  
+  if (comment.commentatorInfo.userId !== userId) {
+    return {
+      status: ResultStatus.PermissionError,
+      extensions: [
+        {
+          field: null,
+          message: 'You are not the author of the comment'
+        }
+      ]
+    }
+  }
+
+  const isDeleted = await commentsCommandRepository.remove(commentId);
+
+  if (!isDeleted) throw new Error('Delete comment error');
+  
+  return {
+    status: ResultStatus.Success,
+    data: null,
+    extensions: []
+  }
+}
+
 const commentsService = {
   createComment,
   updateComment,
+  deleteComment,
 }
 
 export { commentsService }
