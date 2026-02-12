@@ -2,7 +2,7 @@ import { body } from 'express-validator';
 import { customTrim } from '../../../core/middlewares/validationMiddleware';
 import { MAX_COMMENT_CONTENT_LENGTH, MIN_COMMENT_CONTENT_LENGTH } from '../constants';
 
-const commentValidation = body('content')
+const inputCommentValidationSchema = body('content')
   .customSanitizer(customTrim)
   .exists()
     .withMessage('"content" is required in body')
@@ -15,4 +15,4 @@ const commentValidation = body('content')
       `length of the "content" should be in the range from ${MIN_COMMENT_CONTENT_LENGTH} to ${MAX_COMMENT_CONTENT_LENGTH} characters`,
   );
 
-export { commentValidation };
+export { inputCommentValidationSchema };

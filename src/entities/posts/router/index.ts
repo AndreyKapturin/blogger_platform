@@ -11,7 +11,7 @@ import { deletePostHandler } from './handlers/deletePostHandler';
 import { getPostByIdHandler } from './handlers/getPostByIdHandler';
 import { getPostsHandler } from './handlers/getPostsHandler';
 import { updatePostHandler } from './handlers/updatePostHandler';
-import { commentValidation } from '../../comments/validations/inputCommentValidationSchema';
+import { inputCommentValidationSchema } from '../../comments/validations/inputCommentValidationSchema';
 import { createPostCommentHandler } from './handlers/createPostCommentHandler';
 import { bearerAuthMiddlewate } from '../../../core/middlewares/bearerAuthMiddlewate';
 import { getPostCommentsHandler } from './handlers/getPostCommentsHandler';
@@ -53,7 +53,7 @@ postsRouter.post(
   '/:id/comments',
   bearerAuthMiddlewate,
   idInParamsCheckMiddleware,
-  commentValidation,
+  inputCommentValidationSchema,
   validationResultMiddleware,
   createPostCommentHandler,
 );

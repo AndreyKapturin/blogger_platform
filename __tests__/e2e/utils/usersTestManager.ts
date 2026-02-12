@@ -94,6 +94,7 @@ const createUsersTestManager = (app: Express) => {
     createUser,
     createManyUsers,
     createManyUsersAndLogin,
+    loginUser,
   };
 };
 
