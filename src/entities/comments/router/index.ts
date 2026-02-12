@@ -4,8 +4,16 @@ import { validationResultMiddleware } from '../../../core/middlewares/validation
 import { updateCommentHandler } from './handlers/updateCommentHandler';
 import { inputCommentValidationSchema } from '../validations/inputCommentValidationSchema';
 import { bearerAuthMiddlewate } from '../../../core/middlewares/bearerAuthMiddlewate';
+import { getCommentByIdHandler } from './handlers/getCommentByIdHandler';
 
 const commentsRouter = Router();
+
+commentsRouter.get(
+  '/:id',
+  idInParamsCheckMiddleware,
+  validationResultMiddleware,
+  getCommentByIdHandler
+)
 
 commentsRouter.put(
   '/:id',
