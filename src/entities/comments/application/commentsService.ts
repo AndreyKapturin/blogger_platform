@@ -15,7 +15,7 @@ const createComment = async (
       errorMessage: 'Post not found',
       extensions: [
         {
-          field: 'Post id',
+          field: null,
           message: `Post with id ${postId} not found`
         }
       ]
