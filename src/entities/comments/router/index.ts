@@ -18,18 +18,18 @@ commentsRouter.get(
 
 commentsRouter.put(
   '/:id',
+  bearerAuthMiddlewate,
   idInParamsCheckMiddleware,
   inputCommentValidationSchema,
   validationResultMiddleware,
-  bearerAuthMiddlewate,
   updateCommentHandler
 )
 
 commentsRouter.delete(
   '/:id',
+  bearerAuthMiddlewate,
   idInParamsCheckMiddleware,
   validationResultMiddleware,
-  bearerAuthMiddlewate,
   deleteCommentByIdHandler
 )
 
