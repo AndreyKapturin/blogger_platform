@@ -40,6 +40,11 @@ const _cleanObjectIdMapper = (mongoUser: WithId<MongoUserType>): UserType => {
     login: mongoUser.login,
     createdAt: mongoUser.createdAt,
     passwordHash: mongoUser.passwordHash,
+    emailConfirmation: {
+      isConfirmed: mongoUser.emailConfirmation.isConfirmed,
+      code: mongoUser.emailConfirmation.code,
+      codeExpirationDate: mongoUser.emailConfirmation.codeExpirationDate,
+    }
   };
 };
 

@@ -1,3 +1,5 @@
+import { InputUserType } from "../users/types";
+
 type InputLoginType = {
   loginOrEmail: string;
   password: string;
@@ -7,4 +9,6 @@ type AccessToken = {
   accessToken: string
 }
 
-export type { InputLoginType, AccessToken };
+type InputRegistrationType = InputUserType;
+
+export type { InputLoginType, AccessToken, InputRegistrationType };
