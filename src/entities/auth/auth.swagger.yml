@@ -55,6 +55,22 @@ paths:
             '400': 
                 $ref: '#/components/responses/ValidationErrorResponse'
 
+  /auth/registration-email-resending:
+    post:
+        tags: [Auth]
+        summary: Resend email confirmation code
+        requestBody: 
+            description: User email
+            content:
+                application/json: 
+                  schema: 
+                    $ref: '#/components/schemas/InputResendingEmailConfirmationSchema' 
+        responses: 
+            '204':
+                description: Email successfully resend
+            '400': 
+                $ref: '#/components/responses/ValidationErrorResponse'
+
 components: 
   schemas: 
     InputLoginUserSchema:
@@ -85,6 +101,16 @@ components:
         accessToken:
           type: string
           description: JWT access token
+
+    InputResendingEmailConfirmationSchema:
+      type: object
+      required: 
+        - email
+      properties: 
+        email:
+          type: string
+          format: email
+          pattern: ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$
 
   parameters:
     UserIdPathParam:
