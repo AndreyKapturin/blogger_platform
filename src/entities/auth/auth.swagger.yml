@@ -39,6 +39,21 @@ paths:
         '404':
           description: User not found
 
+  /auth/registration:
+    post:
+        tags: [Auth]
+        summary: User self registration
+        requestBody: 
+            description: User credentials
+            content:
+                application/json: 
+                  schema: 
+                    $ref: '#/components/schemas/InputUserSchema' 
+        responses: 
+            '204':
+                description: User successfully registered
+            '400': 
+                $ref: '#/components/responses/ValidationErrorResponse'
 
 components: 
   schemas: 
@@ -106,4 +121,3 @@ components:
       schema:
         type: string
         example: andrew@
-
