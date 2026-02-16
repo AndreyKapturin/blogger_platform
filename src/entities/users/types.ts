@@ -9,6 +9,11 @@ type MongoUserType = {
   email: string;
   createdAt: string;
   passwordHash: string;
+  emailConfirmation: {
+    isConfirmed: boolean,
+    code: string,
+    codeExpirationDate: string,
+  }
 };
 
 type UserType = MongoUserType & UserIdParamType;

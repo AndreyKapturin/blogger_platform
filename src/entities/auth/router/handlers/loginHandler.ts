@@ -1,7 +1,7 @@
 import { Response } from "express";
 import { RequestWithBody } from "../../../../core/types/RequestTypes";
 import { AccessToken, InputLoginType } from "../../types";
-import { authService } from "../../application/service";
+import { authService } from "../../application/authService";
 import { HttpStatus } from "../../../../core/types/HttpStatus";
 import { ResultStatus } from "../../../../core/types/Result";
 import { resultStatusToHttpStatus } from "../../../../core/mappers/resultStatusToHttpStatus";

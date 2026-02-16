@@ -1,4 +1,4 @@
-import express, { Express } from 'express';
+import express, { Express, Request, Response } from 'express';
 import { Routes } from './routes';
 import { blogsRouter } from '../entities/blogs/router';
 import { jsonBodyMiddleware } from '../core/middlewares/jsonBodyMiddleware';
@@ -10,9 +10,10 @@ import { errorsHandler } from '../core/errors/errorsHandler';
 import { usersRouter } from '../entities/users/router';
 import { authRouter } from '../entities/auth/router';
 import { commentsRouter } from '../entities/comments/router';
+import { MONGO_CONNECTION_URI } from '../core/config';
 
 const createApp = async (): Promise<Express> => {
-  await connectToDB();
+  await connectToDB(MONGO_CONNECTION_URI);
   const app = express();
   app.use(jsonBodyMiddleware);
   app.use(Routes.Auth, authRouter);

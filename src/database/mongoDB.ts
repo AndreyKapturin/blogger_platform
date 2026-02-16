@@ -1,5 +1,5 @@
 import { Collection, Db, MongoClient, ServerApiVersion } from 'mongodb';
-import { MONGO_CONNECTION_URI, MONGO_DB_NAME } from '../core/config';
+import { MONGO_DB_NAME } from '../core/config';
 import { BlogType } from '../entities/blogs/types';
 import { PostType } from '../entities/posts/types';
 import { MongoUserType } from '../entities/users/types';
@@ -11,22 +11,22 @@ const POSTS_COLLECTION_NAME = 'posts';
 const USERS_COLLECTION_NAME = 'users';
 const COMMENTS_COLLECTION_NAME = 'comments';
 
-const client = new MongoClient(MONGO_CONNECTION_URI, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  },
-});
-
+let client: MongoClient;
 let dbInstance: Db;
 let blogsCollection: Collection<BlogType>;
 let postsCollection: Collection<PostType>;
 let usersCollection: Collection<MongoUserType>;
 let commentsCollection: Collection<MongoCommentType>;
 
-async function connectToDB() {
+async function connectToDB(mongoUri: string) {
   try {
+    client = new MongoClient(mongoUri, {
+      serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+      },
+    });
     await client.connect();
     dbInstance = client.db(MONGO_DB_NAME);
     await dbInstance.command({ ping: 1 });
