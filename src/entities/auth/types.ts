@@ -15,4 +15,14 @@ type InputEmailResendingType = {
   email: string;
 };
 
-export type { InputLoginType, AccessToken, InputRegistrationType, InputEmailResendingType };
+type EmailConfirmationCode = {
+  code: string;
+};
+
+export type {
+  InputLoginType,
+  AccessToken,
+  InputRegistrationType,
+  InputEmailResendingType,
+  EmailConfirmationCode,
+};

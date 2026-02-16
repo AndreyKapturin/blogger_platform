@@ -135,10 +135,64 @@ const resendingConfirmationCode = async (email: string): Promise<Result> => {
   };
 };
 
+const confirmRegistration = async (emailConfirmationCode: string): Promise<Result> => {
+  const user = await usersCommandRepository.findUserByEmailConfirmationCode(emailConfirmationCode);
+
+  if (!user) {
+    return {
+      status: ResultStatus.InvalidData,
+      errorMessage: 'User with passed confirmation code not exist',
+      extensions: [
+        {
+          field: null,
+          message: 'User with passed confirmation code not exist',
+        },
+      ],
+    };
+  }
+
+  if (user.emailConfirmation.isConfirmed) {
+    return {
+      status: ResultStatus.InvalidData,
+      errorMessage: 'Email is already confirmed',
+      extensions: [
+        {
+          field: null,
+          message: 'Email is already confirmed',
+        },
+      ],
+    };
+  }
+
+  const isExpiredCode = dateUtils.dateIsExpired(user.emailConfirmation.codeExpirationDate);
+
+  if (isExpiredCode) {
+    return {
+      status: ResultStatus.InvalidData,
+      errorMessage: 'Confirmation code is expired',
+      extensions: [
+        {
+          field: 'code',
+          message: 'Confirmation code is expired',
+        },
+      ],
+    };
+  }
+
+  await usersCommandRepository.confirmEmail(user.email);
+
+  return {
+    status: ResultStatus.Success,
+    data: null,
+    extensions: [],
+  };
+};
+
 const authService = {
   login,
   registration,
   resendingConfirmationCode,
+  confirmRegistration,
 };
 
 export { authService };

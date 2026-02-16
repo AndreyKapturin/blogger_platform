@@ -19,6 +19,26 @@ const findUserByLoginOrEmail = async (loginOrEmail: string) => {
   return foundUser ? _cleanObjectIdMapper(foundUser) : null;
 };
 
+const findUserByEmailConfirmationCode = async (emailConfirmationCode: string) => {
+  const foundUser = await usersCollection.findOne({
+    'emailConfirmation.code': emailConfirmationCode,
+  });
+  return foundUser ? _cleanObjectIdMapper(foundUser) : null;
+};
+
+const confirmEmail = async (email: string) => {
+  const updateResult = await usersCollection.updateOne(
+    { email },
+    {
+      $set: {
+        'emailConfirmation.isConfirmed': true,
+      },
+    },
+  );
+
+  return updateResult.matchedCount === 1;
+};
+
 const save = async (user: MongoUserType) => {
   const { insertedId } = await usersCollection.insertOne(user);
   return insertedId.toString();
@@ -70,6 +90,8 @@ const _cleanObjectIdMapper = (mongoUser: WithId<MongoUserType>): UserType => {
 };
 
 const usersCommandRepository = {
+  findUserByEmailConfirmationCode,
+  confirmEmail,
   updateEmailConfirmationCode,
   checkUserByLoginOrEmail,
   findUserById,

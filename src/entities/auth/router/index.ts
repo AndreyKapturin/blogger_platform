@@ -7,6 +7,8 @@ import { bearerAuthMiddlewate } from '../../../core/middlewares/bearerAuthMiddle
 import { meHandler } from './handlers/meHandler';
 import { registrationHandler } from './handlers/registrationHandler';
 import { emailResendingHandler } from './handlers/emailResendingHandler';
+import { emailConfirmationCodeValidation } from '../validations/emailConfirmationCodeValidation';
+import { registrationConfirmationHandler } from './handlers/registrationConfirmationHandler';
 
 const authRouter = Router();
 
@@ -36,6 +38,13 @@ authRouter.post(
   emailValidationSchema,
   validationResultMiddleware,
   emailResendingHandler,
+);
+
+authRouter.post(
+  '/registration-confirmation',
+  emailConfirmationCodeValidation,
+  validationResultMiddleware,
+  registrationConfirmationHandler,
 );
 
 export { authRouter };
