@@ -1,33 +1,31 @@
 import { usersCommandRepository } from '../repositories/usersCommandRepository';
-import { InputUserType, MongoUserType } from '../types';
+import { InputUserType } from '../types';
 import { Result, ResultStatus } from '../../../core/types/Result';
-import { hashPassword } from '../../../core/utils/crypto/passwordUtils';
+import { UserFactory } from '../UserFactory';
 
-const createUser = async (inputUser: InputUserType): Promise<Result<string>> => {
+const createUser = async (credentials: InputUserType): Promise<Result<string>> => {
   const isUserExist = await usersCommandRepository.checkUserByLoginOrEmail(
-    inputUser.login,
-    inputUser.email,
+    credentials.login,
+    credentials.email,
   );
+
   if (isUserExist) {
     return {
-      status: ResultStatus.InvalidCredentials,
+      status: ResultStatus.InvalidData,
       extensions: [
         {
           field: null,
-          message: 'User with passed credentials already  exists',
+          message: 'User with passed credentials already exists',
         },
       ],
     };
   }
 
-  const passwordHash = await hashPassword(inputUser.password);
-
-  const user: MongoUserType = {
-    email: inputUser.email,
-    login: inputUser.login,
-    passwordHash,
-    createdAt: new Date().toISOString(),
-  };
+  const user = await UserFactory.createConfirmedUser(
+    credentials.email,
+    credentials.login,
+    credentials.password,
+  )
 
   const userId = await usersCommandRepository.save(user);
   

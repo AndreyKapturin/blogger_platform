@@ -39,6 +39,53 @@ paths:
         '404':
           description: User not found
 
+  /auth/registration:
+    post:
+        tags: [Auth]
+        summary: User self registration
+        requestBody: 
+            description: User credentials
+            content:
+                application/json: 
+                  schema: 
+                    $ref: '#/components/schemas/InputUserSchema' 
+        responses: 
+            '204':
+                description: User successfully registered
+            '400': 
+                $ref: '#/components/responses/ValidationErrorResponse'
+
+  /auth/registration-email-resending:
+    post:
+        tags: [Auth]
+        summary: Resend email confirmation code
+        requestBody: 
+            description: User email
+            content:
+                application/json: 
+                  schema: 
+                    $ref: '#/components/schemas/InputResendingEmailConfirmationSchema' 
+        responses: 
+            '204':
+                description: Email successfully resend
+            '400': 
+                $ref: '#/components/responses/ValidationErrorResponse'
+
+  /auth/registration-confirmation:
+    post:
+        tags: [Auth]
+        summary: Confirm email
+        requestBody: 
+            description: User confirmation code
+            content:
+                application/json: 
+                  schema: 
+                    $ref: '#/components/schemas/InputRegistrationConfirmationSchema' 
+        responses: 
+            '204':
+                description: Email successfully confirmed
+            '400': 
+                $ref: '#/components/responses/ValidationErrorResponse'
 
 components: 
   schemas: 
@@ -70,6 +117,24 @@ components:
         accessToken:
           type: string
           description: JWT access token
+
+    InputResendingEmailConfirmationSchema:
+      type: object
+      required: 
+        - email
+      properties: 
+        email:
+          type: string
+          format: email
+          pattern: ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$
+
+    InputRegistrationConfirmationSchema:
+      type: object
+      required: 
+        - code
+      properties: 
+        code:
+          type: string
 
   parameters:
     UserIdPathParam:
@@ -106,4 +171,3 @@ components:
       schema:
         type: string
         example: andrew@
-
