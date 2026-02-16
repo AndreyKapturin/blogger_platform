@@ -1,4 +1,5 @@
 import { hashPassword } from '../../core/utils/crypto/passwordUtils';
+import { dateUtils } from '../../core/utils/date/dateUtils';
 import { MongoUserType } from './types';
 
 class UserFactory {
@@ -28,19 +29,15 @@ class UserFactory {
     rawPassword: string,
   ): Promise<MongoUserType> {
     const passwordHash = await hashPassword(rawPassword);
-    const nowDate = new Date();
-    const createdAt = nowDate.toISOString();
-    nowDate.setHours(nowDate.getHours() + 1);
-    const codeExpirationDate = nowDate.toISOString();
     return {
       email,
       login,
       passwordHash,
-      createdAt,
+      createdAt: dateUtils.getCreatedAtDate(),
       emailConfirmation: {
         isConfirmed: false,
         code: crypto.randomUUID(),
-        codeExpirationDate,
+        codeExpirationDate: dateUtils.getEmailConfirmationCodeExpirationDate(),
       },
     };
   }

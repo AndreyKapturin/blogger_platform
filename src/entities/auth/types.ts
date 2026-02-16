@@ -1,4 +1,4 @@
-import { InputUserType } from "../users/types";
+import { InputUserType } from '../users/types';
 
 type InputLoginType = {
   loginOrEmail: string;
@@ -6,9 +6,13 @@ type InputLoginType = {
 };
 
 type AccessToken = {
-  accessToken: string
-}
+  accessToken: string;
+};
 
 type InputRegistrationType = InputUserType;
 
-export type { InputLoginType, AccessToken, InputRegistrationType };
+type InputEmailResendingType = {
+  email: string;
+};
+
+export type { InputLoginType, AccessToken, InputRegistrationType, InputEmailResendingType };

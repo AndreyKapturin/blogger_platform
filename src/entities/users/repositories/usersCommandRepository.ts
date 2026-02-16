@@ -29,6 +29,27 @@ const deleteUser = async (userId: string) => {
   return Boolean(deletedCount);
 };
 
+const updateEmailConfirmationCode = async (
+  userId: string,
+  code: string,
+  codeExpirationDate: string,
+) => {
+  const updateResult = await usersCollection.updateOne(
+    { _id: new ObjectId(userId) },
+    {
+      $set: {
+        emailConfirmation: {
+          isConfirmed: false,
+          code,
+          codeExpirationDate,
+        },
+      },
+    },
+  );
+
+  return updateResult.matchedCount === 1;
+};
+
 const cleanAll = async () => {
   await usersCollection.deleteMany();
 };
@@ -44,11 +65,12 @@ const _cleanObjectIdMapper = (mongoUser: WithId<MongoUserType>): UserType => {
       isConfirmed: mongoUser.emailConfirmation.isConfirmed,
       code: mongoUser.emailConfirmation.code,
       codeExpirationDate: mongoUser.emailConfirmation.codeExpirationDate,
-    }
+    },
   };
 };
 
 const usersCommandRepository = {
+  updateEmailConfirmationCode,
   checkUserByLoginOrEmail,
   findUserById,
   findUserByLoginOrEmail,

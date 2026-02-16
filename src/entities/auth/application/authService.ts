@@ -6,6 +6,7 @@ import { createAccessToken } from '../../../core/utils/jwt/jwtUtils';
 import { UserFactory } from '../../users/UserFactory';
 import { emailService } from '../../../core/services/emailService';
 import { log } from '../../../core/utils/logger/loggerUtils';
+import { dateUtils } from '../../../core/utils/date/dateUtils';
 
 const login = async (credentials: InputLoginType): Promise<Result<string>> => {
   const user = await usersCommandRepository.findUserByLoginOrEmail(credentials.loginOrEmail);
@@ -74,7 +75,57 @@ const registration = async (credentials: InputRegistrationType): Promise<Result>
 
   await usersCommandRepository.save(newUser);
 
-  emailService.sendConfirmationCode(newUser.email, newUser.emailConfirmation.code)
+  emailService
+    .sendConfirmationCode(newUser.email, newUser.emailConfirmation.code)
+    .catch((error) => log('Send confirmation code error: ', error));
+
+  return {
+    status: ResultStatus.Success,
+    data: null,
+    extensions: [],
+  };
+};
+
+const resendingConfirmationCode = async (email: string): Promise<Result> => {
+  const user = await usersCommandRepository.findUserByLoginOrEmail(email);
+
+  if (!user) {
+    return {
+      status: ResultStatus.InvalidData,
+      errorMessage: 'User with passed email not exists',
+      extensions: [
+        {
+          field: null,
+          message: 'User with passed email not exists',
+        },
+      ],
+    };
+  }
+
+  if (user.emailConfirmation.isConfirmed) {
+    return {
+      status: ResultStatus.InvalidData,
+      errorMessage: 'Email is already confirmed',
+      extensions: [
+        {
+          field: null,
+          message: 'Email is already confirmed',
+        },
+      ],
+    };
+  }
+
+  const newConfirmationCode = crypto.randomUUID();
+  const newCodeExpirationDate = dateUtils.getEmailConfirmationCodeExpirationDate();
+
+  await usersCommandRepository.updateEmailConfirmationCode(
+    user.id,
+    newConfirmationCode,
+    newCodeExpirationDate,
+  );
+
+  emailService
+    .sendConfirmationCode(user.email, newConfirmationCode)
     .catch((error) => log('Send confirmation code error: ', error));
 
   return {
@@ -87,6 +138,7 @@ const registration = async (credentials: InputRegistrationType): Promise<Result>
 const authService = {
   login,
   registration,
+  resendingConfirmationCode,
 };
 
 export { authService };

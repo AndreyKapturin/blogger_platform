@@ -34,4 +34,9 @@ const inputUserValidationSchema = [
   emailValidationSchema
 ];
 
-export { inputUserValidationSchema, customLoginValidator, passwordValidationSchema };
+export {
+  inputUserValidationSchema,
+  customLoginValidator,
+  emailValidationSchema,
+  passwordValidationSchema,
+};
