@@ -4,7 +4,7 @@ import { InputLoginType, InputRegistrationType } from '../types';
 import { comparePassword } from '../../../core/utils/crypto/passwordUtils';
 import { createAccessToken } from '../../../core/utils/jwt/jwtUtils';
 import { UserFactory } from '../../users/UserFactory';
-import { sendConfirmationCode } from '../../../core/services/emailService';
+import { emailService } from '../../../core/services/emailService';
 import { log } from '../../../core/utils/logger/loggerUtils';
 
 const login = async (credentials: InputLoginType): Promise<Result<string>> => {
@@ -74,7 +74,7 @@ const registration = async (credentials: InputRegistrationType): Promise<Result>
 
   await usersCommandRepository.save(newUser);
 
-  sendConfirmationCode(newUser.email, newUser.emailConfirmation.code)
+  emailService.sendConfirmationCode(newUser.email, newUser.emailConfirmation.code)
     .catch((error) => log('Send confirmation code error: ', error));
 
   return {

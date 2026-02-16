@@ -20,4 +20,8 @@ const _createConfurmationCodeMailHTML = (confirmationCode: string) => {
   )
 }
 
-export { sendConfirmationCode }
+const emailService = {
+  sendConfirmationCode
+}
+
+export {  emailService }
