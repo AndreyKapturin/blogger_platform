@@ -71,6 +71,22 @@ paths:
             '400': 
                 $ref: '#/components/responses/ValidationErrorResponse'
 
+  /auth/registration-confirmation:
+    post:
+        tags: [Auth]
+        summary: Confirm email
+        requestBody: 
+            description: User confirmation code
+            content:
+                application/json: 
+                  schema: 
+                    $ref: '#/components/schemas/InputRegistrationConfirmationSchema' 
+        responses: 
+            '204':
+                description: Email successfully confirmed
+            '400': 
+                $ref: '#/components/responses/ValidationErrorResponse'
+
 components: 
   schemas: 
     InputLoginUserSchema:
@@ -111,6 +127,14 @@ components:
           type: string
           format: email
           pattern: ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$
+
+    InputRegistrationConfirmationSchema:
+      type: object
+      required: 
+        - code
+      properties: 
+        code:
+          type: string
 
   parameters:
     UserIdPathParam:
