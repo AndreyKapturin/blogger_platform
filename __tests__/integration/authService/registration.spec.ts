@@ -53,10 +53,11 @@ describe('AuthService.registration', () => {
     expect(sendConfirmationCodeSpyOn).toHaveBeenCalled();
   });
 
-  it(`should return ${ResultStatus.InvalidData} result if login is busy`, async () => {
+  it(`should return ${ResultStatus.InvalidData} result if login or email is busy`, async () => {
     const inputCredentials = getInputRegistratonData();
     await authService.registration(inputCredentials);
-    const repeatedRegistrationResult = await authService.registration(inputCredentials);
+    const repeatedEmailRegistrationResult = await authService.registration({ ...inputCredentials, login: getInputRegistratonData().login });
+    const repeatedLoginRegistrationResult = await authService.registration({ ...inputCredentials, email: getInputRegistratonData().email });
     
     const userInDatabaseCount = await usersCollection.countDocuments({
       $or: [
@@ -65,7 +66,10 @@ describe('AuthService.registration', () => {
       ]
     })
     
-    expect(repeatedRegistrationResult.status).toBe(ResultStatus.InvalidData);
+    expect(repeatedEmailRegistrationResult.status).toBe(ResultStatus.InvalidData);
+    expect(repeatedEmailRegistrationResult.extensions).toEqual([{ field: 'email', message: expect.any(String) }]);
+    expect(repeatedLoginRegistrationResult.status).toBe(ResultStatus.InvalidData);
+    expect(repeatedLoginRegistrationResult.extensions).toEqual([{ field: 'login', message: expect.any(String) }]);
     expect(userInDatabaseCount).toBe(1);
     expect(sendConfirmationCodeSpyOn).toHaveBeenCalledTimes(1);
   });

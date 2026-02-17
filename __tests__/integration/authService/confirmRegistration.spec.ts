@@ -71,6 +71,7 @@ describe('AuthService.confirmRegistration', () => {
       await authService.confirmRegistration(unexistedConfirmationCode);
 
     expect(confirmRegistrationResult.status).toBe(ResultStatus.InvalidData);
+    expect(confirmRegistrationResult.extensions).toEqual([{ field: 'code', message: expect.any(String) }]);
   });
 
   it(`should return ${ResultStatus.InvalidData} if user is confirmed`, async () => {
@@ -91,6 +92,7 @@ describe('AuthService.confirmRegistration', () => {
     );
 
     expect(confirmRegistrationResult.status).toBe(ResultStatus.InvalidData);
+    expect(confirmRegistrationResult.extensions).toEqual([{ field: 'code', message: expect.any(String) }]);
   });
 
   it(`should return ${ResultStatus.InvalidData} if confirmation code is expired`, async () => {
@@ -113,5 +115,6 @@ describe('AuthService.confirmRegistration', () => {
     );
 
     expect(confirmRegistrationResult.status).toBe(ResultStatus.InvalidData);
+    expect(confirmRegistrationResult.extensions).toEqual([{ field: 'code', message: expect.any(String) }]);
   });
 });

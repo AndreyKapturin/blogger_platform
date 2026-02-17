@@ -3,7 +3,17 @@ import { usersCollection } from '../../../database/mongoDB';
 import { MongoUserType, UserType } from '../types';
 
 const checkUserByLoginOrEmail = async (login: string, email: string) => {
-  const documentCount = await usersCollection.countDocuments({ login, email }, { limit: 1 });
+  const documentCount = await usersCollection.countDocuments({ $or: [{ login }, { email }], }, { limit: 1 });
+  return Boolean(documentCount);
+};
+
+const checkUserByLogin = async (login: string) => {
+  const documentCount = await usersCollection.countDocuments({ login }, { limit: 1 });
+  return Boolean(documentCount);
+};
+
+const checkUserByEmail = async (email: string) => {
+  const documentCount = await usersCollection.countDocuments({ email }, { limit: 1 });
   return Boolean(documentCount);
 };
 
@@ -90,6 +100,8 @@ const _cleanObjectIdMapper = (mongoUser: WithId<MongoUserType>): UserType => {
 };
 
 const usersCommandRepository = {
+  checkUserByLogin,
+  checkUserByEmail,
   findUserByEmailConfirmationCode,
   confirmEmail,
   updateEmailConfirmationCode,

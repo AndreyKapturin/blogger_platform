@@ -49,19 +49,31 @@ const login = async (credentials: InputLoginType): Promise<Result<string>> => {
 };
 
 const registration = async (credentials: InputRegistrationType): Promise<Result> => {
-  const isUserExist = await usersCommandRepository.checkUserByLoginOrEmail(
-    credentials.login,
-    credentials.email,
-  );
+  let isUserExist = await usersCommandRepository.checkUserByEmail(credentials.email);
 
   if (isUserExist) {
     return {
       status: ResultStatus.InvalidData,
-      errorMessage: 'User with passed credentials already exists',
+      errorMessage: 'User with passed email already exists',
       extensions: [
         {
-          field: null,
-          message: 'User with passed credentials already exists',
+          field: 'email',
+          message: 'User with passed email already exists',
+        },
+      ],
+    };
+  }
+
+  isUserExist = await usersCommandRepository.checkUserByLogin(credentials.login);
+
+  if (isUserExist) {
+    return {
+      status: ResultStatus.InvalidData,
+      errorMessage: 'User with passed login already exists',
+      extensions: [
+        {
+          field: 'login',
+          message: 'User with passed login already exists',
         },
       ],
     };
@@ -95,7 +107,7 @@ const resendingConfirmationCode = async (email: string): Promise<Result> => {
       errorMessage: 'User with passed email not exists',
       extensions: [
         {
-          field: null,
+          field: 'email',
           message: 'User with passed email not exists',
         },
       ],
@@ -108,7 +120,7 @@ const resendingConfirmationCode = async (email: string): Promise<Result> => {
       errorMessage: 'Email is already confirmed',
       extensions: [
         {
-          field: null,
+          field: 'email',
           message: 'Email is already confirmed',
         },
       ],
@@ -144,7 +156,7 @@ const confirmRegistration = async (emailConfirmationCode: string): Promise<Resul
       errorMessage: 'User with passed confirmation code not exist',
       extensions: [
         {
-          field: null,
+          field: 'code',
           message: 'User with passed confirmation code not exist',
         },
       ],
@@ -157,7 +169,7 @@ const confirmRegistration = async (emailConfirmationCode: string): Promise<Resul
       errorMessage: 'Email is already confirmed',
       extensions: [
         {
-          field: null,
+          field: 'code',
           message: 'Email is already confirmed',
         },
       ],

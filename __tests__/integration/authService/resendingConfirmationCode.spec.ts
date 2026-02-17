@@ -72,6 +72,7 @@ describe('AuthService.resendingConfirmationCode', () => {
       await authService.resendingConfirmationCode(unexistedEmail);
 
     expect(resendingConfirmationCodeResult.status).toBe(ResultStatus.InvalidData);
+    expect(resendingConfirmationCodeResult.extensions).toEqual([{ field: 'email', message: expect.any(String) }]);
   });
 
   it(`should return ${ResultStatus.InvalidData} if user is confirmed`, async () => {
@@ -87,5 +88,6 @@ describe('AuthService.resendingConfirmationCode', () => {
       await authService.resendingConfirmationCode(inputCredentials.email);
 
     expect(resendingConfirmationCodeResult.status).toBe(ResultStatus.InvalidData);
+    expect(resendingConfirmationCodeResult.extensions).toEqual([{ field: 'email', message: expect.any(String) }]);
   });
 });
