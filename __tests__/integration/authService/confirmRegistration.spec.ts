@@ -101,7 +101,7 @@ describe('AuthService.confirmRegistration', () => {
       $or: [{ login: inputCredentials.login }, { email: inputCredentials.email }],
     });
 
-    const nowDate = dateUtils.getCreatedAtDate();
+    const nowDate = dateUtils.getEmailConfirmationCodeExpirationDate(-10);
 
     await usersCollection.updateOne(
       { login: inputCredentials.login },
