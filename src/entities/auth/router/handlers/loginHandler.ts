@@ -21,7 +21,8 @@ const loginHandler = async (
     return;
   }
 
-  res.status(HttpStatus.Ok).json({ accessToken: loginResult.data });
+  res.cookie('refreshToken', loginResult.data.refreshToken, { httpOnly: true, secure: true });
+  res.status(HttpStatus.Ok).json({ accessToken: loginResult.data.accessToken });
 };
 
 export { loginHandler };

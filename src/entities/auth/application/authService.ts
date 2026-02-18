@@ -2,13 +2,14 @@ import { usersCommandRepository } from '../../users/repositories/usersCommandRep
 import { Result, ResultStatus } from '../../../core/types/Result';
 import { InputLoginType, InputRegistrationType } from '../types';
 import { comparePassword } from '../../../core/utils/crypto/passwordUtils';
-import { createAccessToken } from '../../../core/utils/jwt/jwtUtils';
+import { createAccessAndRefreshTokens } from '../../../core/utils/jwt/jwtUtils';
 import { UserFactory } from '../../users/UserFactory';
 import { emailService } from '../../../core/services/emailService';
 import { log } from '../../../core/utils/logger/loggerUtils';
 import { dateUtils } from '../../../core/utils/date/dateUtils';
+import { JwtTokensPair } from '../../../core/types/JwtTokens';
 
-const login = async (credentials: InputLoginType): Promise<Result<string>> => {
+const login = async (credentials: InputLoginType): Promise<Result<JwtTokensPair>> => {
   const user = await usersCommandRepository.findUserByLoginOrEmail(credentials.loginOrEmail);
 
   if (!user) {
@@ -39,11 +40,11 @@ const login = async (credentials: InputLoginType): Promise<Result<string>> => {
     };
   }
 
-  const accessToken = await createAccessToken({ userId: user.id });
+  const jwtTokensPair = await createAccessAndRefreshTokens({ userId: user.id });
 
   return {
     status: ResultStatus.Success,
-    data: accessToken,
+    data: jwtTokensPair,
     extensions: [],
   };
 };

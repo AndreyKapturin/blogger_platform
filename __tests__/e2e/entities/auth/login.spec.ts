@@ -31,7 +31,7 @@ describe(`POST ${Routes.Auth}/login`, () => {
   it.each([
     { loginOrEmail: inputUser.email },
     { loginOrEmail: inputUser.login },
-  ])(`should return ${HttpStatus.Ok} if passed valid credentials`, async ({loginOrEmail}) => {
+  ])(`should return ${HttpStatus.Ok} if passed valid credentials, accessToken in response body and refreshToken in cookie`, async ({loginOrEmail}) => {
     const inputLoginWithEmail: InputLoginType = {
       loginOrEmail,
       password: inputUser.password
@@ -45,6 +45,8 @@ describe(`POST ${Routes.Auth}/login`, () => {
     expect(loginResponse.body).toEqual({
       accessToken: expect.any(String)
     });
+    expect(loginResponse.header['set-cookie'])
+      .toEqual(expect.arrayContaining([expect.stringMatching('refreshToken=')]));
 
   });
 

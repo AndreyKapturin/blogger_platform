@@ -1,4 +1,4 @@
-import express, { Express, Request, Response } from 'express';
+import express, { Express } from 'express';
 import { Routes } from './routes';
 import { blogsRouter } from '../entities/blogs/router';
 import { jsonBodyMiddleware } from '../core/middlewares/jsonBodyMiddleware';
@@ -11,11 +11,13 @@ import { usersRouter } from '../entities/users/router';
 import { authRouter } from '../entities/auth/router';
 import { commentsRouter } from '../entities/comments/router';
 import { MONGO_CONNECTION_URI } from '../core/config';
+import cookieParser from 'cookie-parser';
 
 const createApp = async (): Promise<Express> => {
   await connectToDB(MONGO_CONNECTION_URI);
   const app = express();
   app.use(jsonBodyMiddleware);
+  app.use(cookieParser());
   app.use(Routes.Auth, authRouter);
   app.use(Routes.Blogs, blogsRouter);
   app.use(Routes.Comments, commentsRouter);
