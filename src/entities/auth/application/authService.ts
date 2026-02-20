@@ -1,13 +1,14 @@
 import { usersCommandRepository } from '../../users/repositories/usersCommandRepository';
 import { Result, ResultStatus } from '../../../core/types/Result';
-import { InputLoginType, InputRegistrationType } from '../types';
+import { InputLoginType, InputRegistrationType, RevokedRefreshToken } from '../types';
 import { comparePassword } from '../../../core/utils/crypto/passwordUtils';
-import { createAccessAndRefreshTokens } from '../../../core/utils/jwt/jwtUtils';
+import { createAccessAndRefreshTokens, decodeToken } from '../../../core/utils/jwt/jwtUtils';
 import { UserFactory } from '../../users/UserFactory';
 import { emailService } from '../../../core/services/emailService';
 import { log } from '../../../core/utils/logger/loggerUtils';
 import { dateUtils } from '../../../core/utils/date/dateUtils';
-import { JwtTokensPair } from '../../../core/types/JwtTokens';
+import { JwtTokensPair } from '../types';
+import { refreshTokenCommandRepository } from '../repositories/refreshTokenCommandRepository';
 
 const login = async (credentials: InputLoginType): Promise<Result<JwtTokensPair>> => {
   const user = await usersCommandRepository.findUserByLoginOrEmail(credentials.loginOrEmail);
@@ -49,7 +50,7 @@ const login = async (credentials: InputLoginType): Promise<Result<JwtTokensPair>
   };
 };
 
-const registration = async (credentials: InputRegistrationType): Promise<Result> => {
+const registration = async (credentials: InputRegistrationType): Promise<Result<string>> => {
   let isUserExist = await usersCommandRepository.checkUserByEmail(credentials.email);
 
   if (isUserExist) {
@@ -86,7 +87,7 @@ const registration = async (credentials: InputRegistrationType): Promise<Result>
     credentials.password,
   );
 
-  await usersCommandRepository.save(newUser);
+  const createdUserId = await usersCommandRepository.save(newUser);
 
   emailService
     .sendConfirmationCode(newUser.email, newUser.emailConfirmation.code)
@@ -94,7 +95,7 @@ const registration = async (credentials: InputRegistrationType): Promise<Result>
 
   return {
     status: ResultStatus.Success,
-    data: null,
+    data: createdUserId,
     extensions: [],
   };
 };
@@ -201,11 +202,29 @@ const confirmRegistration = async (emailConfirmationCode: string): Promise<Resul
   };
 };
 
+const refreshTokens = async (refreshToken: string): Promise<Result<JwtTokensPair>> => {
+  const tokenPayload = decodeToken(refreshToken);
+  const jwtTokensPair = await createAccessAndRefreshTokens({ userId: tokenPayload.userId });
+  const revokedRefreshToken: RevokedRefreshToken = {
+    token: refreshToken,
+    expirationDate: new Date(tokenPayload.exp! * 1000),
+  }
+  
+  await refreshTokenCommandRepository.saveRevokedRefreshToken(revokedRefreshToken);
+
+  return {
+    status: ResultStatus.Success,
+    data: jwtTokensPair,
+    extensions: [],
+  };
+};
+
 const authService = {
   login,
   registration,
   resendingConfirmationCode,
   confirmRegistration,
+  refreshTokens,
 };
 
 export { authService };
