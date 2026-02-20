@@ -14,9 +14,14 @@ const saveRevokedRefreshToken = async (revokedRefreshToken: MongoRevokedRefreshT
   return insertedId.toString();
 };
 
+const cleanAll = async () => {
+  await revokedRefreshTokensCollection.deleteMany();
+};
+
 const refreshTokenCommandRepository = {
   checkTokenInRevokedList,
   saveRevokedRefreshToken,
+  cleanAll,
 };
 
 export { refreshTokenCommandRepository };
