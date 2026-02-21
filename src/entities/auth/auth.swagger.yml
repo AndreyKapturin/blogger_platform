@@ -109,6 +109,21 @@ paths:
         '401':
           description: Unauthorized
 
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout user
+      security:
+        - RefreshToken: []
+      responses:
+        '204':
+          description: Successfully logout user
+          headers:
+            Set-Cookie:
+              $ref: '#/components/headers/ClearRefreshTokenCookie'
+        '401':
+          description: Unauthorized
+
 components: 
   schemas: 
     InputLoginUserSchema:
@@ -200,3 +215,10 @@ components:
       schema:
         type: string
         example: "refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; HttpOnly; Secure;"
+
+    ClearRefreshTokenCookie:
+      description: Instruction to clear the refreshToken cookie
+      schema:
+        type: string
+        example: >
+          refreshToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly Secure;

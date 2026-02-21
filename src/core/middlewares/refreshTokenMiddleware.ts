@@ -3,7 +3,6 @@ import { HttpStatus } from '../types/HttpStatus';
 import { verifyToken } from '../utils/jwt/jwtUtils';
 import { log } from '../utils/logger/loggerUtils';
 import { refreshTokenCommandRepository } from '../../entities/auth/repositories/refreshTokenCommandRepository';
-import { JwtTokenPayload } from '../../entities/auth/types';
 
 const refreshTokenMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   const refreshToken = req.cookies.refreshToken;
@@ -22,10 +21,9 @@ const refreshTokenMiddleware = async (req: Request, res: Response, next: NextFun
     return;
   }
 
-  let tokenPayload: JwtTokenPayload;
 
   try {
-    tokenPayload = await verifyToken(refreshToken);
+    await verifyToken(refreshToken);
   } 
   catch (error) {
     log(error);

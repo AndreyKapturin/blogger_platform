@@ -219,7 +219,24 @@ const refreshTokens = async (refreshToken: string): Promise<Result<JwtTokensPair
   };
 };
 
+const logout = async (refreshToken: string): Promise<Result> => {
+  const tokenPayload = decodeToken(refreshToken);
+  const revokedRefreshToken: RevokedRefreshToken = {
+    token: refreshToken,
+    expirationDate: new Date(tokenPayload.exp! * 1000),
+  }
+  
+  await refreshTokenCommandRepository.saveRevokedRefreshToken(revokedRefreshToken);
+
+  return {
+    status: ResultStatus.Success,
+    data: null,
+    extensions: [],
+  };
+}
+
 const authService = {
+  logout,
   login,
   registration,
   resendingConfirmationCode,

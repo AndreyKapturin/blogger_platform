@@ -11,6 +11,7 @@ import { emailConfirmationCodeValidation } from '../validations/emailConfirmatio
 import { registrationConfirmationHandler } from './handlers/registrationConfirmationHandler';
 import { refreshTokenMiddleware } from '../../../core/middlewares/refreshTokenMiddleware';
 import { refreshTokensHandler } from './handlers/refreshTokensHandler';
+import { logoutHandler } from './handlers/logoutHandler';
 
 const authRouter = Router();
 
@@ -53,6 +54,12 @@ authRouter.post(
   '/refresh-token',
   refreshTokenMiddleware,
   refreshTokensHandler,
+);
+
+authRouter.post(
+  '/logout',
+  refreshTokenMiddleware,
+  logoutHandler,
 );
 
 export { authRouter };

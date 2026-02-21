@@ -49,8 +49,8 @@ afterAll(async () => {
   await closeBbConnection();
 });
 
-describe('AuthService.refreshTokens', () => {
-  it('should return new JWT tokens pair and save previous token in black list', async () => {
+describe('AuthService.logout', () => {
+  it('should save passed refresh token in black list', async () => {
     const inputCredentials = getInputRegistratonData();
     await authService.registration(inputCredentials);
     const loginResult = await authService.login({
@@ -63,22 +63,19 @@ describe('AuthService.refreshTokens', () => {
       return;
     }
 
-    const firstRefreshToken = loginResult.data.refreshToken;
+    const refreshToken = loginResult.data.refreshToken;
 
-    const refreshTokensResult = await authService.refreshTokens(firstRefreshToken);
+    const logoutResult = await authService.logout(refreshToken);
 
-    if (!isSuccessResult(refreshTokensResult)) {
-      expect(refreshTokensResult.status).toBe(ResultStatus.Success);
+    if (!isSuccessResult(logoutResult)) {
+      expect(logoutResult.status).toBe(ResultStatus.Success);
       return;
     }
 
-    expect(refreshTokensResult.data).toEqual({
-      accessToken: expect.any(String),
-      refreshToken: expect.any(String),
-    });
+    expect(logoutResult.data).toBeNull();
 
     const foundRevokedRefreshToken = await revokedRefreshTokensCollection
-      .findOne({ token: firstRefreshToken });
+      .findOne({ token: refreshToken });
 
     expect(foundRevokedRefreshToken).not.toBeNull();
   });
