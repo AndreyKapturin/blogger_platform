@@ -6,7 +6,11 @@ export { MONGO_DB_NAME } from './database';
 
 export { APP_PORT } from './server';
 
-export { JWT_ACCESS_TOKEN_LIFETIME_IN_SECONDS, JWT_SECRET } from './jwt';
+export {
+  JWT_ACCESS_TOKEN_LIFETIME_IN_SECONDS,
+  JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS,
+  JWT_SECRET,
+} from './jwt';
 
 export {
   EMAIL_SERVICE_PASSWORD,

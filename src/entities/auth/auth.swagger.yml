@@ -16,6 +16,9 @@ paths:
             application/json: 
               schema: 
                 $ref: '#/components/schemas/AccessTokenSchema'
+          headers:
+            Set-Cookie:
+              $ref: '#/components/headers/RefreshTokenCookie'
         '400':
           $ref: '#/components/responses/ValidationErrorResponse'
         '401':
@@ -87,6 +90,25 @@ paths:
             '400': 
                 $ref: '#/components/responses/ValidationErrorResponse'
 
+  /auth/refresh-token:
+    post:
+      tags: [Auth]
+      summary: Refresh access and refresh tokens pair
+      security:
+        - RefreshToken: []
+      responses:
+        '200':
+          description: Tokens successfully refresh
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessTokenSchema'
+          headers:
+            Set-Cookie:
+              $ref: '#/components/headers/RefreshTokenCookie'
+        '401':
+          description: Unauthorized
+
 components: 
   schemas: 
     InputLoginUserSchema:
@@ -116,7 +138,7 @@ components:
       properties: 
         accessToken:
           type: string
-          description: JWT access token
+          description: JWT access token. Lifetime 10 seconds
 
     InputResendingEmailConfirmationSchema:
       type: object
@@ -171,3 +193,10 @@ components:
       schema:
         type: string
         example: andrew@
+
+  headers:
+    RefreshTokenCookie:
+      description: Refresh token in HTTP-only cookie. Lifetime 20 seconds
+      schema:
+        type: string
+        example: "refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; HttpOnly; Secure;"
