@@ -2,7 +2,7 @@ import { Express } from 'express';
 import { Routes } from "../../../../src/app/routes";
 import { HttpStatus } from "../../../../src/core/types/HttpStatus";
 import request from 'supertest';
-import { createPostsTestManager, PostsTestManagerType } from '../../utils/PostsTestManager';
+import { createPostsTestManager, PostsTestManagerType } from '../../utils/postsTestManager';
 import { BlogsTestManagerType, createBlogsTestManager } from '../../utils/blogsTestManager';
 import { createApp } from '../../../../src/app';
 import { ObjectId } from 'mongodb';
@@ -18,17 +18,17 @@ let blog: ViewBlogType;
 
 beforeAll(async () => {
   app = await createApp();
-  await request(app).delete(`${Routes.Testing}/all-data`).expect(HttpStatus.No_Content);
+  await request(app).delete(Routes.TestingAllData).expect(HttpStatus.No_Content);
   blogsTestManager = createBlogsTestManager(app);
   postsTestManager = createPostsTestManager(app);
   blog = (await blogsTestManager.createCorrectBlog()).body;
 });
 
-describe(`GET ${Routes.Posts}/:id`, () => {
+describe(`GET ${Routes.PostById(':id')}`, () => {
   describe(`should return ${HttpStatus.Ok} status code and post if post is found`, () => {
     it('post is exist', async () => {
       const postResponse = await postsTestManager.createCorrectPost(blog);
-      const getResponse = await request(app).get(`${Routes.Posts}/${postResponse.body.id}`);
+      const getResponse = await request(app).get(Routes.PostById(postResponse.body.id));
       expect(getResponse.status).toBe(HttpStatus.Ok);
       expect(getResponse.body).toEqual(postResponse.body);
     });
@@ -36,7 +36,7 @@ describe(`GET ${Routes.Posts}/:id`, () => {
 
   describe(`should return ${HttpStatus.Not_Found} status code if post not found`, () => {
     it('post not exist', async () => {
-      const getResponse = await request(app).get(`${Routes.Posts}/${notExistPostId}`);
+      const getResponse = await request(app).get(Routes.PostById(notExistPostId));
       expect(getResponse.status).toBe(HttpStatus.Not_Found);
     });
   });

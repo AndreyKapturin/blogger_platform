@@ -64,7 +64,7 @@ const createUsersTestManager = (app: Express) => {
   };
 
   const loginUser = async (loginOrEmail: string, password: string) => {
-    const loginResponse = await request(app).post(`${Routes.Auth}/login`).send({
+    const loginResponse = await request(app).post(Routes.AuthLogin).send({
       loginOrEmail,
       password,
     });

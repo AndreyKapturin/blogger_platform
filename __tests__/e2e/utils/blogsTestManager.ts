@@ -163,12 +163,12 @@ const createBlogsTestManager = (app: Express) => {
     };
 
     const updateResponse = await request(app)
-      .put(`${Routes.Blogs}/${id}`)
+      .put(Routes.BlogById(id))
       .set('Authorization', authHeader)
       .send(dataForUpdate);
     expect(updateResponse.status).toBe(HttpStatus.No_Content);
 
-    const getResponse = await request(app).get(`${Routes.Blogs}/${id}`);
+    const getResponse = await request(app).get(Routes.BlogById(id));
     expect(getResponse.body).toEqual(expectedBlog);
   };
 
@@ -188,12 +188,12 @@ const createBlogsTestManager = (app: Express) => {
     }
 
     const updateResponse = await request(app)
-      .put(`${Routes.Blogs}/${id}`)
+      .put(Routes.BlogById(id))
       .set('Authorization', authHeader)
       .send(dataForUpdate);
     expect(updateResponse.status).toBe(HttpStatus.Bad_Request);
 
-    const getResponse = await request(app).get(`${Routes.Blogs}/${id}`);
+    const getResponse = await request(app).get(Routes.BlogById(id));
     expect(getResponse.body).toEqual(createResponse.body);
     return updateResponse;
   };

@@ -32,13 +32,12 @@ let userAccessToken: string;
 let anotherUserAccessToken: string;
 let userPassword = 'Qwerty123!@#';
 
-const validCommentContent = 'Updated comment text! Very cool post. I like it!';
 const notExistCommentId = new ObjectId().toString();
 const invalidAccessToken = 'jdlnfjlkadn fjl;adnfl;kn adlksnf jlasdnfjlknadlsknlfjad';
 
 beforeAll(async () => {
   app = await createApp();
-  await request(app).delete(`${Routes.Testing}/all-data`).expect(HttpStatus.No_Content);
+  await request(app).delete(Routes.TestingAllData).expect(HttpStatus.No_Content);
 
   blogsTestManager = createBlogsTestManager(app);
   postsTestManager = createPostsTestManager(app);
@@ -54,31 +53,31 @@ beforeAll(async () => {
   comment = await commentsTestManager.createComment(post.id, userAccessToken);
 });
 
-describe(`DELETE ${Routes.Comments}/:id`, () => {
+describe(`DELETE ${Routes.CommentById(':id')}`, () => {
   it(`should return ${HttpStatus.Unauthorized} if access token invalid`, async () => {
     const deleteCommentResponse = await request(app)
-      .delete(`${Routes.Comments}/${comment.id}`)
+      .delete(Routes.CommentById(comment.id))
       .set('Authorization', `Bearer ${invalidAccessToken}`);
     expect(deleteCommentResponse.status).toBe(HttpStatus.Unauthorized);
   });
 
   it(`should return ${HttpStatus.Forbidden} if user is not comment author`, async () => {
     const deleteCommentResponse = await request(app)
-      .delete(`${Routes.Comments}/${comment.id}`)
+      .delete(Routes.CommentById(comment.id))
       .set('Authorization', `Bearer ${anotherUserAccessToken}`);
     expect(deleteCommentResponse.status).toBe(HttpStatus.Forbidden);
   });
 
   it(`should return ${HttpStatus.Not_Found} if comment not exist`, async () => {
     const deleteCommentResponse = await request(app)
-      .delete(`${Routes.Comments}/${notExistCommentId}`)
+      .delete(Routes.CommentById(notExistCommentId))
       .set('Authorization', `Bearer ${userAccessToken}`);
     expect(deleteCommentResponse.status).toBe(HttpStatus.Not_Found);
   });
 
   it(`should delete comment, return ${HttpStatus.No_Content} status code if comment exist`, async () => {
     const deleteCommentResponse = await request(app)
-      .delete(`${Routes.Comments}/${comment.id}`)
+      .delete(Routes.CommentById(comment.id))
       .set('Authorization', `Bearer ${userAccessToken}`);
     expect(deleteCommentResponse.status).toBe(HttpStatus.No_Content);
   });

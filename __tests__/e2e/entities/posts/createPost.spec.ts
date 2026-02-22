@@ -6,7 +6,7 @@ import request from 'supertest';
 import { ViewBlogType } from '../../../../src/entities/blogs/types';
 import { closeBbConnection } from '../../../../src/database/mongoDB';
 import { BlogsTestManagerType, createBlogsTestManager } from '../../utils/blogsTestManager';
-import { correctInputPostData, createPostsTestManager, PostsTestManagerType } from '../../utils/PostsTestManager';
+import { correctInputPostData, createPostsTestManager, PostsTestManagerType } from '../../utils/postsTestManager';
 import { InputPostType } from '../../../../src/entities/posts/types';
 import { MAX_POST_CONTENT_LENGTH, MAX_POST_SHORT_DESCRIPTION_LENGTH, MAX_POST_TITLE_LENGTH } from '../../../../src/entities/posts/constants';
 import { authHeader } from '../../../../src/core/constants';
@@ -20,7 +20,7 @@ const notExistBlogId = new ObjectId().toString();
 
 beforeAll(async () => {
   app = await createApp();
-  await request(app).delete(`${Routes.Testing}/all-data`).expect(HttpStatus.No_Content);
+  await request(app).delete(Routes.TestingAllData).expect(HttpStatus.No_Content);
   blogsTestManager = createBlogsTestManager(app);
   postsTestManager = createPostsTestManager(app);
   blog = (await blogsTestManager.createCorrectBlog()).body;

@@ -2,7 +2,7 @@ import { Express } from 'express';
 import { Routes } from "../../../../src/app/routes";
 import { HttpStatus } from "../../../../src/core/types/HttpStatus";
 import request from 'supertest';
-import { createPostsTestManager, PostsTestManagerType } from '../../utils/PostsTestManager';
+import { createPostsTestManager, PostsTestManagerType } from '../../utils/postsTestManager';
 import { BlogsTestManagerType, createBlogsTestManager } from '../../utils/blogsTestManager';
 import { createApp } from '../../../../src/app';
 import { ObjectId } from 'mongodb';
@@ -19,21 +19,21 @@ let blog: ViewBlogType;
 
 beforeAll(async () => {
   app = await createApp();
-  await request(app).delete(`${Routes.Testing}/all-data`).expect(HttpStatus.No_Content);
+  await request(app).delete(Routes.TestingAllData).expect(HttpStatus.No_Content);
   blogsTestManager = createBlogsTestManager(app);
   postsTestManager = createPostsTestManager(app);
   blog = (await blogsTestManager.createCorrectBlog()).body;
 });
 
-describe(`DELETE ${Routes.Posts}/:id`, () => {
+describe(`DELETE ${Routes.PostById(':id')}`, () => {
   describe(`should return ${HttpStatus.No_Content} status code if post was successfuly deleted`, () => {
     it('post exist', async () => {
       const postResponse = await postsTestManager.createCorrectPost(blog);
       const deleteResponse = await request(app)
-        .delete(`${Routes.Posts}/${postResponse.body.id}`)
+        .delete(Routes.PostById(postResponse.body.id))
         .set('Authorization', authHeader);
       expect(deleteResponse.status).toBe(HttpStatus.No_Content);
-      const getResponse = await request(app).get(`${Routes.Posts}/${postResponse.body.id}`);
+      const getResponse = await request(app).get(Routes.PostById(postResponse.body.id));
       expect(getResponse.status).toBe(HttpStatus.Not_Found);
     });
   });
@@ -41,7 +41,7 @@ describe(`DELETE ${Routes.Posts}/:id`, () => {
   describe(`should return ${HttpStatus.Not_Found} status code if post not found`, () => {
     it('post not exist', async () => {
       const response = await request(app)
-        .delete(`${Routes.Posts}/${notExistPostId}`)
+        .delete(Routes.PostById(notExistPostId))
         .set('Authorization', authHeader);
       expect(response.status).toBe(HttpStatus.Not_Found);
     });
@@ -51,7 +51,7 @@ describe(`DELETE ${Routes.Posts}/:id`, () => {
     it('if auth header incorrect', async () => {
       const createRespone = await postsTestManager.createCorrectPost(blog);
       await request(app)
-        .delete(`${Routes.Posts}/${createRespone.body.id}`)
+        .delete(Routes.PostById(createRespone.body.id))
         .expect(HttpStatus.Unauthorized);
     });
   });

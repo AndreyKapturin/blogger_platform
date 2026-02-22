@@ -22,13 +22,13 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  await request(app).delete(`${Routes.Testing}/all-data`).expect(HttpStatus.No_Content);
+  await request(app).delete(Routes.TestingAllData).expect(HttpStatus.No_Content);
 });
 
-describe(`POST ${Routes.Auth}/logout`, () => {
+describe(`POST ${Routes.AuthLogout}`, () => {
   it(`should return ${HttpStatus.No_Content} if passed valid refresh token`, async () => {
     const { input } = await usersTestManager.createUser();
-    const loginResponse = await request(app).post(`${Routes.Auth}/login`).send({
+    const loginResponse = await request(app).post(Routes.AuthLogin).send({
       loginOrEmail: input.login,
       password: input.password,
     });
@@ -38,7 +38,7 @@ describe(`POST ${Routes.Auth}/logout`, () => {
     let refreshToken = extractFromCookieArray(cookies, 'refreshToken');
 
     const logoutResponse = await request(app)
-      .post(`${Routes.Auth}/logout`)
+      .post(Routes.AuthLogout)
       .set('Cookie', `refreshToken=${refreshToken}`);
 
     setCookieHeader = logoutResponse.headers['set-cookie'];
@@ -50,21 +50,21 @@ describe(`POST ${Routes.Auth}/logout`, () => {
   });
 
   it(`should return ${HttpStatus.Unauthorized} if refresh token not passed`, async () => {
-    const logoutResponse = await request(app).post(`${Routes.Auth}/logout`);
+    const logoutResponse = await request(app).post(Routes.AuthLogout);
     expect(logoutResponse.status).toBe(HttpStatus.Unauthorized);
   });
 
   it(`should return ${HttpStatus.Unauthorized} if passed invalid refresh token`, async () => {
     const refreshToken = faker.internet.jwt();
     const logoutResponse = await request(app)
-      .post(`${Routes.Auth}/logout`)
+      .post(Routes.AuthLogout)
       .set('Cookie', `refreshToken=${refreshToken}`);
     expect(logoutResponse.status).toBe(HttpStatus.Unauthorized);
   });
 
   it(`should return ${HttpStatus.Unauthorized} if passed refresh token is expires`, async () => {
     const { input } = await usersTestManager.createUser();
-    const loginResponse = await request(app).post(`${Routes.Auth}/login`).send({
+    const loginResponse = await request(app).post(Routes.AuthLogin).send({
       loginOrEmail: input.login,
       password: input.password,
     });
@@ -76,14 +76,14 @@ describe(`POST ${Routes.Auth}/logout`, () => {
     await sleep(JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS + 1);
 
     const logoutResponse = await request(app)
-      .post(`${Routes.Auth}/logout`)
+      .post(Routes.AuthLogout)
       .set('Cookie', `refreshToken=${refreshToken}`);
     expect(logoutResponse.status).toBe(HttpStatus.Unauthorized);
   });
 
   it(`should return ${HttpStatus.Unauthorized} if passed revoked refresh token`, async () => {
     const { input } = await usersTestManager.createUser();
-    const loginResponse = await request(app).post(`${Routes.Auth}/login`).send({
+    const loginResponse = await request(app).post(Routes.AuthLogin).send({
       loginOrEmail: input.login,
       password: input.password,
     });
@@ -93,12 +93,12 @@ describe(`POST ${Routes.Auth}/logout`, () => {
     const refreshToken = extractFromCookieArray(cookies, 'refreshToken');
 
     const refreshTokenResponse = await request(app)
-      .post(`${Routes.Auth}/refresh-token`)
+      .post(Routes.AuthRefreshToken)
       .set('Cookie', `refreshToken=${refreshToken}`);
     expect(refreshTokenResponse.status).toBe(HttpStatus.Ok);
 
     const logoutResponse = await request(app)
-      .post(`${Routes.Auth}/logout`)
+      .post(Routes.AuthLogout)
       .set('Cookie', `refreshToken=${refreshToken}`);
     expect(logoutResponse.status).toBe(HttpStatus.Unauthorized);
   });

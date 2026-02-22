@@ -15,7 +15,7 @@ let usersTestManager: UsersTestManagerType;
 
 beforeAll(async () => {
   app = await createApp();
-  await request(app).delete(`${Routes.Testing}/all-data`).expect(HttpStatus.No_Content);
+  await request(app).delete(Routes.TestingAllData).expect(HttpStatus.No_Content);
   usersTestManager = createUsersTestManager(app);
   users = (await usersTestManager.createManyUsers(100)).map((user) => user.created);
 });

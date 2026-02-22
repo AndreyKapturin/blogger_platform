@@ -34,7 +34,7 @@ const notExistCommentId = new ObjectId().toString();
 
 beforeAll(async () => {
   app = await createApp();
-  await request(app).delete(`${Routes.Testing}/all-data`).expect(HttpStatus.No_Content);
+  await request(app).delete(Routes.TestingAllData).expect(HttpStatus.No_Content);
 
   blogsTestManager = createBlogsTestManager(app);
   postsTestManager = createPostsTestManager(app);
@@ -48,15 +48,15 @@ beforeAll(async () => {
   comment = await commentsTestManager.createComment(post.id, userAccessToken);
 });
 
-describe(`GET ${Routes.Comments}/:id`, () => {
+describe(`GET ${Routes.CommentById(':id')}`, () => {
   it(`should return ${HttpStatus.Ok} status code and comment if comment exist`, async () => {
-    const response = await request(app).get(`${Routes.Comments}/${comment.id}`);
+    const response = await request(app).get(Routes.CommentById(comment.id));
     expect(response.status).toBe(HttpStatus.Ok);
     expect(response.body).toEqual(comment);
   });
 
   it(`should return ${HttpStatus.Not_Found} if comment not exist`, async () => {
-    const response = await request(app).get(`${Routes.Comments}/${notExistCommentId}`);
+    const response = await request(app).get(Routes.CommentById(notExistCommentId));
     expect(response.status).toBe(HttpStatus.Not_Found);
   });
 });

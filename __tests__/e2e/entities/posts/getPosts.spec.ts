@@ -7,7 +7,7 @@ import { SortDirection } from '../../../../src/core/types/PaginationAndSorting';
 import { ViewBlogType } from '../../../../src/entities/blogs/types';
 import { closeBbConnection } from '../../../../src/database/mongoDB';
 import { BlogsTestManagerType, createBlogsTestManager } from '../../utils/blogsTestManager';
-import { createPostsTestManager, PostsTestManagerType } from '../../utils/PostsTestManager';
+import { createPostsTestManager, PostsTestManagerType } from '../../utils/postsTestManager';
 import { PostSortField, ViewPostType } from '../../../../src/entities/posts/types';
 
 let app: Express;
@@ -21,7 +21,7 @@ beforeAll(async () => {
   app = await createApp();
   blogTestManager = createBlogsTestManager(app);
   postsTestManager = createPostsTestManager(app);
-  await request(app).delete(`${Routes.Testing}/all-data`).expect(HttpStatus.No_Content);
+  await request(app).delete(Routes.TestingAllData).expect(HttpStatus.No_Content);
 
   blogs = await blogTestManager.createManyBlogs(3);
 

@@ -19,7 +19,7 @@ const inputUser: InputUserType = {
 
 beforeAll(async () => {
   app = await createApp();
-  await request(app).delete(`${Routes.Testing}/all-data`).expect(HttpStatus.No_Content);
+  await request(app).delete(Routes.TestingAllData).expect(HttpStatus.No_Content);
   const createUserResponse = await request(app)
     .post(Routes.Users)
     .set('Authorization', authHeader)
@@ -27,7 +27,7 @@ beforeAll(async () => {
   user = createUserResponse.body;
 });
 
-describe(`POST ${Routes.Auth}/login`, () => {
+describe(`POST ${Routes.AuthLogin}`, () => {
   it.each([
     { loginOrEmail: inputUser.email },
     { loginOrEmail: inputUser.login },
@@ -38,7 +38,7 @@ describe(`POST ${Routes.Auth}/login`, () => {
     }
 
     const loginResponse = await request(app)
-      .post(`${Routes.Auth}/login`)
+      .post(Routes.AuthLogin)
       .send(inputLoginWithEmail);
     
     expect(loginResponse.status).toBe(HttpStatus.Ok);
@@ -57,7 +57,7 @@ describe(`POST ${Routes.Auth}/login`, () => {
     {loginOrEmail: 'Andrew_$', password: inputUser.password},
   ])(`should return ${HttpStatus.Bad_Request} if passed credentials syntax invalid`, async (credentials) => {
     await request(app)
-      .post(`${Routes.Auth}/login`)
+      .post(Routes.AuthLogin)
       .send(credentials)
       .expect(HttpStatus.Bad_Request);
   });
@@ -67,7 +67,7 @@ describe(`POST ${Routes.Auth}/login`, () => {
     { loginOrEmail: 'Login_1', password: inputUser.password },
   ])(`should return ${HttpStatus.Unauthorized} if passed invalid credentials`, async (credentials) => {
     await request(app)
-      .post(`${Routes.Auth}/login`)
+      .post(Routes.AuthLogin)
       .send(credentials)
       .expect(HttpStatus.Unauthorized);
   });

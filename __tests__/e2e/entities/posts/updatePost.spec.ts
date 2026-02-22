@@ -6,7 +6,7 @@ import request from 'supertest';
 import { ViewBlogType } from '../../../../src/entities/blogs/types';
 import { closeBbConnection } from '../../../../src/database/mongoDB';
 import { BlogsTestManagerType, createBlogsTestManager } from '../../utils/blogsTestManager';
-import { correctInputPostData, createPostsTestManager, PostsTestManagerType } from '../../utils/PostsTestManager';
+import { correctInputPostData, createPostsTestManager, PostsTestManagerType } from '../../utils/postsTestManager';
 import { InputPostType } from '../../../../src/entities/posts/types';
 import { MAX_POST_CONTENT_LENGTH, MAX_POST_SHORT_DESCRIPTION_LENGTH, MAX_POST_TITLE_LENGTH } from '../../../../src/entities/posts/constants';
 import { authHeader } from '../../../../src/core/constants';
@@ -21,14 +21,14 @@ const notExistPostId = new ObjectId().toString();
 
 beforeAll(async () => {
   app = await createApp();
-  await request(app).delete(`${Routes.Testing}/all-data`).expect(HttpStatus.No_Content);
+  await request(app).delete(Routes.TestingAllData).expect(HttpStatus.No_Content);
   blogsTestManager = createBlogsTestManager(app);
   postsTestManager = createPostsTestManager(app);
   blog = (await blogsTestManager.createCorrectBlog()).body;
 });
 
 
-describe(`PUT ${Routes.Posts}/:id`, () => {
+describe(`PUT ${Routes.PostById(':id')}`, () => {
   describe(`should update post, return ${HttpStatus.No_Content} status code`, () => {
     it('all data is correct', async () => {
       const dataForUpdate: Partial<InputPostType> = {
@@ -43,13 +43,13 @@ describe(`PUT ${Routes.Posts}/:id`, () => {
       const postResponse = await postsTestManager.createCorrectPost(blog);
 
       const updateResponse1 = await request(app)
-        .put(`${Routes.Posts}/${postResponse.body.id}`)
+        .put(Routes.PostById(postResponse.body.id))
         .set('Authorization', authHeader)
         .send({ ...postResponse.body, title: 'Updated title' });
       expect(updateResponse1.status).toBe(HttpStatus.No_Content);
 
       const updateResponse2 = await request(app)
-        .put(`${Routes.Posts}/${postResponse.body.id}`)
+        .put(Routes.PostById(postResponse.body.id))
         .set('Authorization', authHeader)
         .send({ ...postResponse.body, title: 'Updated title' });
       expect(updateResponse2.status).toBe(HttpStatus.No_Content);
@@ -109,7 +109,7 @@ describe(`PUT ${Routes.Posts}/:id`, () => {
   describe(`should return ${HttpStatus.Not_Found} status code if post not found`, () => {
     it('post not exist', async () => {
       const response = await request(app)
-        .put(`${Routes.Posts}/${notExistPostId}`)
+        .put(Routes.PostById(notExistPostId))
         .set('Authorization', authHeader)
         .send({
           ...correctInputPostData,
@@ -172,7 +172,7 @@ describe(`PUT ${Routes.Posts}/:id`, () => {
     it(`blog with passed blogId not existed`, async () => {
       const createPostResponse = await postsTestManager.createCorrectPost(blog);
       const updateResponse = await request(app)
-        .put(`${Routes.Posts}/${createPostResponse.body.id}`)
+        .put(Routes.PostById(createPostResponse.body.id))
         .set('Authorization', authHeader)
         .send({
           title: createPostResponse.body.title,
@@ -189,7 +189,7 @@ describe(`PUT ${Routes.Posts}/:id`, () => {
       const createRespone = await postsTestManager.createCorrectPost(blog);
       const { id, blogName, ...updatedPost } = { ...createRespone.body, title: 'New post title' };
       await request(app)
-        .put(`${Routes.Posts}/${id}`)
+        .put(Routes.PostById(id))
         .send(updatedPost)
         .expect(HttpStatus.Unauthorized);
     });

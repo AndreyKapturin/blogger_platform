@@ -19,7 +19,7 @@ const inputUser: InputUserType = {
 
 beforeAll(async () => {
   app = await createApp();
-  await request(app).delete(`${Routes.Testing}/all-data`).expect(HttpStatus.No_Content);
+  await request(app).delete(Routes.TestingAllData).expect(HttpStatus.No_Content);
 
   const createUserResponse = await request(app)
     .post(Routes.Users)
@@ -28,7 +28,7 @@ beforeAll(async () => {
   user = createUserResponse.body;
   
   const loginResponse = await request(app)
-    .post(`${Routes.Auth}/login`)
+    .post(Routes.AuthLogin)
     .send({
       loginOrEmail: inputUser.login,
       password: inputUser.password
@@ -37,10 +37,10 @@ beforeAll(async () => {
   accessToken = loginResponse.body.accessToken;
 });
 
-describe(`GET ${Routes.Auth}/me`, () => {
+describe(`GET ${Routes.AuthMe}`, () => {
   it(`should return ${HttpStatus.Ok} and user if passed valid access token`, async () => {
     const meResponse = await request(app)
-      .get(`${Routes.Auth}/me`)
+      .get(Routes.AuthMe)
       .set('Authorization', `Bearer ${accessToken}`);
     
     expect(meResponse.status).toBe(HttpStatus.Ok);
@@ -53,7 +53,7 @@ describe(`GET ${Routes.Auth}/me`, () => {
 
   it(`should return ${HttpStatus.Unauthorized} if passed invalid access token`, async () => {
     const meResponse = await request(app)
-      .get(`${Routes.Auth}/me`)
+      .get(Routes.AuthMe)
       .set('Authorization', 'Bearer asdadasdasd');    
     expect(meResponse.status).toBe(HttpStatus.Unauthorized);
   });

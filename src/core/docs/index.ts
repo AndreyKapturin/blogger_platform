@@ -1,6 +1,7 @@
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { Router } from 'express';
+import { Routes } from '../../app/routes';
 
 const swaggerOptions = {
   definition: {
@@ -16,6 +17,6 @@ const swaggerOptions = {
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 const docsRouter = Router();
-docsRouter.use('/', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+docsRouter.use(Routes.Docs, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-export { docsRouter }
+export { docsRouter };

@@ -17,10 +17,10 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  await request(app).delete(`${Routes.Testing}/all-data`).expect(HttpStatus.No_Content);
+  await request(app).delete(Routes.TestingAllData).expect(HttpStatus.No_Content);
 });
 
-describe(`DELETE ${Routes.Users}/:id`, () => {
+describe(`DELETE ${Routes.UserById(':id')}`, () => {
   it(`should delete user if user exist. Return ${HttpStatus.No_Content}`, async () => {
     const inputUser: InputUserType = {
       login: 'AndrewK',
@@ -42,20 +42,20 @@ describe(`DELETE ${Routes.Users}/:id`, () => {
     });
 
     const deleteResponse = await request(app)
-      .delete(`${Routes.Users}/${createResponse.body.id}`)
+      .delete(Routes.UserById(createResponse.body.id))
       .set('Authorization', authHeader);
     expect(deleteResponse.status).toBe(HttpStatus.No_Content);
   });
 
   it(`should return ${HttpStatus.Unauthorized} if auth header not passed`, async () => {
     const deleteResponse = await request(app)
-      .delete(`${Routes.Users}/${notExistUserId}`);
+      .delete(Routes.UserById(notExistUserId));
     expect(deleteResponse.status).toBe(HttpStatus.Unauthorized);
   });
 
   it(`should return ${HttpStatus.Not_Found} if user not exist`, async () => {
     const deleteResponse = await request(app)
-      .delete(`${Routes.Users}/${notExistUserId}`)
+      .delete(Routes.UserById(notExistUserId))
       .set('Authorization', authHeader);
     expect(deleteResponse.status).toBe(HttpStatus.Not_Found);
   });

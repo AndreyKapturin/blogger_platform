@@ -21,18 +21,18 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  await request(app).delete(`${Routes.Testing}/all-data`).expect(HttpStatus.No_Content);
+  await request(app).delete(Routes.TestingAllData).expect(HttpStatus.No_Content);
 });
 
-describe(`DELETE ${Routes.Blogs}/:id`, () => {
+describe(`DELETE ${Routes.BlogById(':id')}`, () => {
   describe(`should return ${HttpStatus.No_Content} status code if blog was successfuly deleted`, () => {
     it('blog exist', async () => {
       const postResponse = await blogsTestManager.createCorrectBlog();
       const deleteResponse = await request(app)
-        .delete(`${Routes.Blogs}/${postResponse.body.id}`)
+        .delete(Routes.BlogById(postResponse.body.id))
         .set('Authorization', authHeader);
       expect(deleteResponse.status).toBe(HttpStatus.No_Content);
-      const getResponse = await request(app).get(`${Routes.Blogs}/${postResponse.body.id}`);
+      const getResponse = await request(app).get(Routes.BlogById(postResponse.body.id));
       expect(getResponse.status).toBe(HttpStatus.Not_Found);
     });
 
@@ -51,31 +51,29 @@ describe(`DELETE ${Routes.Blogs}/:id`, () => {
         },
       );
 
-      const post1GetResponse = await request(app).get(
-        `${Routes.Posts}/${createPost1Response.body.id}`,
-      );
+      const post1GetResponse = await request(app)
+        .get(Routes.PostById(createPost1Response.body.id));
       expect(post1GetResponse.status).toBe(HttpStatus.Ok);
       expect(post1GetResponse.body).toEqual(createPost1Response.body);
       expect(post1GetResponse.body.blogId).toEqual(createBlogResponse.body.id);
 
-      const post2GetResponse = await request(app).get(
-        `${Routes.Posts}/${createPost2Response.body.id}`,
-      );
+      const post2GetResponse = await request(app)
+        .get(Routes.PostById(createPost2Response.body.id));
       expect(post2GetResponse.status).toBe(HttpStatus.Ok);
       expect(post2GetResponse.body).toEqual(createPost2Response.body);
       expect(post2GetResponse.body.blogId).toEqual(createBlogResponse.body.id);
 
       const deleteBlogResponse = await request(app)
-        .delete(`${Routes.Blogs}/${createBlogResponse.body.id}`)
+        .delete(Routes.BlogById(createBlogResponse.body.id))
         .set('Authorization', authHeader);
       expect(deleteBlogResponse.status).toBe(HttpStatus.No_Content);
 
       await request(app)
-        .get(`${Routes.Posts}/${createPost1Response.body.id}`)
+        .get(Routes.PostById(createPost1Response.body.id))
         .expect(HttpStatus.Not_Found);
 
       await request(app)
-        .get(`${Routes.Posts}/${createPost2Response.body.id}`)
+        .get(Routes.PostById(createPost2Response.body.id))
         .expect(HttpStatus.Not_Found);
     });
   });
@@ -83,7 +81,7 @@ describe(`DELETE ${Routes.Blogs}/:id`, () => {
   describe(`should return ${HttpStatus.Not_Found} status code if blog not found`, () => {
     it('blog not exist', async () => {
       const response = await request(app)
-        .delete(`${Routes.Blogs}/${notExistBlogId}`)
+        .delete(Routes.BlogById(notExistBlogId))
         .set('Authorization', authHeader);
       expect(response.status).toBe(HttpStatus.Not_Found);
     });
@@ -93,7 +91,7 @@ describe(`DELETE ${Routes.Blogs}/:id`, () => {
     it('if auth header incorrect', async () => {
       const createRespone = await blogsTestManager.createCorrectBlog();
       await request(app)
-        .delete(`${Routes.Blogs}/${createRespone.body.id}`)
+        .delete(Routes.BlogById(createRespone.body.id))
         .expect(HttpStatus.Unauthorized);
     });
   });

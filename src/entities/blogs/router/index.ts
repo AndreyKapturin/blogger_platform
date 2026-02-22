@@ -16,11 +16,12 @@ import { getBlogByIdHandler } from './handlers/getBlogByIdHandler';
 import { getBlogsHandler } from './handlers/getBlogsHandler';
 import { getPostsOfBlogHandler } from './handlers/getPostsOfBlogHandler';
 import { updateBlogHandler } from './handlers/updateBlogHandler';
+import { Routes } from '../../../app/routes';
 
 const blogsRouter = Router();
 
 blogsRouter.get(
-  '/',
+  Routes.Index,
   searchQueryBlogValidationSchema,
   paginationAndSortingBlogValidationSchema,
   validationResultMiddleware,
@@ -28,14 +29,14 @@ blogsRouter.get(
 );
 
 blogsRouter.get(
-  '/:id',
+  Routes.ById(':id'),
   idInParamsCheckMiddleware,
   validationResultMiddleware,
   getBlogByIdHandler
 );
 
 blogsRouter.get(
-  '/:id/posts',
+  Routes.BlogIdPosts(':id'),
   idInParamsCheckMiddleware,
   paginationAndSortingPostsValidationSchema,
   validationResultMiddleware,
@@ -43,7 +44,7 @@ blogsRouter.get(
 );
 
 blogsRouter.post(
-  '/',
+  Routes.Index,
   basicAuthMiddleware,
   inputBlogValidationSchema,
   validationResultMiddleware,
@@ -51,7 +52,7 @@ blogsRouter.post(
 );
 
 blogsRouter.post(
-  '/:id/posts',
+  Routes.BlogIdPosts(':id'),
   basicAuthMiddleware,
   idInParamsCheckMiddleware,
   inputBlogPostValidationSchema,
@@ -60,7 +61,7 @@ blogsRouter.post(
 );
 
 blogsRouter.put(
-  '/:id',
+  Routes.ById(':id'),
   basicAuthMiddleware,
   idInParamsCheckMiddleware,
   inputBlogValidationSchema,
@@ -69,7 +70,7 @@ blogsRouter.put(
 );
 
 blogsRouter.delete(
-  '/:id',
+  Routes.ById(':id'),
   basicAuthMiddleware,
   idInParamsCheckMiddleware,
   validationResultMiddleware,
