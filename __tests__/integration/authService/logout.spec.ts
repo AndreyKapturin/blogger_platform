@@ -6,7 +6,7 @@ import {
   revokedRefreshTokensCollection,
   usersCollection,
 } from '../../../src/database/mongoDB';
-import { Result, ResultStatus } from '../../../src/core/types/Result';
+import { Result, ResultStatus } from '../../../src/core/utils/Result';
 import { InputRegistrationType } from '../../../src/entities/auth/types';
 import { faker } from '@faker-js/faker';
 import {

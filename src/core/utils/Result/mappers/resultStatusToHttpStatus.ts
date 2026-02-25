@@ -1,5 +1,5 @@
-import { HttpStatus } from "../types/HttpStatus";
-import { ResultStatus } from "../types/Result";
+import { HttpStatus } from "../../../types/HttpStatus";
+import { ResultStatus } from "../types";
 
 const resultStatusToHttpStatus = (resultStatus: ResultStatus): HttpStatus => {
   switch (resultStatus) {

@@ -5,10 +5,9 @@ import { BlogIdParamType } from '../../types';
 import { postsService } from '../../../posts/application/postsService';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
 import { postsQueryRepository } from '../../../posts/repositories/postsQueryRepository';
-import { ResultStatus } from '../../../../core/types/Result';
-import { resultStatusToHttpStatus } from '../../../../core/mappers/resultStatusToHttpStatus';
-import { extensionResultToAPIError } from '../../../../core/mappers/extensionResultToAPIError';
 import { APIErrorResult } from '../../../../core/types/APIErrorResult';
+import { sendHttpResponseIfWrongResult } from '../../../../core/utils/Result';
+import { isWrongResult } from '../../../../core/utils/Result/sendHttpResponseIfWrongResult';
 
 const createPostForBlogHandler = async (
   req: RequestWithParamsAndBody<BlogIdParamType, InputBlogPostType>,
@@ -23,11 +22,9 @@ const createPostForBlogHandler = async (
 
   const createdPostResult = await postsService.createPost(inputPost);
 
-  if (createdPostResult.status !== ResultStatus.Success) {
-    res
-      .status(resultStatusToHttpStatus(createdPostResult.status))
-      .json(extensionResultToAPIError(createdPostResult.extensions))
-    return
+  if (isWrongResult(createdPostResult)) {
+    sendHttpResponseIfWrongResult(createdPostResult, res);
+    return;
   }
 
   const createdPost = await postsQueryRepository.findById(createdPostResult.data);

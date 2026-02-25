@@ -4,9 +4,8 @@ import { InputPostType, PostIdParamType } from '../../types';
 import { APIErrorResult } from '../../../../core/types/APIErrorResult';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
 import { postsService } from '../../application/postsService';
-import { ResultStatus } from '../../../../core/types/Result';
-import { resultStatusToHttpStatus } from '../../../../core/mappers/resultStatusToHttpStatus';
-import { extensionResultToAPIError } from '../../../../core/mappers/extensionResultToAPIError';
+import { sendHttpResponseIfWrongResult } from '../../../../core/utils/Result';
+import { isWrongResult } from '../../../../core/utils/Result/sendHttpResponseIfWrongResult';
 
 const updatePostHandler = async (
   req: RequestWithParamsAndBody<PostIdParamType, InputPostType>,
@@ -14,10 +13,8 @@ const updatePostHandler = async (
 ) => {
   const updatePostResult = await postsService.updatePost(req.params.id, req.body);
 
-  if (updatePostResult.status !== ResultStatus.Success) {
-    res
-      .status(resultStatusToHttpStatus(updatePostResult.status))
-      .json(extensionResultToAPIError(updatePostResult.extensions));
+  if (isWrongResult(updatePostResult)) {
+    sendHttpResponseIfWrongResult(updatePostResult, res);
     return;
   }
 

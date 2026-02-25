@@ -6,9 +6,10 @@ import {
   MAX_USER_LOGIN_LENGTH,
   MIN_USER_LOGIN_LENGTH,
 } from '../../../src/entities/users/constants';
-import { ResultStatus } from '../../../src/core/types/Result';
+
 import { closeBbConnection, connectToDB, usersCollection } from '../../../src/database/mongoDB';
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import { ResultStatus } from '../../../src/core/utils/Result';
 
 let mongoMemoryServer: MongoMemoryServer;
 

@@ -4,10 +4,9 @@ import { InputPostType, ViewPostType } from '../../types';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
 import { postsService } from '../../application/postsService';
 import { postsQueryRepository } from '../../repositories/postsQueryRepository';
-import { ResultStatus } from '../../../../core/types/Result';
-import { resultStatusToHttpStatus } from '../../../../core/mappers/resultStatusToHttpStatus';
-import { extensionResultToAPIError } from '../../../../core/mappers/extensionResultToAPIError';
 import { APIErrorResult } from '../../../../core/types/APIErrorResult';
+import { sendHttpResponseIfWrongResult } from '../../../../core/utils/Result';
+import { isWrongResult } from '../../../../core/utils/Result/sendHttpResponseIfWrongResult';
 
 const createPostHandler = async (
   req: RequestWithBody<InputPostType>,
@@ -15,11 +14,9 @@ const createPostHandler = async (
 ) => {
   const createdPostResult = await postsService.createPost(req.body);
 
-  if (createdPostResult.status !== ResultStatus.Success) {
-    res
-      .status(resultStatusToHttpStatus(createdPostResult.status))
-      .json(extensionResultToAPIError(createdPostResult.extensions))
-    return
+  if (isWrongResult(createdPostResult)) {
+    sendHttpResponseIfWrongResult(createdPostResult, res);
+    return;
   }
 
   const createdPost = await postsQueryRepository.findById(createdPostResult.data);

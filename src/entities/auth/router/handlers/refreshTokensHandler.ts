@@ -2,18 +2,15 @@ import { Request, Response } from 'express';
 import { AccessToken } from '../../types';
 import { authService } from '../../application/authService';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
-import { ResultStatus } from '../../../../core/types/Result';
-import { resultStatusToHttpStatus } from '../../../../core/mappers/resultStatusToHttpStatus';
-import { extensionResultToAPIError } from '../../../../core/mappers/extensionResultToAPIError';
 import { APIErrorResult } from '../../../../core/types/APIErrorResult';
+import { isWrongResult } from '../../../../core/utils/Result/sendHttpResponseIfWrongResult';
+import { sendHttpResponseIfWrongResult } from '../../../../core/utils/Result';
 
 const refreshTokensHandler = async (req: Request, res: Response<AccessToken | APIErrorResult>) => {
   const updateTokensResult = await authService.refreshTokens(req.cookies.refreshToken);
 
-  if (updateTokensResult.status !== ResultStatus.Success) {
-    res
-      .status(resultStatusToHttpStatus(updateTokensResult.status))
-      .json(extensionResultToAPIError(updateTokensResult.extensions));
+  if (isWrongResult(updateTokensResult)) {
+    sendHttpResponseIfWrongResult(updateTokensResult, res);
     return;
   }
 
@@ -21,7 +18,7 @@ const refreshTokensHandler = async (req: Request, res: Response<AccessToken | AP
     httpOnly: true,
     secure: true,
   });
-  
+
   res.status(HttpStatus.Ok).json({ accessToken: updateTokensResult.data.accessToken });
 };
 

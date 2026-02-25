@@ -1,23 +1,20 @@
-import { Response } from "express";
-import { RequestWithBody } from "../../../../core/types/RequestTypes";
-import { AccessToken, InputLoginType } from "../../types";
-import { authService } from "../../application/authService";
-import { HttpStatus } from "../../../../core/types/HttpStatus";
-import { ResultStatus } from "../../../../core/types/Result";
-import { resultStatusToHttpStatus } from "../../../../core/mappers/resultStatusToHttpStatus";
-import { extensionResultToAPIError } from "../../../../core/mappers/extensionResultToAPIError";
-import { APIErrorResult } from "../../../../core/types/APIErrorResult";
+import { Response } from 'express';
+import { RequestWithBody } from '../../../../core/types/RequestTypes';
+import { AccessToken, InputLoginType } from '../../types';
+import { authService } from '../../application/authService';
+import { HttpStatus } from '../../../../core/types/HttpStatus';
+import { APIErrorResult } from '../../../../core/types/APIErrorResult';
+import { sendHttpResponseIfWrongResult } from '../../../../core/utils/Result';
+import { isWrongResult } from '../../../../core/utils/Result/sendHttpResponseIfWrongResult';
 
 const loginHandler = async (
   req: RequestWithBody<InputLoginType>,
-  res: Response<AccessToken | APIErrorResult>
+  res: Response<AccessToken | APIErrorResult>,
 ) => {
   const loginResult = await authService.login(req.body);
 
-  if (loginResult.status !== ResultStatus.Success) {
-    res
-      .status(resultStatusToHttpStatus(loginResult.status))
-      .json(extensionResultToAPIError(loginResult.extensions));
+  if (isWrongResult(loginResult)) {
+    sendHttpResponseIfWrongResult(loginResult, res);
     return;
   }
 

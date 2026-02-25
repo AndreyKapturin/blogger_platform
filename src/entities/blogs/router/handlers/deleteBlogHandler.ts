@@ -3,18 +3,15 @@ import { RequestWithParams } from '../../../../core/types/RequestTypes';
 import { BlogIdParamType } from '../../types';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
 import { blogsService } from '../../application/blogsService';
-import { ResultStatus } from '../../../../core/types/Result';
-import { resultStatusToHttpStatus } from '../../../../core/mappers/resultStatusToHttpStatus';
-import { extensionResultToAPIError } from '../../../../core/mappers/extensionResultToAPIError';
+import { sendHttpResponseIfWrongResult } from '../../../../core/utils/Result';
+import { isWrongResult } from '../../../../core/utils/Result/sendHttpResponseIfWrongResult';
 
 const deleteBlogHandler = async (req: RequestWithParams<BlogIdParamType>, res: Response) => {
   const deleteBlogResult = await blogsService.deleteBlog(req.params.id);
 
-  if (deleteBlogResult.status !== ResultStatus.Success) {
-    res
-      .status(resultStatusToHttpStatus(deleteBlogResult.status))
-      .json(extensionResultToAPIError(deleteBlogResult.extensions))
-    return
+  if (isWrongResult(deleteBlogResult)) {
+    sendHttpResponseIfWrongResult(deleteBlogResult, res);
+    return;
   }
 
   res.sendStatus(HttpStatus.No_Content);
