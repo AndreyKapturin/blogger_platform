@@ -15,6 +15,8 @@ export const Routes = {
   Testing: '/testing',
   AllData: '/all-data',
   Docs: '/docs',
+  Security: '/security',
+  Devices: '/devices',
 
   get AuthLogin() {
     return `${this.Auth}${this.Login}`;
@@ -36,6 +38,10 @@ export const Routes = {
   },
   get AuthLogout() {
     return `${this.Auth}${this.Logout}`;
+  },
+
+  get SecurityDevices() {
+    return `${this.Security}${this.Devices}`;
   },
 
   get TestingAllData() {
