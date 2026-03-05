@@ -8,13 +8,10 @@ import { createUsersTestManager, UsersTestManagerType } from '../../utils/usersT
 import { extractFromCookieArray } from '../../../../src/core/utils/cookie/cookieUtils';
 import { faker } from '@faker-js/faker';
 import { JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS } from '../../../../src/core/config';
+import { sleep } from '../../utils/timeUtils';
 
 let app: Express;
 let usersTestManager: UsersTestManagerType;
-
-const sleep = async (timeInSeconds: number) => {
-  return new Promise((resolve) => setTimeout(resolve, timeInSeconds * 1000));
-};
 
 beforeAll(async () => {
   app = await createApp();
@@ -91,6 +88,8 @@ describe(`POST ${Routes.AuthLogout}`, () => {
     const setCookieHeader = loginResponse.headers['set-cookie'];
     const cookies = Array.isArray(setCookieHeader) ? setCookieHeader : [setCookieHeader];
     const refreshToken = extractFromCookieArray(cookies, 'refreshToken');
+
+    await sleep(1)
 
     const refreshTokenResponse = await request(app)
       .post(Routes.AuthRefreshToken)

@@ -1,17 +1,22 @@
 import { usersCommandRepository } from '../../users/repositories/usersCommandRepository';
 import { Result, ResultStatus } from '../../../core/utils/Result';
-import { InputLoginType, InputRegistrationType, RevokedRefreshToken } from '../types';
+import { InputAuthData, InputRegistrationType, Session } from '../types';
 import { comparePassword } from '../../../core/utils/crypto/passwordUtils';
-import { createAccessAndRefreshTokens, decodeToken } from '../../../core/utils/jwt/jwtUtils';
+import {
+  createAccessAndRefreshTokens,
+  decodeToken,
+  getTokenIatAndExpDate,
+} from '../../../core/utils/jwt/jwtUtils';
 import { UserFactory } from '../../users/UserFactory';
 import { emailService } from '../../../core/services/emailService';
 import { log } from '../../../core/utils/logger/loggerUtils';
 import { dateUtils } from '../../../core/utils/date/dateUtils';
 import { JwtTokensPair } from '../types';
-import { refreshTokenCommandRepository } from '../repositories/refreshTokenCommandRepository';
 import { ResultFactory } from '../../../core/utils/Result/ResultFactory';
+import { sessionCommandRepository } from '../repositories/sessionCommandRepository';
 
-const login = async (credentials: InputLoginType): Promise<Result<JwtTokensPair>> => {
+const login = async (inputAuthData: InputAuthData): Promise<Result<JwtTokensPair>> => {
+  const { credentials, requestDevice } = inputAuthData;
   const user = await usersCommandRepository.findUserByLoginOrEmail(credentials.loginOrEmail);
 
   if (!user) {
@@ -34,7 +39,21 @@ const login = async (credentials: InputLoginType): Promise<Result<JwtTokensPair>
     ]);
   }
 
-  const jwtTokensPair = await createAccessAndRefreshTokens({ userId: user.id });
+  const deviceId = crypto.randomUUID();
+  const jwtTokensPair = await createAccessAndRefreshTokens({ userId: user.id, deviceId });
+
+  const { issuedDate, expirationDate } = getTokenIatAndExpDate(jwtTokensPair.refreshToken);
+
+  const session: Session = {
+    userId: user.id,
+    deviceId,
+    issuedDate,
+    deviceName: requestDevice.deviceName,
+    ip: requestDevice.ip,
+    expirationDate,
+  };
+
+  await sessionCommandRepository.save(session);
 
   return ResultFactory.success(jwtTokensPair);
 };
@@ -153,26 +172,25 @@ const confirmRegistration = async (emailConfirmationCode: string): Promise<Resul
 
 const refreshTokens = async (refreshToken: string): Promise<Result<JwtTokensPair>> => {
   const tokenPayload = decodeToken(refreshToken);
-  const jwtTokensPair = await createAccessAndRefreshTokens({ userId: tokenPayload.userId });
-  const revokedRefreshToken: RevokedRefreshToken = {
-    token: refreshToken,
-    expirationDate: new Date(tokenPayload.exp! * 1000),
-  };
+  const jwtTokensPair = await createAccessAndRefreshTokens({
+    deviceId: tokenPayload.deviceId,
+    userId: tokenPayload.userId,
+  });
 
-  await refreshTokenCommandRepository.saveRevokedRefreshToken(revokedRefreshToken);
+  const { issuedDate, expirationDate } = getTokenIatAndExpDate(jwtTokensPair.refreshToken);
+
+  await sessionCommandRepository.updateSessionIatAndExpDate(
+    tokenPayload.deviceId,
+    issuedDate,
+    expirationDate,
+  );
 
   return ResultFactory.success(jwtTokensPair);
 };
 
 const logout = async (refreshToken: string): Promise<Result> => {
   const tokenPayload = decodeToken(refreshToken);
-  const revokedRefreshToken: RevokedRefreshToken = {
-    token: refreshToken,
-    expirationDate: new Date(tokenPayload.exp! * 1000),
-  };
-
-  await refreshTokenCommandRepository.saveRevokedRefreshToken(revokedRefreshToken);
-
+  await sessionCommandRepository.deleteSessionByDeviceId(tokenPayload.deviceId);
   return ResultFactory.success(null);
 };
 

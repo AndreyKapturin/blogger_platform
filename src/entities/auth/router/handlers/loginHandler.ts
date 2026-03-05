@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { RequestWithBody } from '../../../../core/types/RequestTypes';
-import { AccessToken, InputLoginType } from '../../types';
+import { AccessToken, InputAuthData, InputLoginType } from '../../types';
 import { authService } from '../../application/authService';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
 import { APIErrorResult } from '../../../../core/types/APIErrorResult';
@@ -11,7 +11,19 @@ const loginHandler = async (
   req: RequestWithBody<InputLoginType>,
   res: Response<AccessToken | APIErrorResult>,
 ) => {
-  const loginResult = await authService.login(req.body);
+  
+  const inputAuthData: InputAuthData = {
+    credentials: {
+      loginOrEmail: req.body.loginOrEmail,
+      password: req.body.password,
+    },
+    requestDevice: {
+      ip: req.ip!,
+      deviceName: `${req.useragent!.os} ${req.useragent!.browser}`,
+    },
+  };
+
+  const loginResult = await authService.login(inputAuthData);
 
   if (isWrongResult(loginResult)) {
     sendHttpResponseIfWrongResult(loginResult, res);

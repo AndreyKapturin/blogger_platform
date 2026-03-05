@@ -7,6 +7,7 @@ import { InputUserType, ViewUserType } from '../../../../src/entities/users/type
 import { closeBbConnection } from '../../../../src/database/mongoDB';
 import { authHeader } from '../../../../src/core/constants';
 import { InputLoginType } from '../../../../src/entities/auth/types';
+import { faker } from "@faker-js/faker";
 
 let app: Express;
 let user: ViewUserType;
@@ -38,7 +39,8 @@ describe(`POST ${Routes.AuthLogin}`, () => {
     }
 
     const loginResponse = await request(app)
-      .post(Routes.AuthLogin)
+    .post(Routes.AuthLogin)
+    .set('User-Agent', faker.internet.userAgent())
       .send(inputLoginWithEmail);
     
     expect(loginResponse.status).toBe(HttpStatus.Ok);
@@ -47,7 +49,6 @@ describe(`POST ${Routes.AuthLogin}`, () => {
     });
     expect(loginResponse.header['set-cookie'])
       .toEqual(expect.arrayContaining([expect.stringMatching('refreshToken=')]));
-
   });
 
   it.each([

@@ -3,17 +3,19 @@ import { authService } from '../../../src/entities/auth/application/authService'
 import {
   closeBbConnection,
   connectToDB,
-  revokedRefreshTokensCollection,
+  sessionCollection,
   usersCollection,
 } from '../../../src/database/mongoDB';
 import { Result, ResultStatus } from '../../../src/core/utils/Result';
-import { InputRegistrationType } from '../../../src/entities/auth/types';
+import { InputAuthData, InputRegistrationType } from '../../../src/entities/auth/types';
 import { faker } from '@faker-js/faker';
 import {
   MAX_USER_LOGIN_LENGTH,
   MIN_USER_LOGIN_LENGTH,
 } from '../../../src/entities/users/constants';
 import { emailService } from '../../../src/core/services/emailService';
+import { decodeToken } from '../../../src/core/utils/jwt/jwtUtils';
+import { sleep } from "../../e2e/utils/timeUtils";
 
 let mongoMemoryServer: MongoMemoryServer;
 
@@ -41,7 +43,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await usersCollection.deleteMany();
-  await revokedRefreshTokensCollection.deleteMany();
+  await sessionCollection.deleteMany();
 });
 
 afterAll(async () => {
@@ -50,13 +52,22 @@ afterAll(async () => {
 });
 
 describe('AuthService.refreshTokens', () => {
-  it('should return new JWT tokens pair and save previous token in black list', async () => {
+  it('should return new JWT tokens pair and update session', async () => {
     const inputCredentials = getInputRegistratonData();
     await authService.registration(inputCredentials);
-    const loginResult = await authService.login({
-      loginOrEmail: inputCredentials.login,
-      password: inputCredentials.password,
-    });
+
+    const inputAuthData: InputAuthData = {
+      credentials: {
+        loginOrEmail: inputCredentials.login,
+        password: inputCredentials.password,
+      },
+      requestDevice: {
+        deviceName: 'MacOS Chrome',
+        ip: faker.internet.ipv4(),
+      },
+    };
+
+    const loginResult = await authService.login(inputAuthData);
 
     if (!isSuccessResult(loginResult)) {
       expect(loginResult.status).toBe(ResultStatus.Success);
@@ -64,6 +75,8 @@ describe('AuthService.refreshTokens', () => {
     }
 
     const firstRefreshToken = loginResult.data.refreshToken;
+
+    await sleep(1);
 
     const refreshTokensResult = await authService.refreshTokens(firstRefreshToken);
 
@@ -77,9 +90,18 @@ describe('AuthService.refreshTokens', () => {
       refreshToken: expect.any(String),
     });
 
-    const foundRevokedRefreshToken = await revokedRefreshTokensCollection
-      .findOne({ token: firstRefreshToken });
+    const tokenPayload = decodeToken(firstRefreshToken);
+    const deviceId = tokenPayload.deviceId;
 
-    expect(foundRevokedRefreshToken).not.toBeNull();
+    const deviceSession = await sessionCollection.findOne({ deviceId });
+
+    const prevSessionIssuedDate = tokenPayload.iat * 1000;
+    const prevSessionExpirationDate = tokenPayload.exp * 1000;
+    const nowSessionIssuedDate = deviceSession!.issuedDate.getTime();
+    const nowSessionExpirationDate = deviceSession!.expirationDate.getTime();
+
+    expect(deviceSession).not.toBeNull();
+    expect(nowSessionIssuedDate).toBeGreaterThan(prevSessionIssuedDate);
+    expect(nowSessionExpirationDate).toBeGreaterThan(prevSessionExpirationDate);
   });
 });

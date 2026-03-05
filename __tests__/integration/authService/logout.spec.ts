@@ -3,17 +3,18 @@ import { authService } from '../../../src/entities/auth/application/authService'
 import {
   closeBbConnection,
   connectToDB,
-  revokedRefreshTokensCollection,
+  sessionCollection,
   usersCollection,
 } from '../../../src/database/mongoDB';
 import { Result, ResultStatus } from '../../../src/core/utils/Result';
-import { InputRegistrationType } from '../../../src/entities/auth/types';
+import { InputAuthData, InputRegistrationType } from '../../../src/entities/auth/types';
 import { faker } from '@faker-js/faker';
 import {
   MAX_USER_LOGIN_LENGTH,
   MIN_USER_LOGIN_LENGTH,
 } from '../../../src/entities/users/constants';
 import { emailService } from '../../../src/core/services/emailService';
+import { decodeToken } from '../../../src/core/utils/jwt/jwtUtils';
 
 let mongoMemoryServer: MongoMemoryServer;
 
@@ -41,7 +42,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await usersCollection.deleteMany();
-  await revokedRefreshTokensCollection.deleteMany();
+  await sessionCollection.deleteMany();
 });
 
 afterAll(async () => {
@@ -50,13 +51,22 @@ afterAll(async () => {
 });
 
 describe('AuthService.logout', () => {
-  it('should save passed refresh token in black list', async () => {
+  it('should remove session for current device', async () => {
     const inputCredentials = getInputRegistratonData();
     await authService.registration(inputCredentials);
-    const loginResult = await authService.login({
-      loginOrEmail: inputCredentials.login,
-      password: inputCredentials.password,
-    });
+
+    const inputAuthData: InputAuthData = {
+      credentials: {
+        loginOrEmail: inputCredentials.login,
+        password: inputCredentials.password,
+      },
+      requestDevice: {
+        deviceName: 'MacOS Chrome',
+        ip: faker.internet.ipv4(),
+      },
+    };
+
+    const loginResult = await authService.login(inputAuthData);
 
     if (!isSuccessResult(loginResult)) {
       expect(loginResult.status).toBe(ResultStatus.Success);
@@ -64,6 +74,15 @@ describe('AuthService.logout', () => {
     }
 
     const refreshToken = loginResult.data.refreshToken;
+    const tokenPayload = decodeToken(refreshToken);
+    const deviceId = tokenPayload.deviceId;
+    const issuedDate = new Date(tokenPayload.iat * 1000);
+
+    const documentsCountAfterLogin = await sessionCollection.countDocuments({
+      $and: [{ deviceId }, { issuedDate }],
+    });
+
+    expect(documentsCountAfterLogin).toBe(1);
 
     const logoutResult = await authService.logout(refreshToken);
 
@@ -72,11 +91,10 @@ describe('AuthService.logout', () => {
       return;
     }
 
-    expect(logoutResult.data).toBeNull();
+    const documentsCountAfterLogout = await sessionCollection.countDocuments({
+      $and: [{ deviceId }, { issuedDate }],
+    });
 
-    const foundRevokedRefreshToken = await revokedRefreshTokensCollection
-      .findOne({ token: refreshToken });
-
-    expect(foundRevokedRefreshToken).not.toBeNull();
+    expect(documentsCountAfterLogout).toBe(0);
   });
 });

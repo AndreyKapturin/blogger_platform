@@ -12,12 +12,15 @@ import { authRouter } from '../entities/auth/router';
 import { commentsRouter } from '../entities/comments/router';
 import { MONGO_CONNECTION_URI } from '../core/config';
 import cookieParser from 'cookie-parser';
+import { express as useragent } from "express-useragent";
 
 const createApp = async (): Promise<Express> => {
   await connectToDB(MONGO_CONNECTION_URI);
   const app = express();
   app.use(jsonBodyMiddleware);
   app.use(cookieParser());
+  app.use(useragent());
+  app.set('trust proxy', true);
   app.use(Routes.Auth, authRouter);
   app.use(Routes.Blogs, blogsRouter);
   app.use(Routes.Comments, commentsRouter);
