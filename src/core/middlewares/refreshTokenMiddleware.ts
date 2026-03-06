@@ -29,6 +29,7 @@ const refreshTokenMiddleware = async (req: Request, res: Response, next: NextFun
   } 
   catch (error) {
     log(error);
+    res.clearCookie('refreshToken', { httpOnly: true, secure: true });
     res
       .status(HttpStatus.Unauthorized)
       .json({
@@ -46,6 +47,7 @@ const refreshTokenMiddleware = async (req: Request, res: Response, next: NextFun
     .existsDeviceSession(tokenPayload.deviceId, new Date(tokenPayload.iat * 1000))
 
   if (!isActiveSession) {
+    res.clearCookie('refreshToken', { httpOnly: true, secure: true });
     res
       .status(HttpStatus.Unauthorized)
       .json({

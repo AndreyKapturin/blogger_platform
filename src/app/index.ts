@@ -19,9 +19,9 @@ const createApp = async (): Promise<Express> => {
   await connectToDB(MONGO_CONNECTION_URI);
   const app = express();
   app.use(jsonBodyMiddleware);
+  app.set('trust proxy', true);
   app.use(cookieParser());
   app.use(useragent());
-  app.set('trust proxy', true);
   app.use(Routes.Auth, authRouter);
   app.use(Routes.Blogs, blogsRouter);
   app.use(Routes.Comments, commentsRouter);

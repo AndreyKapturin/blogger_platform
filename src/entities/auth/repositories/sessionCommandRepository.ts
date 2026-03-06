@@ -1,3 +1,4 @@
+import { WithId } from 'mongodb';
 import { sessionCollection } from '../../../database/mongoDB';
 import { Session } from '../types';
 
@@ -30,6 +31,28 @@ const updateSessionIatAndExpDate = async (
   return Boolean(matchedCount);
 };
 
+const terminateOtherSession = async (userId: string, deviceId: string) => {
+  await sessionCollection.deleteMany({
+    $and: [{ userId }, { deviceId: { $ne: deviceId } }],
+  });
+};
+
+const findSessionByDeviceId = async (deviceId: string) => {
+  const foundSession = await sessionCollection.findOne({ deviceId });
+  return foundSession ? _cleanObjectIdMapper(foundSession) : null;
+};
+
+const _cleanObjectIdMapper = (mongoSession: WithId<Session>): Session => {
+  return {
+    deviceId: mongoSession.deviceId,
+    deviceName: mongoSession.deviceName,
+    expirationDate: mongoSession.expirationDate,
+    ip: mongoSession.ip,
+    issuedDate: mongoSession.issuedDate,
+    userId: mongoSession.userId,
+  }
+}
+
 const cleanAll = async () => sessionCollection.deleteMany();
 
 const sessionCommandRepository = {
@@ -37,6 +60,8 @@ const sessionCommandRepository = {
   existsDeviceSession,
   deleteSessionByDeviceId,
   updateSessionIatAndExpDate,
+  terminateOtherSession,
+  findSessionByDeviceId,
   cleanAll,
 };
 

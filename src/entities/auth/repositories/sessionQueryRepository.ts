@@ -1,11 +1,11 @@
 import { WithId } from 'mongodb';
 import { sessionCollection } from '../../../database/mongoDB';
-import { Session } from '../../auth/types';
-import { ViewSecurityDeviceType } from '../types';
+import { Session } from '../types';
+import { ViewSecurityDeviceType } from '../../security/types';
 
 const getAllDevicesForUser = async (userId: string) => {
   return sessionCollection
-    .find({ $and: [{ userId }, { expirationDate: { $gt: new Date() } }] })
+    .find({ $and: [{ userId }, { expirationDate: { $gt: new Date } }] })
     .map(_sessionToDeviceMapper)
     .toArray();
 };
@@ -19,8 +19,8 @@ const _sessionToDeviceMapper = (session: WithId<Session>): ViewSecurityDeviceTyp
   };
 };
 
-const devicesQueryRepository = {
+const sessionQueryRepository = {
   getAllDevicesForUser,
 };
 
-export { devicesQueryRepository };
+export { sessionQueryRepository };

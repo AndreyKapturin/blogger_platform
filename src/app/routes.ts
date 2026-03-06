@@ -76,6 +76,13 @@ export const Routes = {
     return `${this.Users}/${id}`;
   },
 
+  DeviceById(id: string) {
+    return `${this.Devices}/${id}`;
+  },
+  SecurityDeviceById(id: string) {
+    return `${this.SecurityDevices}/${id}`;
+  },
+
   ById(id: string) {
     return `/${id}`;
   },

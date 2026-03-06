@@ -1,17 +1,12 @@
 import { Request, Response } from 'express';
 import { SecurityDevice } from '../../../auth/types';
 import { decodeToken } from '../../../../core/utils/jwt/jwtUtils';
-import { devicesQueryRepository } from '../../repositories/devicesQueryRepository';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
+import { sessionQueryRepository } from '../../../auth/repositories/sessionQueryRepository';
 
-const getSecurityDevices = async (
-  req: Request,
-  res: Response<SecurityDevice[]>,
-) => {
-  const refreshToken = req.cookies.refreshToken;
-  const tokenPayload = decodeToken(refreshToken);
-  const userId = tokenPayload.userId;
-  const devices = await devicesQueryRepository.getAllDevicesForUser(userId);
+const getSecurityDevices = async (req: Request, res: Response<SecurityDevice[]>) => {
+  const { userId } = decodeToken(req.cookies.refreshToken);
+  const devices = await sessionQueryRepository.getAllDevicesForUser(userId);
   res.status(HttpStatus.Ok).json(devices);
 };
 
