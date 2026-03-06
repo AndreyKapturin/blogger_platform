@@ -15,6 +15,8 @@ export const Routes = {
   Testing: '/testing',
   AllData: '/all-data',
   Docs: '/docs',
+  Security: '/security',
+  Devices: '/devices',
 
   get AuthLogin() {
     return `${this.Auth}${this.Login}`;
@@ -36,6 +38,10 @@ export const Routes = {
   },
   get AuthLogout() {
     return `${this.Auth}${this.Logout}`;
+  },
+
+  get SecurityDevices() {
+    return `${this.Security}${this.Devices}`;
   },
 
   get TestingAllData() {
@@ -68,6 +74,13 @@ export const Routes = {
 
   UserById(id: string) {
     return `${this.Users}/${id}`;
+  },
+
+  DeviceById(id: string) {
+    return `${this.Devices}/${id}`;
+  },
+  SecurityDeviceById(id: string) {
+    return `${this.SecurityDevices}/${id}`;
   },
 
   ById(id: string) {

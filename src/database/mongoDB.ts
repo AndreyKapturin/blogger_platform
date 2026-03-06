@@ -5,13 +5,13 @@ import { PostType } from '../entities/posts/types';
 import { MongoUserType } from '../entities/users/types';
 import { log } from '../core/utils/logger/loggerUtils';
 import { MongoCommentType } from '../entities/comments/types';
-import { MongoRevokedRefreshToken } from '../entities/auth/types';
+import { Session } from '../entities/auth/types';
 
 const BLOGS_COLLECTION_NAME = 'blogs';
 const POSTS_COLLECTION_NAME = 'posts';
 const USERS_COLLECTION_NAME = 'users';
 const COMMENTS_COLLECTION_NAME = 'comments';
-const REVOKED_REFRESH_TOKEN_COLLECTION_NAME = 'revoked_refresh_tokens';
+const SESSION_COLLECTION_NAME = 'session';
 
 let client: MongoClient;
 let dbInstance: Db;
@@ -19,7 +19,7 @@ let blogsCollection: Collection<BlogType>;
 let postsCollection: Collection<PostType>;
 let usersCollection: Collection<MongoUserType>;
 let commentsCollection: Collection<MongoCommentType>;
-let revokedRefreshTokensCollection: Collection<MongoRevokedRefreshToken>;
+let sessionCollection: Collection<Session>;
 
 async function connectToDB(mongoUri: string) {
   try {
@@ -38,9 +38,9 @@ async function connectToDB(mongoUri: string) {
     postsCollection = dbInstance.collection(POSTS_COLLECTION_NAME);
     usersCollection = dbInstance.collection(USERS_COLLECTION_NAME);
     commentsCollection = dbInstance.collection(COMMENTS_COLLECTION_NAME);
-    revokedRefreshTokensCollection = dbInstance.collection(REVOKED_REFRESH_TOKEN_COLLECTION_NAME);
+    sessionCollection = dbInstance.collection(SESSION_COLLECTION_NAME);
 
-    await revokedRefreshTokensCollection.createIndex(
+    await sessionCollection.createIndex(
       { expirationDate: 1 },
       { expireAfterSeconds: 0 }
     );
@@ -63,5 +63,5 @@ export {
   postsCollection,
   usersCollection,
   commentsCollection,
-  revokedRefreshTokensCollection,
+  sessionCollection,
 };

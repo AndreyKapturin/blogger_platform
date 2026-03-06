@@ -2,11 +2,12 @@ import { NextFunction, Request, Response } from 'express';
 import { HttpStatus } from '../types/HttpStatus';
 import { verifyToken } from '../utils/jwt/jwtUtils';
 import { log } from '../utils/logger/loggerUtils';
-import { refreshTokenCommandRepository } from '../../entities/auth/repositories/refreshTokenCommandRepository';
+import { JwtTokenDecodePayload } from '../../entities/auth/types';
+import { sessionCommandRepository } from '../../entities/auth/repositories/sessionCommandRepository';
 
 const refreshTokenMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   const refreshToken = req.cookies.refreshToken;
-
+  
   if (!refreshToken) {
     res
       .status(HttpStatus.Unauthorized)
@@ -21,12 +22,14 @@ const refreshTokenMiddleware = async (req: Request, res: Response, next: NextFun
     return;
   }
 
+  let tokenPayload: JwtTokenDecodePayload;
 
   try {
-    await verifyToken(refreshToken);
+    tokenPayload = await verifyToken(refreshToken);
   } 
   catch (error) {
     log(error);
+    res.clearCookie('refreshToken', { httpOnly: true, secure: true });
     res
       .status(HttpStatus.Unauthorized)
       .json({
@@ -40,10 +43,11 @@ const refreshTokenMiddleware = async (req: Request, res: Response, next: NextFun
     return;
   }
 
-  const isRevokedToken = await refreshTokenCommandRepository
-    .checkTokenInRevokedList(refreshToken);
+  const isActiveSession = await sessionCommandRepository
+    .existsDeviceSession(tokenPayload.deviceId, new Date(tokenPayload.iat * 1000))
 
-  if (isRevokedToken) {
+  if (!isActiveSession) {
+    res.clearCookie('refreshToken', { httpOnly: true, secure: true });
     res
       .status(HttpStatus.Unauthorized)
       .json({

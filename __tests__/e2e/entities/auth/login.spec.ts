@@ -7,6 +7,7 @@ import { InputUserType, ViewUserType } from '../../../../src/entities/users/type
 import { closeBbConnection } from '../../../../src/database/mongoDB';
 import { authHeader } from '../../../../src/core/constants';
 import { InputLoginType } from '../../../../src/entities/auth/types';
+import { faker } from '@faker-js/faker';
 
 let app: Express;
 let user: ViewUserType;
@@ -28,50 +29,50 @@ beforeAll(async () => {
 });
 
 describe(`POST ${Routes.AuthLogin}`, () => {
+  it.each([{ loginOrEmail: inputUser.email }, { loginOrEmail: inputUser.login }])(
+    `should return ${HttpStatus.Ok} if passed valid credentials, accessToken in response body and refreshToken in cookie`,
+    async ({ loginOrEmail }) => {
+      const inputLoginWithEmail: InputLoginType = {
+        loginOrEmail,
+        password: inputUser.password,
+      };
+
+      const loginResponse = await request(app)
+        .post(Routes.AuthLogin)
+        .set('User-Agent', faker.internet.userAgent())
+        .send(inputLoginWithEmail);
+
+      expect(loginResponse.status).toBe(HttpStatus.Ok);
+      expect(loginResponse.body).toEqual({
+        accessToken: expect.any(String),
+      });
+      expect(loginResponse.header['set-cookie']).toEqual(
+        expect.arrayContaining([expect.stringMatching('refreshToken=')]),
+      );
+    },
+  );
+
   it.each([
-    { loginOrEmail: inputUser.email },
-    { loginOrEmail: inputUser.login },
-  ])(`should return ${HttpStatus.Ok} if passed valid credentials, accessToken in response body and refreshToken in cookie`, async ({loginOrEmail}) => {
-    const inputLoginWithEmail: InputLoginType = {
-      loginOrEmail,
-      password: inputUser.password
-    }
-
-    const loginResponse = await request(app)
-      .post(Routes.AuthLogin)
-      .send(inputLoginWithEmail);
-    
-    expect(loginResponse.status).toBe(HttpStatus.Ok);
-    expect(loginResponse.body).toEqual({
-      accessToken: expect.any(String)
-    });
-    expect(loginResponse.header['set-cookie'])
-      .toEqual(expect.arrayContaining([expect.stringMatching('refreshToken=')]));
-
-  });
-
-  it.each([
-    {loginOrEmail: inputUser.login, password: '12345'},
-    {loginOrEmail: 'Andrey@', password: inputUser.password},
-    {loginOrEmail: 'andrew@@mail.ru', password: inputUser.password},
-    {loginOrEmail: 'Andrew_$', password: inputUser.password},
-  ])(`should return ${HttpStatus.Bad_Request} if passed credentials syntax invalid`, async (credentials) => {
-    await request(app)
-      .post(Routes.AuthLogin)
-      .send(credentials)
-      .expect(HttpStatus.Bad_Request);
-  });
+    { loginOrEmail: inputUser.login, password: '12345' },
+    { loginOrEmail: 'Andrey@', password: inputUser.password },
+    { loginOrEmail: 'andrew@@mail.ru', password: inputUser.password },
+    { loginOrEmail: 'Andrew_$', password: inputUser.password },
+  ])(
+    `should return ${HttpStatus.Bad_Request} if passed credentials syntax invalid`,
+    async (credentials) => {
+      await request(app).post(Routes.AuthLogin).send(credentials).expect(HttpStatus.Bad_Request);
+    },
+  );
 
   it.each([
     { loginOrEmail: inputUser.login, password: 'Qwerty123!' },
     { loginOrEmail: 'Login_1', password: inputUser.password },
-  ])(`should return ${HttpStatus.Unauthorized} if passed invalid credentials`, async (credentials) => {
-    await request(app)
-      .post(Routes.AuthLogin)
-      .send(credentials)
-      .expect(HttpStatus.Unauthorized);
-  });
-  
+  ])(
+    `should return ${HttpStatus.Unauthorized} if passed invalid credentials`,
+    async (credentials) => {
+      await request(app).post(Routes.AuthLogin).send(credentials).expect(HttpStatus.Unauthorized);
+    },
+  );
 });
 
 afterAll(async () => {

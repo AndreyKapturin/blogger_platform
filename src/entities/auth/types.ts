@@ -6,14 +6,21 @@ type InputLoginType = {
   password: string;
 };
 
-type JwtTokenPayload = JwtPayload & {
+type JwtTokenEncodePayload = {
   userId: string;
-}
+  deviceId: string;
+};
+
+type JwtTokenDecodePayload = JwtPayload &
+  JwtTokenEncodePayload & {
+    exp: number;
+    iat: number;
+  };
 
 type JwtTokensPair = {
-  accessToken: string,
-  refreshToken: string,
-}
+  accessToken: string;
+  refreshToken: string;
+};
 
 type AccessToken = {
   accessToken: string;
@@ -29,21 +36,43 @@ type EmailConfirmationCode = {
   code: string;
 };
 
-type RevokedRefreshToken = {
-  token: string,
-  expirationDate: Date,
-}
+type InputAuthData = {
+  credentials: InputLoginType;
+  requestDevice: RequestDevice;
+};
 
-type MongoRevokedRefreshToken = RevokedRefreshToken;
+type RequestDevice = {
+  ip: string;
+  deviceName: string;
+};
+
+type SecurityDevice = {
+  ip: string;
+  title: string;
+  lastActiveDate: string;
+  deviceId: string;
+};
+
+type Session = {
+  userId: string;
+  deviceId: string;
+  issuedDate: Date;
+  deviceName: string;
+  ip: string;
+  expirationDate: Date;
+};
 
 export type {
-  RevokedRefreshToken,
-  MongoRevokedRefreshToken,
   InputLoginType,
   AccessToken,
   InputRegistrationType,
   InputEmailResendingType,
   EmailConfirmationCode,
-  JwtTokenPayload,
+  JwtTokenEncodePayload,
+  JwtTokenDecodePayload,
   JwtTokensPair,
+  InputAuthData,
+  RequestDevice,
+  SecurityDevice,
+  Session,
 };
