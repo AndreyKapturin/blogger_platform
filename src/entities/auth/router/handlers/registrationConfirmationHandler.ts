@@ -1,23 +1,20 @@
-import { Response } from "express";
-import { RequestWithBody } from "../../../../core/types/RequestTypes";
-import { EmailConfirmationCode } from "../../types";
-import { APIErrorResult } from "../../../../core/types/APIErrorResult";
-import { ResultStatus } from "../../../../core/types/Result";
-import { authService } from "../../application/authService";
-import { resultStatusToHttpStatus } from "../../../../core/mappers/resultStatusToHttpStatus";
-import { extensionResultToAPIError } from "../../../../core/mappers/extensionResultToAPIError";
-import { HttpStatus } from "../../../../core/types/HttpStatus";
+import { Response } from 'express';
+import { RequestWithBody } from '../../../../core/types/RequestTypes';
+import { EmailConfirmationCode } from '../../types';
+import { APIErrorResult } from '../../../../core/types/APIErrorResult';
+import { authService } from '../../application/authService';
+import { HttpStatus } from '../../../../core/types/HttpStatus';
+import { isWrongResult } from '../../../../core/utils/Result/sendHttpResponseIfWrongResult';
+import { sendHttpResponseIfWrongResult } from '../../../../core/utils/Result';
 
 const registrationConfirmationHandler = async (
   req: RequestWithBody<EmailConfirmationCode>,
-  res: Response<APIErrorResult>
+  res: Response<APIErrorResult>,
 ) => {
   const registrationConfirmationResult = await authService.confirmRegistration(req.body.code);
 
-  if (registrationConfirmationResult.status !== ResultStatus.Success) {
-    res
-      .status(resultStatusToHttpStatus(registrationConfirmationResult.status))
-      .json(extensionResultToAPIError(registrationConfirmationResult.extensions));
+  if (isWrongResult(registrationConfirmationResult)) {
+    sendHttpResponseIfWrongResult(registrationConfirmationResult, res);
     return;
   }
 

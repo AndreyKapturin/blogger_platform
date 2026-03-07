@@ -1,82 +1,84 @@
 import { usersCommandRepository } from '../../users/repositories/usersCommandRepository';
-import { Result, ResultStatus } from '../../../core/types/Result';
-import { InputLoginType, InputRegistrationType } from '../types';
+import { Result, ResultStatus } from '../../../core/utils/Result';
+import { InputAuthData, InputRegistrationType, Session } from '../types';
 import { comparePassword } from '../../../core/utils/crypto/passwordUtils';
-import { createAccessToken } from '../../../core/utils/jwt/jwtUtils';
+import {
+  createAccessAndRefreshTokens,
+  decodeToken,
+  getTokenIatAndExpDate,
+} from '../../../core/utils/jwt/jwtUtils';
 import { UserFactory } from '../../users/UserFactory';
 import { emailService } from '../../../core/services/emailService';
 import { log } from '../../../core/utils/logger/loggerUtils';
 import { dateUtils } from '../../../core/utils/date/dateUtils';
+import { JwtTokensPair } from '../types';
+import { ResultFactory } from '../../../core/utils/Result/ResultFactory';
+import { sessionCommandRepository } from '../repositories/sessionCommandRepository';
 
-const login = async (credentials: InputLoginType): Promise<Result<string>> => {
+const login = async (inputAuthData: InputAuthData): Promise<Result<JwtTokensPair>> => {
+  const { credentials, requestDevice } = inputAuthData;
   const user = await usersCommandRepository.findUserByLoginOrEmail(credentials.loginOrEmail);
 
   if (!user) {
-    return {
-      status: ResultStatus.InvalidCredentials,
-      errorMessage: 'Invalid credentials',
-      extensions: [
-        {
-          field: null,
-          message: 'Invalid credentials',
-        },
-      ],
-    };
+    return ResultFactory.wrong(ResultStatus.InvalidCredentials, 'Invalid credentials', [
+      {
+        field: null,
+        message: 'Invalid credentials',
+      },
+    ]);
   }
 
   const isValidPassword = await comparePassword(credentials.password, user.passwordHash);
 
   if (!isValidPassword) {
-    return {
-      status: ResultStatus.InvalidCredentials,
-      errorMessage: 'Invalid credentials',
-      extensions: [
-        {
-          field: null,
-          message: 'Invalid credentials',
-        },
-      ],
-    };
+    return ResultFactory.wrong(ResultStatus.InvalidCredentials, 'Invalid credentials', [
+      {
+        field: null,
+        message: 'Invalid credentials',
+      },
+    ]);
   }
 
-  const accessToken = await createAccessToken({ userId: user.id });
+  const deviceId = crypto.randomUUID();
+  const jwtTokensPair = await createAccessAndRefreshTokens({ userId: user.id, deviceId });
 
-  return {
-    status: ResultStatus.Success,
-    data: accessToken,
-    extensions: [],
+  const { issuedDate, expirationDate } = getTokenIatAndExpDate(jwtTokensPair.refreshToken);
+
+  const session: Session = {
+    userId: user.id,
+    deviceId,
+    issuedDate,
+    deviceName: requestDevice.deviceName,
+    ip: requestDevice.ip,
+    expirationDate,
   };
+
+  await sessionCommandRepository.save(session);
+
+  return ResultFactory.success(jwtTokensPair);
 };
 
-const registration = async (credentials: InputRegistrationType): Promise<Result> => {
+const registration = async (credentials: InputRegistrationType): Promise<Result<string>> => {
   let isUserExist = await usersCommandRepository.checkUserByEmail(credentials.email);
 
   if (isUserExist) {
-    return {
-      status: ResultStatus.InvalidData,
-      errorMessage: 'User with passed email already exists',
-      extensions: [
-        {
-          field: 'email',
-          message: 'User with passed email already exists',
-        },
-      ],
-    };
+    return ResultFactory.wrong(ResultStatus.InvalidData, 'User already exists', [
+      {
+        field: 'email',
+        message: 'User with passed email already exists',
+      },
+    ]);
   }
 
   isUserExist = await usersCommandRepository.checkUserByLogin(credentials.login);
 
   if (isUserExist) {
-    return {
-      status: ResultStatus.InvalidData,
-      errorMessage: 'User with passed login already exists',
-      extensions: [
-        {
-          field: 'login',
-          message: 'User with passed login already exists',
-        },
-      ],
-    };
+    return ResultFactory.wrong(ResultStatus.InvalidData, 'User already exists', [
+      {
+        field: 'login',
+        message: 'User with passed login already exists',
+      },
+    ]);
   }
 
   const newUser = await UserFactory.createUnconfirmedUser(
@@ -85,46 +87,34 @@ const registration = async (credentials: InputRegistrationType): Promise<Result>
     credentials.password,
   );
 
-  await usersCommandRepository.save(newUser);
+  const createdUserId = await usersCommandRepository.save(newUser);
 
   emailService
     .sendConfirmationCode(newUser.email, newUser.emailConfirmation.code)
     .catch((error) => log('Send confirmation code error: ', error));
 
-  return {
-    status: ResultStatus.Success,
-    data: null,
-    extensions: [],
-  };
+  return ResultFactory.success(createdUserId);
 };
 
 const resendingConfirmationCode = async (email: string): Promise<Result> => {
   const user = await usersCommandRepository.findUserByLoginOrEmail(email);
 
   if (!user) {
-    return {
-      status: ResultStatus.InvalidData,
-      errorMessage: 'User with passed email not exists',
-      extensions: [
-        {
-          field: 'email',
-          message: 'User with passed email not exists',
-        },
-      ],
-    };
+    return ResultFactory.wrong(ResultStatus.InvalidData, 'User not found', [
+      {
+        field: 'email',
+        message: 'User with passed email not exists',
+      },
+    ]);
   }
 
   if (user.emailConfirmation.isConfirmed) {
-    return {
-      status: ResultStatus.InvalidData,
-      errorMessage: 'Email is already confirmed',
-      extensions: [
-        {
-          field: 'email',
-          message: 'Email is already confirmed',
-        },
-      ],
-    };
+    return ResultFactory.wrong(ResultStatus.InvalidData, 'Email is already confirmed', [
+      {
+        field: 'email',
+        message: 'Email is already confirmed',
+      },
+    ]);
   }
 
   const newConfirmationCode = crypto.randomUUID();
@@ -140,71 +130,77 @@ const resendingConfirmationCode = async (email: string): Promise<Result> => {
     .sendConfirmationCode(user.email, newConfirmationCode)
     .catch((error) => log('Send confirmation code error: ', error));
 
-  return {
-    status: ResultStatus.Success,
-    data: null,
-    extensions: [],
-  };
+  return ResultFactory.success(null);
 };
 
 const confirmRegistration = async (emailConfirmationCode: string): Promise<Result> => {
   const user = await usersCommandRepository.findUserByEmailConfirmationCode(emailConfirmationCode);
 
   if (!user) {
-    return {
-      status: ResultStatus.InvalidData,
-      errorMessage: 'User with passed confirmation code not exist',
-      extensions: [
-        {
-          field: 'code',
-          message: 'User with passed confirmation code not exist',
-        },
-      ],
-    };
+    return ResultFactory.wrong(ResultStatus.InvalidData, 'User not found', [
+      {
+        field: 'code',
+        message: 'User with passed confirmation code not exist',
+      },
+    ]);
   }
 
   if (user.emailConfirmation.isConfirmed) {
-    return {
-      status: ResultStatus.InvalidData,
-      errorMessage: 'Email is already confirmed',
-      extensions: [
-        {
-          field: 'code',
-          message: 'Email is already confirmed',
-        },
-      ],
-    };
+    return ResultFactory.wrong(ResultStatus.InvalidData, 'Email is already confirmed', [
+      {
+        field: 'code',
+        message: 'Email is already confirmed',
+      },
+    ]);
   }
 
   const isExpiredCode = dateUtils.dateIsExpired(user.emailConfirmation.codeExpirationDate);
 
   if (isExpiredCode) {
-    return {
-      status: ResultStatus.InvalidData,
-      errorMessage: 'Confirmation code is expired',
-      extensions: [
-        {
-          field: 'code',
-          message: 'Confirmation code is expired',
-        },
-      ],
-    };
+    return ResultFactory.wrong(ResultStatus.InvalidData, 'Confirmation code is expired', [
+      {
+        field: 'code',
+        message: 'Confirmation code is expired',
+      },
+    ]);
   }
 
   await usersCommandRepository.confirmEmail(user.email);
 
-  return {
-    status: ResultStatus.Success,
-    data: null,
-    extensions: [],
-  };
+  return ResultFactory.success(null);
+};
+
+const refreshTokens = async (refreshToken: string): Promise<Result<JwtTokensPair>> => {
+  const tokenPayload = decodeToken(refreshToken);
+  const jwtTokensPair = await createAccessAndRefreshTokens({
+    deviceId: tokenPayload.deviceId,
+    userId: tokenPayload.userId,
+  });
+
+  const { issuedDate, expirationDate } = getTokenIatAndExpDate(jwtTokensPair.refreshToken);
+
+  await sessionCommandRepository.updateSessionIatAndExpDate(
+    tokenPayload.deviceId,
+    issuedDate,
+    expirationDate,
+  );
+
+  return ResultFactory.success(jwtTokensPair);
+};
+
+const logout = async (refreshToken: string): Promise<Result> => {
+  const tokenPayload = decodeToken(refreshToken);
+  await sessionCommandRepository.deleteSessionByDeviceId(tokenPayload.deviceId);
+  return ResultFactory.success(null);
 };
 
 const authService = {
+  logout,
   login,
   registration,
   resendingConfirmationCode,
   confirmRegistration,
+  refreshTokens,
 };
 
 export { authService };

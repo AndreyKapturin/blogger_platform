@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { HttpStatus } from '../types/HttpStatus';
-import { verifyAccessToken } from '../utils/jwt/jwtUtils';
+import { verifyToken } from '../utils/jwt/jwtUtils';
 import { log } from '../utils/logger/loggerUtils';
 
 const bearerAuthMiddlewate = async (req: Request, res: Response, next: NextFunction) => {
@@ -22,7 +22,7 @@ const bearerAuthMiddlewate = async (req: Request, res: Response, next: NextFunct
   }
 
   try {
-    const payload = await verifyAccessToken(token);
+    const payload = await verifyToken(token);
     req.user = { userId: payload.userId };
     next();
   } catch (error) {

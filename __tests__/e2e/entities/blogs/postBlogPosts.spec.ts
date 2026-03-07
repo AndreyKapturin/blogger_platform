@@ -19,7 +19,11 @@ beforeAll(async () => {
   blogsTestManager = createBlogsTestManager(app);
 });
 
-describe(`POST ${Routes.Blogs}/:id/posts`, () => {
+beforeEach(async () => {
+  await request(app).delete(Routes.TestingAllData).expect(HttpStatus.No_Content);
+});
+
+describe(`POST ${Routes.BlogPostsById(':id')}`, () => {
   describe(`should create post for blog, return ${HttpStatus.Created} status code and post`, () => {
     it('all data is correct', async () => {
       const blog = (await blogsTestManager.createCorrectBlog({ name: 'Blog 1' })).body;
@@ -30,7 +34,7 @@ describe(`POST ${Routes.Blogs}/:id/posts`, () => {
       };
 
       const createPostResponse = await request(app)
-        .post(`${Routes.Blogs}/${blog.id}/posts`)
+        .post(Routes.BlogPostsById(blog.id))
         .set('Authorization', authHeader)
         .send(inputPost);
 
@@ -58,7 +62,7 @@ describe(`POST ${Routes.Blogs}/:id/posts`, () => {
       };
 
       const createPostResponse = await request(app)
-        .post(`${Routes.Blogs}/${blog.id}/posts`)
+        .post(Routes.BlogPostsById(blog.id))
         .set('Authorization', authHeader)
         .send(inputPost);
 
@@ -85,7 +89,7 @@ describe(`POST ${Routes.Blogs}/:id/posts`, () => {
       };
 
       const createPostResponse = await request(app)
-        .post(`${Routes.Blogs}/${blog.id}/posts`)
+        .post(Routes.BlogPostsById(blog.id))
         .send(inputPost);
       expect(createPostResponse.status).toBe(HttpStatus.Unauthorized);
     });
@@ -100,7 +104,7 @@ describe(`POST ${Routes.Blogs}/:id/posts`, () => {
       };
 
       const createPostResponse = await request(app)
-        .post(`${Routes.Blogs}/${notExistBlogId}/posts`)
+        .post(Routes.BlogPostsById(notExistBlogId))
         .set('Authorization', authHeader)
         .send(inputPost);
 

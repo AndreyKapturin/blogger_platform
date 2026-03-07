@@ -4,7 +4,7 @@ import { HttpStatus } from '../../../../src/core/types/HttpStatus';
 import { createApp } from '../../../../src/app';
 import request from 'supertest';
 import { SortDirection } from '../../../../src/core/types/PaginationAndSorting';
-import { BlogSortField, ViewBlogQuery, ViewBlogType } from '../../../../src/entities/blogs/types';
+import { BlogSortField, ViewBlogType } from '../../../../src/entities/blogs/types';
 import { closeBbConnection } from '../../../../src/database/mongoDB';
 import { BlogsTestManagerType, createBlogsTestManager } from '../../utils/blogsTestManager';
 
@@ -15,7 +15,7 @@ let blogs: ViewBlogType[];
 beforeAll(async () => {
   app = await createApp();
   blogTestManager = createBlogsTestManager(app);
-  await request(app).delete(`${Routes.Testing}/all-data`).expect(HttpStatus.No_Content);
+  await request(app).delete(Routes.TestingAllData).expect(HttpStatus.No_Content);
   blogs = await blogTestManager.createManyBlogs(1000);
 });
 

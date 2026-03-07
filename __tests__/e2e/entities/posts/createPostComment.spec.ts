@@ -30,7 +30,7 @@ const invalidAccessToken = 'jdlnfjlkadn fjl;adnfl;kn adlksnf jlasdnfjlknadlsknlf
 
 beforeAll(async () => {
   app = await createApp();
-  await request(app).delete(`${Routes.Testing}/all-data`).expect(HttpStatus.No_Content);
+  await request(app).delete(Routes.TestingAllData).expect(HttpStatus.No_Content);
 
   blogsTestManager = createBlogsTestManager(app);
   postsTestManager = createPostsTestManager(app);
@@ -42,11 +42,11 @@ beforeAll(async () => {
   userAccessToken = await usersTestManager.loginUser(user.login, userPassword);
 });
 
-describe(`POST ${Routes.Posts}/:id/comments`, () => {
+describe(`POST ${Routes.PostCommentsById(':id')}`, () => {
   it(`should create comment, return ${HttpStatus.Created} status code
     and created comment if data is valid and comment exist`, async () => {
     const createCommentResponse = await request(app)
-      .post(`${Routes.Posts}/${post.id}/comments`)
+      .post(Routes.PostCommentsById(post.id))
       .set('Authorization', `Bearer ${userAccessToken}`)
       .send({
         content: validCommentContent,
@@ -68,7 +68,7 @@ describe(`POST ${Routes.Posts}/:id/comments`, () => {
 
   it(`should return ${HttpStatus.Bad_Request} if data is invalid`, async () => {
     const createCommentResponse = await request(app)
-      .post(`${Routes.Posts}/${post.id}/comments`)
+      .post(Routes.PostCommentsById(post.id))
       .set('Authorization', `Bearer ${userAccessToken}`)
       .send({
         content: 'p'.repeat(MIN_COMMENT_CONTENT_LENGTH - 1),
@@ -85,7 +85,7 @@ describe(`POST ${Routes.Posts}/:id/comments`, () => {
 
   it(`should return ${HttpStatus.Unauthorized} if access token invalid`, async () => {
     const createCommentResponse = await request(app)
-      .post(`${Routes.Posts}/${post.id}/comments`)
+      .post(Routes.PostCommentsById(post.id))
       .set('Authorization', `Bearer ${invalidAccessToken}`)
       .send({ content: validCommentContent });
     expect(createCommentResponse.status).toBe(HttpStatus.Unauthorized);
@@ -93,7 +93,7 @@ describe(`POST ${Routes.Posts}/:id/comments`, () => {
 
   it(`should return ${HttpStatus.Not_Found} if post not exist`, async () => {
     const createCommentResponse = await request(app)
-      .post(`${Routes.Posts}/${notExistPostId}/comments`)
+      .post(Routes.PostCommentsById(notExistPostId))
       .set('Authorization', `Bearer ${userAccessToken}`)
       .send({
         content: validCommentContent,

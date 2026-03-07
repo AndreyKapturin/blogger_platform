@@ -1,11 +1,21 @@
+import { sessionCommandRepository } from '../../auth/repositories/sessionCommandRepository';
 import { blogsCommandRepository } from '../../blogs/repositories/blogsCommandRepository';
+import { commentsCommandRepository } from '../../comments/repositories/commentsCommandRepository';
 import { postsCommandRepository } from '../../posts/repositories/postsCommandRepository';
+import { requestsCommandRepository } from '../../requests/repositories/requestsCommandRepository';
 import { usersCommandRepository } from '../../users/repositories/usersCommandRepository';
 
 const cleanDatabase = async () => {
-  await blogsCommandRepository.cleanAll();
-  await postsCommandRepository.cleanAll();
-  await usersCommandRepository.cleanAll();
+  await Promise.all(
+    [
+      blogsCommandRepository,
+      postsCommandRepository,
+      usersCommandRepository,
+      commentsCommandRepository,
+      sessionCommandRepository,
+      requestsCommandRepository,
+    ].map((commandRepository) => commandRepository.cleanAll()),
+  );
 };
 
 export { cleanDatabase };

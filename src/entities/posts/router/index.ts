@@ -16,25 +16,26 @@ import { createPostCommentHandler } from './handlers/createPostCommentHandler';
 import { bearerAuthMiddlewate } from '../../../core/middlewares/bearerAuthMiddlewate';
 import { getPostCommentsHandler } from './handlers/getPostCommentsHandler';
 import { paginationAndSortingCommentValidationSchema } from '../../comments/validations/paginationAndSortingCommentValidationSchema';
+import { Routes } from '../../../app/routes';
 
 const postsRouter = Router();
 
 postsRouter.get(
-  '/',
+  Routes.Index,
   paginationAndSortingPostsValidationSchema,
   validationResultMiddleware,
   getPostsHandler,
 );
 
 postsRouter.get(
-  '/:id',
+  Routes.ById(':id'),
   idInParamsCheckMiddleware,
   validationResultMiddleware,
   getPostByIdHandler,
 );
 
 postsRouter.get(
-  '/:id/comments',
+  Routes.PostIdComments(':id'),
   idInParamsCheckMiddleware,
   paginationAndSortingCommentValidationSchema,
   validationResultMiddleware,
@@ -42,7 +43,7 @@ postsRouter.get(
 );
 
 postsRouter.post(
-  '/',
+  Routes.Index,
   basicAuthMiddleware,
   inputPostValidationSchema,
   validationResultMiddleware,
@@ -50,7 +51,7 @@ postsRouter.post(
 );
 
 postsRouter.post(
-  '/:id/comments',
+  Routes.PostIdComments(':id'),
   bearerAuthMiddlewate,
   idInParamsCheckMiddleware,
   inputCommentValidationSchema,
@@ -59,7 +60,7 @@ postsRouter.post(
 );
 
 postsRouter.put(
-  '/:id',
+  Routes.ById(':id'),
   basicAuthMiddleware,
   idInParamsCheckMiddleware,
   inputPostValidationSchema,
@@ -68,7 +69,7 @@ postsRouter.put(
 );
 
 postsRouter.delete(
-  '/:id',
+  Routes.ById(':id'),
   basicAuthMiddleware,
   idInParamsCheckMiddleware,
   validationResultMiddleware,

@@ -64,7 +64,7 @@ const createPostsTestManager = (app: Express) => {
     items,
   };
 
-  const response = await request(app).get(`${Routes.Blogs}/${blogId}/posts`).query(query);
+  const response = await request(app).get(Routes.BlogPostsById(blogId)).query(query);
   expect(response.status).toBe(HttpStatus.Ok);
   expect(response.body).toEqual(expectedBody);
   return response;
@@ -164,12 +164,12 @@ const createPostsTestManager = (app: Express) => {
     };
 
     const updateResponse = await request(app)
-      .put(`${Routes.Posts}/${id}`)
+      .put(Routes.PostById(id))
       .set('Authorization', authHeader)
       .send(dataForUpdate);
     expect(updateResponse.status).toBe(HttpStatus.No_Content);
 
-    const getResponse = await request(app).get(`${Routes.Posts}/${id}`);
+    const getResponse = await request(app).get(Routes.PostById(id));
     expect(getResponse.body).toEqual(expectedPost);
   };
 
@@ -190,11 +190,11 @@ const createPostsTestManager = (app: Express) => {
     }
 
     const updateResponse = await request(app)
-      .put(`${Routes.Posts}/${id}`)
+      .put(Routes.PostById(id))
       .set('Authorization', authHeader)
       .send(dataForUpdate);
     expect(updateResponse.status).toBe(HttpStatus.Bad_Request);
-    const getResponse = await request(app).get(`${Routes.Posts}/${id}`);
+    const getResponse = await request(app).get(Routes.PostById(id));
     expect(getResponse.body).toEqual(createResponse.body);
     return updateResponse;
   };

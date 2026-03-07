@@ -1,4 +1,4 @@
-import express, { Express, Request, Response } from 'express';
+import express, { Express } from 'express';
 import { Routes } from './routes';
 import { blogsRouter } from '../entities/blogs/router';
 import { jsonBodyMiddleware } from '../core/middlewares/jsonBodyMiddleware';
@@ -11,18 +11,25 @@ import { usersRouter } from '../entities/users/router';
 import { authRouter } from '../entities/auth/router';
 import { commentsRouter } from '../entities/comments/router';
 import { MONGO_CONNECTION_URI } from '../core/config';
+import cookieParser from 'cookie-parser';
+import { express as useragent } from 'express-useragent';
+import { securityRouter } from '../entities/security/router';
 
 const createApp = async (): Promise<Express> => {
   await connectToDB(MONGO_CONNECTION_URI);
   const app = express();
   app.use(jsonBodyMiddleware);
+  app.set('trust proxy', true);
+  app.use(cookieParser());
+  app.use(useragent());
   app.use(Routes.Auth, authRouter);
   app.use(Routes.Blogs, blogsRouter);
   app.use(Routes.Comments, commentsRouter);
-  app.use(Routes.Posts, postsRouter);
-  app.use(Routes.Users, usersRouter);
-  app.use(Routes.Testing, testingRouter);
   app.use(Routes.Docs, docsRouter);
+  app.use(Routes.Posts, postsRouter);
+  app.use(Routes.Security, securityRouter);
+  app.use(Routes.Testing, testingRouter);
+  app.use(Routes.Users, usersRouter);
   app.use(errorsHandler);
   return app;
 };

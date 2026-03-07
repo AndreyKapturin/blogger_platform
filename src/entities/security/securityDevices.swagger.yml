@@ -1,0 +1,94 @@
+paths:
+  /security/devices:
+    get:
+      tags: [SecurityDevices]
+      summary: All user active devices
+      security:
+        - RefreshToken: []
+      responses:
+        '200':
+          description: Array active user devices
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViewSecurityDeviceSchema'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorResultSchema'
+    
+    delete:
+      tags: [SecurityDevices]
+      summary: Terminate all user active device sessions (exclude current)
+      security:
+        - RefreshToken: []
+      responses:
+        '204':
+          description: Successfully terminate other device sessions
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorResultSchema'
+
+  /security/devices/{id}:
+     delete:
+      tags: [SecurityDevices]
+      summary: Terminate user active device session by id
+      parameters:
+        - $ref: '#/components/parameters/SecurityDeviceIdPathParam'
+      security:
+        - RefreshToken: []
+      responses:
+        '204':
+          description: Successfully terminate device session
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorResultSchema'
+        '403':
+          description: If try terminate not own device session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorResultSchema'
+        '404':
+          description: If device session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIErrorResultSchema'
+
+components: 
+  schemas: 
+    ViewSecurityDeviceSchema:
+      type: object
+      required:
+        - ip
+        - title
+        - lastActiveDate
+        - deviceId
+      properties:
+        ip:
+          type: string
+        title:
+          type: string
+        lastActiveDate:
+          type: string
+        deviceId:
+          type: string
+  
+  parameters:
+    SecurityDeviceIdPathParam:
+      in: path
+      name: id
+      required: true
+      description: Mongo ObjectId format unique identifier of the device
+      schema:
+        type: string
+        example: '696c891bdfcde0419df1674d'

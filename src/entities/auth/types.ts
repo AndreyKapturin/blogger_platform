@@ -1,8 +1,25 @@
+import { JwtPayload } from 'jsonwebtoken';
 import { InputUserType } from '../users/types';
 
 type InputLoginType = {
   loginOrEmail: string;
   password: string;
+};
+
+type JwtTokenEncodePayload = {
+  userId: string;
+  deviceId: string;
+};
+
+type JwtTokenDecodePayload = JwtPayload &
+  JwtTokenEncodePayload & {
+    exp: number;
+    iat: number;
+  };
+
+type JwtTokensPair = {
+  accessToken: string;
+  refreshToken: string;
 };
 
 type AccessToken = {
@@ -19,10 +36,43 @@ type EmailConfirmationCode = {
   code: string;
 };
 
+type InputAuthData = {
+  credentials: InputLoginType;
+  requestDevice: RequestDevice;
+};
+
+type RequestDevice = {
+  ip: string;
+  deviceName: string;
+};
+
+type SecurityDevice = {
+  ip: string;
+  title: string;
+  lastActiveDate: string;
+  deviceId: string;
+};
+
+type Session = {
+  userId: string;
+  deviceId: string;
+  issuedDate: Date;
+  deviceName: string;
+  ip: string;
+  expirationDate: Date;
+};
+
 export type {
   InputLoginType,
   AccessToken,
   InputRegistrationType,
   InputEmailResendingType,
   EmailConfirmationCode,
+  JwtTokenEncodePayload,
+  JwtTokenDecodePayload,
+  JwtTokensPair,
+  InputAuthData,
+  RequestDevice,
+  SecurityDevice,
+  Session,
 };

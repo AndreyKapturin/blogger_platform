@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { CustomSanitizer, ErrorFormatter, validationResult } from 'express-validator';
 import { HttpStatus } from '../types/HttpStatus';
-import { log } from '../utils/logger/loggerUtils';
 
 const _errorFormatter: ErrorFormatter = (error) => {
   return error.type === 'field'
@@ -18,7 +17,6 @@ const validationResultMiddleware = (req: Request, res: Response, next: NextFunct
     next();
   } else {
     const arrayResult = result.formatWith(_errorFormatter).array({ onlyFirstError: true });
-    log(arrayResult);
     res.status(HttpStatus.Bad_Request).json({ errorsMessages: arrayResult });
     return;
   }

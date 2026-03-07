@@ -23,11 +23,11 @@ beforeAll(async () => {
   app = await createApp();
   blogTestManager = createBlogsTestManager(app);
   postsTestManager = createPostsTestManager(app);
-  await request(app).delete(`${Routes.Testing}/all-data`).expect(HttpStatus.No_Content);
+  await request(app).delete(Routes.TestingAllData).expect(HttpStatus.No_Content);
   blogs = await blogTestManager.createManyBlogs(3);
 
-  const blog1Posts = await postsTestManager.createManyPosts(blogs[0], 100);
-  const blog2Posts = await postsTestManager.createManyPosts(blogs[1], 150);
+  const blog1Posts = await postsTestManager.createManyPosts(blogs[0], 10);
+  const blog2Posts = await postsTestManager.createManyPosts(blogs[1], 15);
   
   posts = [
     ...blog1Posts,
@@ -36,7 +36,7 @@ beforeAll(async () => {
 
 });
 
-describe(`GET ${Routes.Blogs}/:id/posts`, () => {
+describe(`GET ${Routes.BlogPostsById(':id')}`, () => {
   describe(`should return ${HttpStatus.Ok} status code`, () => {
     it('paginated posts with default sorting', async () => {
       await postsTestManager.getPaginatedPosts(posts, blogs[0].id);
@@ -77,7 +77,7 @@ describe(`GET ${Routes.Blogs}/:id/posts`, () => {
 
   describe(`should return ${HttpStatus.Not_Found} status code`, () => {
     it('blog not existed', async () => {
-      const response = await request(app).get(`${Routes.Blogs}/${notExistBlogId}/posts`);
+      const response = await request(app).get(Routes.BlogPostsById(notExistBlogId));
       expect(response.status).toBe(HttpStatus.Not_Found);
     });
   });

@@ -10,7 +10,7 @@ import {
   MAX_BLOG_NAME_LENGTH,
   MAX_BLOG_WEBSITE_URL_LENGTH,
 } from '../../../../src/entities/blogs/constants';
-import { createPostsTestManager, PostsTestManagerType } from '../../utils/PostsTestManager';
+import { createPostsTestManager, PostsTestManagerType } from '../../utils/postsTestManager';
 import { ObjectId } from 'mongodb';
 import { InputBlogType } from '../../../../src/entities/blogs/types';
 import { closeBbConnection } from '../../../../src/database/mongoDB';
@@ -33,10 +33,10 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  await request(app).delete(`${Routes.Testing}/all-data`).expect(HttpStatus.No_Content);
+  await request(app).delete(Routes.TestingAllData).expect(HttpStatus.No_Content);
 });
 
-describe(`PUT ${Routes.Blogs}/:id`, () => {
+describe(`PUT ${Routes.BlogById(':id')}`, () => {
   describe(`should update blog, return ${HttpStatus.No_Content} status code`, () => {
     it('all data is correct', async () => {
       await blogsTestManager.correctUpdateBlog(correctUpdatedBlogData);
@@ -53,13 +53,13 @@ describe(`PUT ${Routes.Blogs}/:id`, () => {
       const postResponse = await blogsTestManager.createCorrectBlog();
 
       const updateResponse1 = await request(app)
-        .put(`${Routes.Blogs}/${postResponse.body.id}`)
+        .put(Routes.BlogById(postResponse.body.id))
         .set('Authorization', authHeader)
         .send({ ...postResponse.body, name: 'Updated name' });
       expect(updateResponse1.status).toBe(HttpStatus.No_Content);
 
       const updateResponse2 = await request(app)
-        .put(`${Routes.Blogs}/${postResponse.body.id}`)
+        .put(Routes.BlogById(postResponse.body.id))
         .set('Authorization', authHeader)
         .send({ ...postResponse.body, name: 'Updated name' });
       expect(updateResponse2.status).toBe(HttpStatus.No_Content);
@@ -115,20 +115,19 @@ describe(`PUT ${Routes.Blogs}/:id`, () => {
         },
       );
 
-      const post1GetResponse = await request(app).get(
-        `${Routes.Posts}/${createPost1Response.body.id}`,
-      );
+      const post1GetResponse = await request(app)
+        .get(Routes.PostById(createPost1Response.body.id));
       expect(post1GetResponse.status).toBe(HttpStatus.Ok);
       expect(post1GetResponse.body.blogName).toEqual(initialBlogName);
 
-      const post2GetResponse = await request(app).get(
-        `${Routes.Posts}/${createPost2Response.body.id}`,
+      const post2GetResponse = await request(app)
+        .get(Routes.PostById(createPost2Response.body.id)
       );
       expect(post2GetResponse.status).toBe(HttpStatus.Ok);
       expect(post2GetResponse.body.blogName).toEqual(initialBlogName);
 
       const updateBlogResponse = await request(app)
-        .put(`${Routes.Blogs}/${createBlogResponse.body.id}`)
+        .put(Routes.BlogById(createBlogResponse.body.id))
         .set('Authorization', authHeader)
         .send({
           name: updatedBlogName,
@@ -137,15 +136,13 @@ describe(`PUT ${Routes.Blogs}/:id`, () => {
         });
       expect(updateBlogResponse.status).toBe(HttpStatus.No_Content);
 
-      const afterBlogUpdatePost1GetResponse = await request(app).get(
-        `${Routes.Posts}/${createPost1Response.body.id}`,
-      );
+      const afterBlogUpdatePost1GetResponse = await request(app)
+        .get(Routes.PostById(createPost1Response.body.id));
       expect(afterBlogUpdatePost1GetResponse.status).toBe(HttpStatus.Ok);
       expect(afterBlogUpdatePost1GetResponse.body.blogName).toEqual(updatedBlogName);
 
-      const afterBlogUpdatePost2GetResponse = await request(app).get(
-        `${Routes.Posts}/${createPost2Response.body.id}`,
-      );
+      const afterBlogUpdatePost2GetResponse = await request(app)
+        .get(Routes.PostById(createPost2Response.body.id));
       expect(afterBlogUpdatePost2GetResponse.status).toBe(HttpStatus.Ok);
       expect(afterBlogUpdatePost2GetResponse.body.blogName).toEqual(updatedBlogName);
     });
@@ -154,7 +151,7 @@ describe(`PUT ${Routes.Blogs}/:id`, () => {
   describe(`should return ${HttpStatus.Not_Found} status code if blog not found`, () => {
     it('blog not exist', async () => {
       const response = await request(app)
-        .put(`${Routes.Blogs}/${notExistBlogId}`)
+        .put(Routes.BlogById(notExistBlogId))
         .set('Authorization', authHeader)
         .send(correctUpdatedBlogData);
       expect(response.status).toBe(HttpStatus.Not_Found);
@@ -214,7 +211,7 @@ describe(`PUT ${Routes.Blogs}/:id`, () => {
       const createRespone = await blogsTestManager.createCorrectBlog();
       const { id, ...updatedBlog } = { ...createRespone.body, name: 'New blog name' };
       await request(app)
-        .put(`${Routes.Blogs}/${id}`)
+        .put(Routes.BlogById(id))
         .send(updatedBlog)
         .expect(HttpStatus.Unauthorized);
     });

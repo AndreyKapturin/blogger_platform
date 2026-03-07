@@ -6,31 +6,32 @@ import { inputCommentValidationSchema } from '../validations/inputCommentValidat
 import { bearerAuthMiddlewate } from '../../../core/middlewares/bearerAuthMiddlewate';
 import { getCommentByIdHandler } from './handlers/getCommentByIdHandler';
 import { deleteCommentByIdHandler } from './handlers/deleteCommentByIdHandler';
+import { Routes } from '../../../app/routes';
 
 const commentsRouter = Router();
 
 commentsRouter.get(
-  '/:id',
+  Routes.ById(':id'),
   idInParamsCheckMiddleware,
   validationResultMiddleware,
-  getCommentByIdHandler
-)
+  getCommentByIdHandler,
+);
 
 commentsRouter.put(
-  '/:id',
+  Routes.ById(':id'),
   bearerAuthMiddlewate,
   idInParamsCheckMiddleware,
   inputCommentValidationSchema,
   validationResultMiddleware,
-  updateCommentHandler
-)
+  updateCommentHandler,
+);
 
 commentsRouter.delete(
-  '/:id',
+  Routes.ById(':id'),
   bearerAuthMiddlewate,
   idInParamsCheckMiddleware,
   validationResultMiddleware,
-  deleteCommentByIdHandler
-)
+  deleteCommentByIdHandler,
+);
 
 export { commentsRouter };

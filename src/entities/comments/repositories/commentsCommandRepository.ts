@@ -26,6 +26,10 @@ const remove = async (commentId: string) => {
   return deleteResult.deletedCount === 1;
 };
 
+const cleanAll = async () => {
+  await commentsCollection.deleteMany();
+};
+
 const _cleanObjectIdMapper = (mongoComment: WithId<MongoCommentType>): CommentType => {
   return {
     id: mongoComment._id.toString(),
@@ -44,6 +48,7 @@ const commentsCommandRepository = {
   findById,
   update,
   remove,
+  cleanAll,
 };
 
 export { commentsCommandRepository };

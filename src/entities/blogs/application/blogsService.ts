@@ -1,9 +1,10 @@
-import { Result, ResultStatus } from '../../../core/types/Result';
+import { Result, ResultStatus } from '../../../core/utils/Result';
+import { ResultFactory } from '../../../core/utils/Result/ResultFactory';
 import { postsCommandRepository } from '../../posts/repositories/postsCommandRepository';
 import { blogsCommandRepository } from '../repositories/blogsCommandRepository';
 import { BlogType, InputBlogType } from '../types';
 
-const createBlog = async (inputBlog: InputBlogType) => {
+const createBlog = async (inputBlog: InputBlogType): Promise<Result<string>> => {
   const newBlog: BlogType = {
     name: inputBlog.name,
     description: inputBlog.description,
@@ -13,56 +14,45 @@ const createBlog = async (inputBlog: InputBlogType) => {
   };
 
   const createdBlogId = await blogsCommandRepository.save(newBlog);
-
-  const result: Result<string> = {
-    status: ResultStatus.Success,
-    data: createdBlogId,
-    extensions: [],
-  };
-
-  return result;
+  return ResultFactory.success(createdBlogId);
 };
 
-const updateBlog = async (blogId: string, inputBlog: InputBlogType) => {
+const updateBlog = async (blogId: string, inputBlog: InputBlogType): Promise<Result<boolean>> => {
   const updatedBlog: InputBlogType = {
     name: inputBlog.name,
     description: inputBlog.description,
     websiteUrl: inputBlog.websiteUrl,
   };
+
   const wasUpdated = await blogsCommandRepository.update(blogId, updatedBlog);
+
   if (wasUpdated) {
     await postsCommandRepository.updateRelated(blogId, updatedBlog.name);
+    return ResultFactory.success(wasUpdated);
   }
-  return wasUpdated;
+
+  return ResultFactory.wrong(ResultStatus.NotFound, 'Blog not found', [
+    {
+      field: 'blogId',
+      message: `Blog with id ${blogId} not found`,
+    },
+  ]);
 };
 
-const deleteBlog = async (blogId: string) => {
+const deleteBlog = async (blogId: string): Promise<Result> => {
   const wasDeleted = await blogsCommandRepository.remove(blogId);
 
   if (wasDeleted) {
     await postsCommandRepository.removeRelated(blogId);
-
-    const result: Result = {
-      status: ResultStatus.Success,
-      data: null,
-      extensions: [],
-    };
-
-    return result;
+    return ResultFactory.success(null);
   }
 
-  const result: Result = {
-    status: ResultStatus.NotFound,
-    errorMessage: 'Blog not found',
-    extensions: [
-      {
-        field: 'blogId',
-        message: `Blog with id ${blogId} not found`,
-      },
-    ],
-  };
-
-  return result;
+  return ResultFactory.wrong(ResultStatus.NotFound, 'Blog not found', [
+    {
+      field: 'blogId',
+      message: `Blog with id ${blogId} not found`,
+    },
+  ]);
 };
 
 const blogsService = {

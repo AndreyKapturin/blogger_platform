@@ -8,11 +8,12 @@ import { createUserHandler } from './handlers/createUserHandler';
 import { deleteUserHandler } from './handlers/deleteUserHandler';
 import { basicAuthMiddleware } from '../../../core/middlewares/basicAuthMiddleware';
 import { idInParamsCheckMiddleware } from '../../../core/validation/idInParamsCheckMiddleware';
+import { Routes } from '../../../app/routes';
 
 const usersRouter = Router();
 
 usersRouter.get(
-  '/',
+  Routes.Index,
   basicAuthMiddleware,
   searchQueryUsersValidationSchema,
   paginationAndSortingUsersValidationSchema,
@@ -20,18 +21,20 @@ usersRouter.get(
   getUsersHandler,
 );
 
-usersRouter.post('/',
+usersRouter.post(
+  Routes.Index,
   basicAuthMiddleware,
   inputUserValidationSchema,
   validationResultMiddleware,
-  createUserHandler
+  createUserHandler,
 );
 
-usersRouter.delete('/:id',
+usersRouter.delete(
+  Routes.ById(':id'),
   basicAuthMiddleware,
   idInParamsCheckMiddleware,
   validationResultMiddleware,
-  deleteUserHandler
+  deleteUserHandler,
 );
 
 export { usersRouter };

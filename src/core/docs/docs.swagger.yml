@@ -94,3 +94,9 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: JWT access token
+
+    RefreshToken:
+      type: apiKey
+      in: cookie
+      name: refreshToken
+      description: JWT format. Must be correct, must not revoked and not expired

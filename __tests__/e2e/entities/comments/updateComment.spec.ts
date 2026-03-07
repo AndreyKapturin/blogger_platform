@@ -38,7 +38,7 @@ const invalidAccessToken = 'jdlnfjlkadn fjl;adnfl;kn adlksnf jlasdnfjlknadlsknlf
 
 beforeAll(async () => {
   app = await createApp();
-  await request(app).delete(`${Routes.Testing}/all-data`).expect(HttpStatus.No_Content);
+  await request(app).delete(Routes.TestingAllData).expect(HttpStatus.No_Content);
 
   blogsTestManager = createBlogsTestManager(app);
   postsTestManager = createPostsTestManager(app);
@@ -54,11 +54,11 @@ beforeAll(async () => {
   comment = await commentsTestManager.createComment(post.id, userAccessToken);
 });
 
-describe(`PUT ${Routes.Comments}/:id`, () => {
+describe(`PUT ${Routes.CommentById(':id')}`, () => {
   it(`should update comment, return ${HttpStatus.No_Content} status code
     if data is valid and comment exist`, async () => {
     const updateCommentResponse = await request(app)
-      .put(`${Routes.Comments}/${comment.id}`)
+      .put(Routes.CommentById(comment.id))
       .set('Authorization', `Bearer ${userAccessToken}`)
       .send({ content: validCommentContent });
     expect(updateCommentResponse.status).toBe(HttpStatus.No_Content);
@@ -66,7 +66,7 @@ describe(`PUT ${Routes.Comments}/:id`, () => {
 
   it(`should return ${HttpStatus.Bad_Request} status code if data invalid`, async () => {
     const updateCommentResponse = await request(app)
-      .put(`${Routes.Comments}/${comment.id}`)
+      .put(Routes.CommentById(comment.id))
       .set('Authorization', `Bearer ${userAccessToken}`)
       .send({ content: 'short' });
     expect(updateCommentResponse.status).toBe(HttpStatus.Bad_Request);
@@ -80,7 +80,7 @@ describe(`PUT ${Routes.Comments}/:id`, () => {
 
   it(`should return ${HttpStatus.Unauthorized} if access token invalid`, async () => {
     const updateCommentResponse = await request(app)
-      .put(`${Routes.Comments}/${comment.id}`)
+      .put(Routes.CommentById(comment.id))
       .set('Authorization', `Bearer ${invalidAccessToken}`)
       .send({ content: validCommentContent });
     expect(updateCommentResponse.status).toBe(HttpStatus.Unauthorized);
@@ -88,7 +88,7 @@ describe(`PUT ${Routes.Comments}/:id`, () => {
 
   it(`should return ${HttpStatus.Forbidden} if user is not comment author`, async () => {
     const updateCommentResponse = await request(app)
-      .put(`${Routes.Comments}/${comment.id}`)
+      .put(Routes.CommentById(comment.id))
       .set('Authorization', `Bearer ${anotherUserAccessToken}`)
       .send({ content: validCommentContent });
     expect(updateCommentResponse.status).toBe(HttpStatus.Forbidden);
@@ -96,7 +96,7 @@ describe(`PUT ${Routes.Comments}/:id`, () => {
 
   it(`should return ${HttpStatus.Not_Found} if comment not exist`, async () => {
     const updateCommentResponse = await request(app)
-      .put(`${Routes.Comments}/${notExistCommentId}`)
+      .put(Routes.CommentById(notExistCommentId))
       .set('Authorization', `Bearer ${userAccessToken}`)
       .send({ content: validCommentContent });
     expect(updateCommentResponse.status).toBe(HttpStatus.Not_Found);

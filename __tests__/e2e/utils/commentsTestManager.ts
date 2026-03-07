@@ -37,7 +37,7 @@ const createCommentsTestManager = (app: Express) => {
     };
 
     const response = await request(app)
-      .post(`${Routes.Posts}/${postId}/comments`)
+      .post(Routes.PostCommentsById(postId))
       .set('Authorization', `Bearer ${accessToken}`)
       .send(inputComment);
 
