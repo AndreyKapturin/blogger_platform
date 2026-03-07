@@ -1,4 +1,4 @@
-import { Express } from 'express';
+import { Express, request as expressRequest } from 'express';
 import { createApp } from '../../../../src/app';
 import { Routes } from '../../../../src/app/routes';
 import { ViewPostType } from '../../../../src/entities/posts/types';
@@ -20,6 +20,7 @@ import {
   createCommentsTestManager,
   expectedPaginatedViewComments,
 } from '../../utils/commentsTestManager';
+import { faker } from '@faker-js/faker';
 
 let app: Express;
 let blogsTestManager: BlogsTestManagerType;
@@ -44,7 +45,7 @@ beforeAll(async () => {
 
   blog = (await blogsTestManager.createCorrectBlog()).body;
   posts = await postsTestManager.createManyPosts(blog, 10);
-  usersWithTokens = await usersTestManager.createManyUsersAndLogin(10);
+  usersWithTokens = await usersTestManager.createManyUsersAndLogin(5);
   comments = await commentsTestManager.createManyComments(
     100,
     posts.map(({ id }) => id),
@@ -52,14 +53,22 @@ beforeAll(async () => {
   );
 });
 
+beforeEach(() => {
+  jest.spyOn(expressRequest, 'ip', 'get').mockReturnValue(faker.internet.ipv4());
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
+
 describe(`GET ${Routes.PostCommentsById(':id')}`, () => {
   it(`should return ${HttpStatus.Ok} and paginated comments if post exist`, async () => {
     const response = await request(app).get(Routes.PostCommentsById(posts[0].id));
     expect(response.status).toBe(HttpStatus.Ok);
-    expect(response.body).toEqual(expectedPaginatedViewComments)
+    expect(response.body).toEqual(expectedPaginatedViewComments);
   });
 
-   it(`should return ${HttpStatus.Not_Found} if post not exist`, async () => {
+  it(`should return ${HttpStatus.Not_Found} if post not exist`, async () => {
     const response = await request(app).get(Routes.PostCommentsById(notExistPostId));
     expect(response.status).toBe(HttpStatus.Not_Found);
   });

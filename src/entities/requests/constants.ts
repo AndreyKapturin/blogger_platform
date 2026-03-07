@@ -1,0 +1,2 @@
+export const REQUEST_COUNT_LIMIT = 5;
+export const RATE_LIMIT_WINDOW_IN_SECONDS = 10;

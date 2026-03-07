@@ -1,4 +1,4 @@
-import { Express } from 'express';
+import { Express, request as expressRequest } from 'express';
 import { Routes } from '../../../../../src/app/routes';
 import { createApp } from '../../../../../src/app';
 import request, { Response } from 'supertest';
@@ -18,6 +18,14 @@ beforeAll(async () => {
   app = await createApp();
   await request(app).delete(Routes.TestingAllData).expect(HttpStatus.No_Content);
   usersTestManager = createUsersTestManager(app);
+});
+
+beforeEach(() => {
+  jest.spyOn(expressRequest, 'ip', 'get').mockReturnValue(faker.internet.ipv4());
+})
+
+afterEach(() => {
+  jest.restoreAllMocks();
 });
 
 const expectedViewSecurityDevice = {

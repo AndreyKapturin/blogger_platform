@@ -89,7 +89,7 @@ describe(`POST ${Routes.AuthLogout}`, () => {
     const cookies = Array.isArray(setCookieHeader) ? setCookieHeader : [setCookieHeader];
     const refreshToken = extractFromCookieArray(cookies, 'refreshToken');
 
-    await sleep(1)
+    await sleep(1);
 
     const refreshTokenResponse = await request(app)
       .post(Routes.AuthRefreshToken)
