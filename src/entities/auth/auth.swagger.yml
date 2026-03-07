@@ -3,18 +3,18 @@ paths:
     post:
       tags: [Auth]
       summary: Login user
-      requestBody: 
+      requestBody:
         description: User credentials
-        content: 
-          application/json: 
-            schema: 
+        content:
+          application/json:
+            schema:
               $ref: '#/components/schemas/InputLoginUserSchema'
-      responses: 
+      responses:
         '200':
           description: Successfully login user
-          content: 
-            application/json: 
-              schema: 
+          content:
+            application/json:
+              schema:
                 $ref: '#/components/schemas/AccessTokenSchema'
           headers:
             Set-Cookie:
@@ -23,19 +23,21 @@ paths:
           $ref: '#/components/responses/ValidationErrorResponse'
         '401':
           description: Unauthorized
+        '429':
+          $ref: '#/components/responses/ToManyRequestsResponse'
 
   /auth/me:
     get:
       tags: [Auth]
       summary: Get user info by access token
-      security: 
+      security:
         - BearerAuth: []
-      responses: 
+      responses:
         '200':
           description: User info
-          content: 
-            application/json: 
-              schema: 
+          content:
+            application/json:
+              schema:
                 $ref: '#/components/schemas/ViewUserMeSchema'
         '401':
           description: Unauthorized
@@ -44,51 +46,57 @@ paths:
 
   /auth/registration:
     post:
-        tags: [Auth]
-        summary: User self registration
-        requestBody: 
-            description: User credentials
-            content:
-                application/json: 
-                  schema: 
-                    $ref: '#/components/schemas/InputUserSchema' 
-        responses: 
-            '204':
-                description: User successfully registered
-            '400': 
-                $ref: '#/components/responses/ValidationErrorResponse'
+      tags: [Auth]
+      summary: User self registration
+      requestBody:
+        description: User credentials
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InputUserSchema'
+      responses:
+        '204':
+          description: User successfully registered
+        '400':
+          $ref: '#/components/responses/ValidationErrorResponse'
+        '429':
+          $ref: '#/components/responses/ToManyRequestsResponse'
 
   /auth/registration-email-resending:
     post:
-        tags: [Auth]
-        summary: Resend email confirmation code
-        requestBody: 
-            description: User email
-            content:
-                application/json: 
-                  schema: 
-                    $ref: '#/components/schemas/InputResendingEmailConfirmationSchema' 
-        responses: 
-            '204':
-                description: Email successfully resend
-            '400': 
-                $ref: '#/components/responses/ValidationErrorResponse'
+      tags: [Auth]
+      summary: Resend email confirmation code
+      requestBody:
+        description: User email
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InputResendingEmailConfirmationSchema'
+      responses:
+        '204':
+          description: Email successfully resend
+        '400':
+          $ref: '#/components/responses/ValidationErrorResponse'
+        '429':
+          $ref: '#/components/responses/ToManyRequestsResponse'
 
   /auth/registration-confirmation:
     post:
-        tags: [Auth]
-        summary: Confirm email
-        requestBody: 
-            description: User confirmation code
-            content:
-                application/json: 
-                  schema: 
-                    $ref: '#/components/schemas/InputRegistrationConfirmationSchema' 
-        responses: 
-            '204':
-                description: Email successfully confirmed
-            '400': 
-                $ref: '#/components/responses/ValidationErrorResponse'
+      tags: [Auth]
+      summary: Confirm email
+      requestBody:
+        description: User confirmation code
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InputRegistrationConfirmationSchema'
+      responses:
+        '204':
+          description: Email successfully confirmed
+        '400':
+          $ref: '#/components/responses/ValidationErrorResponse'
+        '429':
+          $ref: '#/components/responses/ToManyRequestsResponse'
 
   /auth/refresh-token:
     post:
@@ -124,14 +132,14 @@ paths:
         '401':
           description: Unauthorized
 
-components: 
-  schemas: 
+components:
+  schemas:
     InputLoginUserSchema:
       type: object
-      required: 
+      required:
         - loginOrEmail
         - password
-      properties: 
+      properties:
         loginOrEmail:
           oneOf:
             - type: string
@@ -148,18 +156,18 @@ components:
 
     AccessTokenSchema:
       type: object
-      required: 
+      required:
         - accessToken
-      properties: 
+      properties:
         accessToken:
           type: string
           description: JWT access token. Lifetime 10 seconds
 
     InputResendingEmailConfirmationSchema:
       type: object
-      required: 
+      required:
         - email
-      properties: 
+      properties:
         email:
           type: string
           format: email
@@ -167,9 +175,9 @@ components:
 
     InputRegistrationConfirmationSchema:
       type: object
-      required: 
+      required:
         - code
-      properties: 
+      properties:
         code:
           type: string
 
@@ -182,17 +190,17 @@ components:
       schema:
         type: string
         example: '696c891bdfcde0419df1674d'
-    
+
     UsersSortByQueryParam:
       in: query
       name: sortBy
       description: sorting users field name
-      schema: 
-        allOf: 
+      schema:
+        allOf:
           - $ref: '#/components/schemas/UsersSortFieldSchema'
         type: string
         default: createdAt
-    
+
     SearchLoginTermQueryParam:
       in: query
       name: searchLoginTerm
@@ -214,7 +222,7 @@ components:
       description: Refresh token in HTTP-only cookie. Lifetime 20 seconds
       schema:
         type: string
-        example: "refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; HttpOnly; Secure;"
+        example: 'refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; HttpOnly; Secure;'
 
     ClearRefreshTokenCookie:
       description: Instruction to clear the refreshToken cookie
@@ -222,3 +230,7 @@ components:
         type: string
         example: >
           refreshToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly Secure;
+
+  responses:
+    ToManyRequestsResponse:
+      description: 'More than 5 attempts from one IP-address during 10 seconds'

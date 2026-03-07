@@ -17,6 +17,7 @@ import { refreshTokenMiddleware } from '../../../core/middlewares/refreshTokenMi
 import { refreshTokensHandler } from './handlers/refreshTokensHandler';
 import { logoutHandler } from './handlers/logoutHandler';
 import { Routes } from '../../../app/routes';
+import { rateLimitMiddleware } from '../../../core/middlewares/rateLimitMiddleware';
 
 const authRouter = Router();
 
@@ -24,6 +25,7 @@ authRouter.get(Routes.Me, bearerAuthMiddlewate, meHandler);
 
 authRouter.post(
   Routes.Login,
+  rateLimitMiddleware,
   loginOrEmailValidation,
   passwordValidationSchema,
   validationResultMiddleware,
@@ -32,6 +34,7 @@ authRouter.post(
 
 authRouter.post(
   Routes.Registration,
+  rateLimitMiddleware,
   inputUserValidationSchema,
   validationResultMiddleware,
   registrationHandler,
@@ -39,6 +42,7 @@ authRouter.post(
 
 authRouter.post(
   Routes.EmailResending,
+  rateLimitMiddleware,
   emailValidationSchema,
   validationResultMiddleware,
   emailResendingHandler,
@@ -46,6 +50,7 @@ authRouter.post(
 
 authRouter.post(
   Routes.RegistrationConfirmation,
+  rateLimitMiddleware,
   emailConfirmationCodeValidation,
   validationResultMiddleware,
   registrationConfirmationHandler,

@@ -1,4 +1,4 @@
-import { Express } from 'express';
+import { Express, request as expressRequest } from 'express';
 import { Routes } from '../../../../src/app/routes';
 import { createApp } from '../../../../src/app';
 import request from 'supertest';
@@ -26,6 +26,14 @@ beforeAll(async () => {
     .set('Authorization', authHeader)
     .send(inputUser);
   user = createUserResponse.body;
+});
+
+beforeEach(() => {
+  jest.spyOn(expressRequest, 'ip', 'get').mockReturnValue(faker.internet.ipv4());
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
 });
 
 describe(`POST ${Routes.AuthLogin}`, () => {
