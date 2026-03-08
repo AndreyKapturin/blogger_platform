@@ -1,4 +1,4 @@
-import { sessionCommandRepository } from '../../auth/repositories/sessionCommandRepository';
+import { sessionsCommandRepository } from '../../auth/repositories/sessionsCommandRepository';
 import { blogsCommandRepository } from '../../blogs/repositories/blogsCommandRepository';
 import { commentsCommandRepository } from '../../comments/repositories/commentsCommandRepository';
 import { postsCommandRepository } from '../../posts/repositories/postsCommandRepository';
@@ -12,7 +12,7 @@ const cleanDatabase = async () => {
       postsCommandRepository,
       usersCommandRepository,
       commentsCommandRepository,
-      sessionCommandRepository,
+      sessionsCommandRepository,
       requestsCommandRepository,
     ].map((commandRepository) => commandRepository.cleanAll()),
   );

@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 import { HttpStatus } from '../types/HttpStatus';
-import { verifyToken } from '../utils/jwt/jwtUtils';
+import { jwtService } from '../utils/jwt/jwtUtils';
 import { log } from '../utils/logger/loggerUtils';
 import { JwtTokenDecodePayload } from '../../entities/auth/types';
-import { sessionCommandRepository } from '../../entities/auth/repositories/sessionCommandRepository';
+import { sessionsCommandRepository } from '../../entities/auth/repositories/sessionsCommandRepository';
 
 const refreshTokenMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   const refreshToken = req.cookies.refreshToken;
@@ -25,7 +25,7 @@ const refreshTokenMiddleware = async (req: Request, res: Response, next: NextFun
   let tokenPayload: JwtTokenDecodePayload;
 
   try {
-    tokenPayload = await verifyToken(refreshToken);
+    tokenPayload = await jwtService.verifyToken(refreshToken);
   } 
   catch (error) {
     log(error);
@@ -43,7 +43,7 @@ const refreshTokenMiddleware = async (req: Request, res: Response, next: NextFun
     return;
   }
 
-  const isActiveSession = await sessionCommandRepository
+  const isActiveSession = await sessionsCommandRepository
     .existsDeviceSession(tokenPayload.deviceId, new Date(tokenPayload.iat * 1000))
 
   if (!isActiveSession) {

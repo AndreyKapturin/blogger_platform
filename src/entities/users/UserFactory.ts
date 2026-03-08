@@ -1,4 +1,4 @@
-import { hashPassword } from '../../core/utils/crypto/passwordUtils';
+import { cryptoService } from '../../core/utils/crypto/passwordUtils';
 import { dateUtils } from '../../core/utils/date/dateUtils';
 import { MongoUserType } from './types';
 
@@ -8,7 +8,7 @@ class UserFactory {
     login: string,
     rawPassword: string,
   ): Promise<MongoUserType> {
-    const passwordHash = await hashPassword(rawPassword);
+    const passwordHash = await cryptoService.hashPassword(rawPassword);
     const createdAt = new Date().toISOString();
     return {
       email,
@@ -28,7 +28,7 @@ class UserFactory {
     login: string,
     rawPassword: string,
   ): Promise<MongoUserType> {
-    const passwordHash = await hashPassword(rawPassword);
+    const passwordHash = await cryptoService.hashPassword(rawPassword);
     return {
       email,
       login,

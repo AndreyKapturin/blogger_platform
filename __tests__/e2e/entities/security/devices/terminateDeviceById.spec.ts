@@ -7,7 +7,7 @@ import { closeBbConnection } from '../../../../../src/database/mongoDB';
 import { faker } from '@faker-js/faker';
 import { extractFromCookieArray } from '../../../../../src/core/utils/cookie/cookieUtils';
 import { ISODateStringRegExp } from '../../../utils/constants';
-import { decodeToken } from '../../../../../src/core/utils/jwt/jwtUtils';
+import { jwtService } from '../../../../../src/core/utils/jwt/jwtUtils';
 import { createUsersTestManager, UsersTestManagerType } from '../../../utils/usersTestManager';
 import { InputLoginType } from '../../../../../src/entities/auth/types';
 
@@ -67,8 +67,8 @@ describe(`DELETE ${Routes.SecurityDeviceById(':id')}`, () => {
     const currentDeviceRefreshToken = extractRefreshToken(loginCurrentDeviceResponse);
     const otherDeviceRefreshToken = extractRefreshToken(loginOtherDeviceResponse);
 
-    const { deviceId: currentDeviceId } = decodeToken(currentDeviceRefreshToken!);
-    const { deviceId: otherDeviceId } = decodeToken(otherDeviceRefreshToken!);
+    const { deviceId: currentDeviceId } = jwtService.decodeToken(currentDeviceRefreshToken!);
+    const { deviceId: otherDeviceId } = jwtService.decodeToken(otherDeviceRefreshToken!);
 
     const getDevicesBeforeTerminateResponse = await request(app)
       .get(Routes.SecurityDevices)
@@ -110,7 +110,7 @@ describe(`DELETE ${Routes.SecurityDeviceById(':id')}`, () => {
 
     const currentDeviceRefreshToken = extractRefreshToken(loginCurrentDeviceResponse);
 
-    const { deviceId: currentDeviceId } = decodeToken(currentDeviceRefreshToken!);
+    const { deviceId: currentDeviceId } = jwtService.decodeToken(currentDeviceRefreshToken!);
 
     const getDevicesBeforeTerminateResponse = await request(app)
       .get(Routes.SecurityDevices)
@@ -152,7 +152,7 @@ describe(`DELETE ${Routes.SecurityDeviceById(':id')}`, () => {
       .send({ loginOrEmail: otherUser.login, password: otherUser.password });
 
     const otherUserRefreshToken = extractRefreshToken(otherUserLoginResponse);
-    const { deviceId: otherUserDeviceId } = decodeToken(otherUserRefreshToken!);
+    const { deviceId: otherUserDeviceId } = jwtService.decodeToken(otherUserRefreshToken!);
 
     const terminateOtherUserDeviceResponse = await request(app)
       .delete(Routes.SecurityDeviceById(otherUserDeviceId))
