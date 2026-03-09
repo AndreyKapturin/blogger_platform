@@ -1,20 +1,33 @@
-import { usersCommandRepository } from '../../users/repositories/usersCommandRepository';
+import {
+  UsersCommandRepository,
+  usersCommandRepository,
+} from '../../users/repositories/usersCommandRepository';
 import { Result, ResultStatus } from '../../../core/utils/Result';
 import { InputAuthData, InputRegistrationType, Session } from '../types';
-import { cryptoService } from '../../../core/utils/crypto/passwordUtils';
-import { jwtService } from '../../../core/utils/jwt/jwtUtils';
+import { CryptoService, cryptoService } from '../../../core/utils/crypto/passwordUtils';
+import { JwtService, jwtService } from '../../../core/utils/jwt/jwtUtils';
 import { UserFactory } from '../../users/UserFactory';
 import { emailService } from '../../../core/services/emailService';
 import { log } from '../../../core/utils/logger/loggerUtils';
 import { dateUtils } from '../../../core/utils/date/dateUtils';
 import { JwtTokensPair } from '../types';
 import { ResultFactory } from '../../../core/utils/Result/ResultFactory';
-import { sessionsCommandRepository } from '../repositories/sessionsCommandRepository';
+import {
+  SessionsCommandRepository,
+  sessionsCommandRepository,
+} from '../repositories/sessionsCommandRepository';
 
 class AuthService {
-  static async login(inputAuthData: InputAuthData): Promise<Result<JwtTokensPair>> {
+  constructor(
+    private usersCommandRepository: UsersCommandRepository,
+    private cryptoService: CryptoService,
+    private jwtService: JwtService,
+    private sessionsCommandRepository: SessionsCommandRepository,
+  ) {}
+
+  async login(inputAuthData: InputAuthData): Promise<Result<JwtTokensPair>> {
     const { credentials, requestDevice } = inputAuthData;
-    const user = await usersCommandRepository.findUserByLoginOrEmail(credentials.loginOrEmail);
+    const user = await this.usersCommandRepository.findUserByLoginOrEmail(credentials.loginOrEmail);
 
     if (!user) {
       return ResultFactory.wrong(ResultStatus.InvalidCredentials, 'Invalid credentials', [
@@ -25,7 +38,7 @@ class AuthService {
       ]);
     }
 
-    const isValidPassword = await cryptoService.comparePassword(
+    const isValidPassword = await this.cryptoService.comparePassword(
       credentials.password,
       user.passwordHash,
     );
@@ -40,12 +53,12 @@ class AuthService {
     }
 
     const deviceId = crypto.randomUUID();
-    const jwtTokensPair = await jwtService.createAccessAndRefreshTokens({
+    const jwtTokensPair = await this.jwtService.createAccessAndRefreshTokens({
       userId: user.id,
       deviceId,
     });
 
-    const { issuedDate, expirationDate } = jwtService.getTokenIatAndExpDate(
+    const { issuedDate, expirationDate } = this.jwtService.getTokenIatAndExpDate(
       jwtTokensPair.refreshToken,
     );
 
@@ -58,13 +71,13 @@ class AuthService {
       expirationDate,
     };
 
-    await sessionsCommandRepository.save(session);
+    await this.sessionsCommandRepository.save(session);
 
     return ResultFactory.success(jwtTokensPair);
   }
 
-  static async registration(credentials: InputRegistrationType): Promise<Result<string>> {
-    let isUserExist = await usersCommandRepository.checkUserByEmail(credentials.email);
+  async registration(credentials: InputRegistrationType): Promise<Result<string>> {
+    let isUserExist = await this.usersCommandRepository.checkUserByEmail(credentials.email);
 
     if (isUserExist) {
       return ResultFactory.wrong(ResultStatus.InvalidData, 'User already exists', [
@@ -75,7 +88,7 @@ class AuthService {
       ]);
     }
 
-    isUserExist = await usersCommandRepository.checkUserByLogin(credentials.login);
+    isUserExist = await this.usersCommandRepository.checkUserByLogin(credentials.login);
 
     if (isUserExist) {
       return ResultFactory.wrong(ResultStatus.InvalidData, 'User already exists', [
@@ -92,7 +105,7 @@ class AuthService {
       credentials.password,
     );
 
-    const createdUserId = await usersCommandRepository.save(newUser);
+    const createdUserId = await this.usersCommandRepository.save(newUser);
 
     emailService
       .sendConfirmationCode(newUser.email, newUser.emailConfirmation.code)
@@ -101,8 +114,8 @@ class AuthService {
     return ResultFactory.success(createdUserId);
   }
 
-  static async resendingConfirmationCode(email: string): Promise<Result> {
-    const user = await usersCommandRepository.findUserByLoginOrEmail(email);
+  async resendingConfirmationCode(email: string): Promise<Result> {
+    const user = await this.usersCommandRepository.findUserByLoginOrEmail(email);
 
     if (!user) {
       return ResultFactory.wrong(ResultStatus.InvalidData, 'User not found', [
@@ -125,7 +138,7 @@ class AuthService {
     const newConfirmationCode = crypto.randomUUID();
     const newCodeExpirationDate = dateUtils.getEmailConfirmationCodeExpirationDate();
 
-    await usersCommandRepository.updateEmailConfirmationCode(
+    await this.usersCommandRepository.updateEmailConfirmationCode(
       user.id,
       newConfirmationCode,
       newCodeExpirationDate,
@@ -138,9 +151,9 @@ class AuthService {
     return ResultFactory.success(null);
   }
 
-  static async confirmRegistration(emailConfirmationCode: string): Promise<Result> {
+  async confirmRegistration(emailConfirmationCode: string): Promise<Result> {
     const user =
-      await usersCommandRepository.findUserByEmailConfirmationCode(emailConfirmationCode);
+      await this.usersCommandRepository.findUserByEmailConfirmationCode(emailConfirmationCode);
 
     if (!user) {
       return ResultFactory.wrong(ResultStatus.InvalidData, 'User not found', [
@@ -171,23 +184,23 @@ class AuthService {
       ]);
     }
 
-    await usersCommandRepository.confirmEmail(user.email);
+    await this.usersCommandRepository.confirmEmail(user.email);
 
     return ResultFactory.success(null);
   }
 
-  static async refreshTokens(refreshToken: string): Promise<Result<JwtTokensPair>> {
-    const tokenPayload = jwtService.decodeToken(refreshToken);
-    const jwtTokensPair = await jwtService.createAccessAndRefreshTokens({
+  async refreshTokens(refreshToken: string): Promise<Result<JwtTokensPair>> {
+    const tokenPayload = this.jwtService.decodeToken(refreshToken);
+    const jwtTokensPair = await this.jwtService.createAccessAndRefreshTokens({
       deviceId: tokenPayload.deviceId,
       userId: tokenPayload.userId,
     });
 
-    const { issuedDate, expirationDate } = jwtService.getTokenIatAndExpDate(
+    const { issuedDate, expirationDate } = this.jwtService.getTokenIatAndExpDate(
       jwtTokensPair.refreshToken,
     );
 
-    await sessionsCommandRepository.updateSessionIatAndExpDate(
+    await this.sessionsCommandRepository.updateSessionIatAndExpDate(
       tokenPayload.deviceId,
       issuedDate,
       expirationDate,
@@ -196,13 +209,18 @@ class AuthService {
     return ResultFactory.success(jwtTokensPair);
   }
 
-  static async logout(refreshToken: string): Promise<Result> {
-    const tokenPayload = jwtService.decodeToken(refreshToken);
-    await sessionsCommandRepository.deleteSessionByDeviceId(tokenPayload.deviceId);
+  async logout(refreshToken: string): Promise<Result> {
+    const tokenPayload = this.jwtService.decodeToken(refreshToken);
+    await this.sessionsCommandRepository.deleteSessionByDeviceId(tokenPayload.deviceId);
     return ResultFactory.success(null);
   }
 }
 
-const authService = AuthService;
+const authService = new AuthService(
+  usersCommandRepository,
+  cryptoService,
+  jwtService,
+  sessionsCommandRepository,
+);
 
 export { authService };

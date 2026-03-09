@@ -1,19 +1,27 @@
-import { jwtService } from '../../../core/utils/jwt/jwtUtils';
+import { JwtService, jwtService } from '../../../core/utils/jwt/jwtUtils';
 import { ResultFactory, ResultStatus } from '../../../core/utils/Result';
-import { sessionsCommandRepository } from '../../auth/repositories/sessionsCommandRepository';
+import {
+  SessionsCommandRepository,
+  sessionsCommandRepository,
+} from '../../auth/repositories/sessionsCommandRepository';
 
 class DevicesService {
-  static async terminateOtherDevices(refreshToken: string) {
-    const tokenPayload = jwtService.decodeToken(refreshToken);
-    await sessionsCommandRepository.terminateOtherSession(
+  constructor(
+    private jwtService: JwtService,
+    private sessionsCommandRepository: SessionsCommandRepository,
+  ) {}
+
+  async terminateOtherDevices(refreshToken: string) {
+    const tokenPayload = this.jwtService.decodeToken(refreshToken);
+    await this.sessionsCommandRepository.terminateOtherSession(
       tokenPayload.userId,
       tokenPayload.deviceId,
     );
     return ResultFactory.success(null);
   }
 
-  static async terminateDeviceById(deviceId: string, refreshToken: string) {
-    const foundSession = await sessionsCommandRepository.findSessionByDeviceId(deviceId);
+  async terminateDeviceById(deviceId: string, refreshToken: string) {
+    const foundSession = await this.sessionsCommandRepository.findSessionByDeviceId(deviceId);
 
     if (!foundSession) {
       return ResultFactory.wrong(ResultStatus.NotFound, 'Device not found', [
@@ -24,7 +32,7 @@ class DevicesService {
       ]);
     }
 
-    const tokenPayload = jwtService.decodeToken(refreshToken);
+    const tokenPayload = this.jwtService.decodeToken(refreshToken);
 
     if (foundSession.userId !== tokenPayload.userId) {
       return ResultFactory.wrong(ResultStatus.PermissionError, 'Deleting not own device', [
@@ -35,12 +43,12 @@ class DevicesService {
       ]);
     }
 
-    await sessionsCommandRepository.deleteSessionByDeviceId(deviceId);
+    await this.sessionsCommandRepository.deleteSessionByDeviceId(deviceId);
 
     return ResultFactory.success(null);
   }
 }
 
-const devicesService = DevicesService;
+const devicesService = new DevicesService(jwtService, sessionsCommandRepository);
 
 export { devicesService };

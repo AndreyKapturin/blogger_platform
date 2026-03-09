@@ -3,11 +3,11 @@ import { sessionsCollection } from '../../../database/mongoDB';
 import { Session } from '../types';
 
 class SessionsCommandRepository {
-  static async save(session: Session) {
+  async save(session: Session) {
     sessionsCollection.insertOne(session);
   }
 
-  static async existsDeviceSession(deviceId: string, issuedDate: Date) {
+  async existsDeviceSession(deviceId: string, issuedDate: Date) {
     const documentsCount = await sessionsCollection.countDocuments(
       {
         $and: [{ deviceId }, { issuedDate }],
@@ -17,16 +17,12 @@ class SessionsCommandRepository {
     return Boolean(documentsCount);
   }
 
-  static async deleteSessionByDeviceId(deviceId: string) {
+  async deleteSessionByDeviceId(deviceId: string) {
     const { deletedCount } = await sessionsCollection.deleteOne({ deviceId });
     return Boolean(deletedCount);
   }
 
-  static async updateSessionIatAndExpDate(
-    deviceId: string,
-    issuedDate: Date,
-    expirationDate: Date,
-  ) {
+  async updateSessionIatAndExpDate(deviceId: string, issuedDate: Date, expirationDate: Date) {
     const { matchedCount } = await sessionsCollection.updateOne(
       { deviceId },
       { $set: { issuedDate, expirationDate } },
@@ -34,18 +30,18 @@ class SessionsCommandRepository {
     return Boolean(matchedCount);
   }
 
-  static async terminateOtherSession(userId: string, deviceId: string) {
+  async terminateOtherSession(userId: string, deviceId: string) {
     await sessionsCollection.deleteMany({
       $and: [{ userId }, { deviceId: { $ne: deviceId } }],
     });
   }
 
-  static async findSessionByDeviceId(deviceId: string) {
+  async findSessionByDeviceId(deviceId: string) {
     const foundSession = await sessionsCollection.findOne({ deviceId });
-    return foundSession ? SessionsCommandRepository._cleanObjectIdMapper(foundSession) : null;
+    return foundSession ? this._cleanObjectIdMapper(foundSession) : null;
   }
 
-  static _cleanObjectIdMapper(mongoSession: WithId<Session>): Session {
+  private _cleanObjectIdMapper(mongoSession: WithId<Session>): Session {
     return {
       deviceId: mongoSession.deviceId,
       deviceName: mongoSession.deviceName,
@@ -56,10 +52,10 @@ class SessionsCommandRepository {
     };
   }
 
-  static async cleanAll() {
+  async cleanAll() {
     sessionsCollection.deleteMany();
   }
 }
-const sessionsCommandRepository = SessionsCommandRepository;
+const sessionsCommandRepository = new SessionsCommandRepository();
 
-export { sessionsCommandRepository };
+export { sessionsCommandRepository, SessionsCommandRepository };

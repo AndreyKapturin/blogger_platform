@@ -4,12 +4,12 @@ import { CommentType, MongoCommentType, ViewCommentsQuery, ViewCommentType } fro
 import { toPaginateMapper } from '../../../core/mappers/toPaginateMapper';
 
 class CommentsQueryRepository {
-  static async findById(commentId: string) {
+   async findById(commentId: string) {
     const foundComment = await commentsCollection.findOne({ _id: new ObjectId(commentId) });
-    return foundComment ? CommentsQueryRepository._commentToViewMapper(foundComment) : null;
+    return foundComment ? this._commentToViewMapper(foundComment) : null;
   }
 
-  static async findAllForPostWithPagination(postId: string, commentsQuery: ViewCommentsQuery) {
+   async findAllForPostWithPagination(postId: string, commentsQuery: ViewCommentsQuery) {
     const { sortBy, sortDirection, pageSize, pageNumber } = commentsQuery;
 
     const skip = (pageNumber - 1) * pageSize;
@@ -19,7 +19,7 @@ class CommentsQueryRepository {
       .sort({ [sortBy]: sortDirection })
       .skip(skip)
       .limit(pageSize)
-      .map(CommentsQueryRepository._commentToViewMapper)
+      .map(this._commentToViewMapper)
       .toArray();
 
     const totalCount = await commentsCollection.countDocuments(filter);
@@ -27,17 +27,7 @@ class CommentsQueryRepository {
     return paginatedViewComments;
   }
 
-  static _cleanObjectIdMapper(mongoComment: WithId<MongoCommentType>): CommentType {
-    return {
-      id: mongoComment._id.toString(),
-      content: mongoComment.content,
-      commentatorInfo: mongoComment.commentatorInfo,
-      createdAt: mongoComment.createdAt,
-      postId: mongoComment.postId,
-    };
-  }
-
-  static _commentToViewMapper(mongoComment: WithId<MongoCommentType>): ViewCommentType {
+  private _commentToViewMapper(mongoComment: WithId<MongoCommentType>): ViewCommentType {
     return {
       id: mongoComment._id.toString(),
       content: mongoComment.content,
@@ -47,6 +37,6 @@ class CommentsQueryRepository {
   }
 }
 
-const commentsQueryRepository = CommentsQueryRepository;
+const commentsQueryRepository = new CommentsQueryRepository();
 
 export { commentsQueryRepository };

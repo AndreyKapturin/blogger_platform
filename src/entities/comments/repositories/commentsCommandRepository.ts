@@ -3,17 +3,17 @@ import { commentsCollection } from '../../../database/mongoDB';
 import { CommentType, MongoCommentType } from '../types';
 
 class CommentsCommandRepository {
-  static async findById(commentId: string) {
+  async findById(commentId: string) {
     const foundComment = await commentsCollection.findOne({ _id: new ObjectId(commentId) });
-    return foundComment ? CommentsCommandRepository._cleanObjectIdMapper(foundComment) : null;
+    return foundComment ? this._cleanObjectIdMapper(foundComment) : null;
   }
 
-  static async save(inputComment: MongoCommentType) {
+  async save(inputComment: MongoCommentType) {
     const { insertedId } = await commentsCollection.insertOne(inputComment);
     return insertedId.toString();
   }
 
-  static async update(commentId: string, content: string) {
+  async update(commentId: string, content: string) {
     const updateResult = await commentsCollection.updateOne(
       { _id: new ObjectId(commentId) },
       { $set: { content } },
@@ -22,16 +22,16 @@ class CommentsCommandRepository {
     return updateResult.matchedCount === 1;
   }
 
-  static async remove(commentId: string) {
+  async remove(commentId: string) {
     const deleteResult = await commentsCollection.deleteOne({ _id: new ObjectId(commentId) });
     return deleteResult.deletedCount === 1;
   }
 
-  static async cleanAll() {
+  async cleanAll() {
     await commentsCollection.deleteMany();
   }
 
-  static _cleanObjectIdMapper(mongoComment: WithId<MongoCommentType>): CommentType {
+  private _cleanObjectIdMapper(mongoComment: WithId<MongoCommentType>): CommentType {
     return {
       id: mongoComment._id.toString(),
       content: mongoComment.content,
@@ -45,6 +45,6 @@ class CommentsCommandRepository {
   }
 }
 
-const commentsCommandRepository = CommentsCommandRepository;
+const commentsCommandRepository = new CommentsCommandRepository();
 
-export { commentsCommandRepository };
+export { commentsCommandRepository, CommentsCommandRepository };

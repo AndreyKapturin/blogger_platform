@@ -1,17 +1,28 @@
 import { Result, ResultStatus } from '../../../core/utils/Result';
 import { ResultFactory } from '../../../core/utils/Result/ResultFactory';
-import { postsCommandRepository } from '../../posts/repositories/postsCommandRepository';
-import { usersCommandRepository } from '../../users/repositories/usersCommandRepository';
-import { commentsCommandRepository } from '../repositories/commentsCommandRepository';
+import {
+  PostsCommandRepository,
+  postsCommandRepository,
+} from '../../posts/repositories/postsCommandRepository';
+import {
+  UsersCommandRepository,
+  usersCommandRepository,
+} from '../../users/repositories/usersCommandRepository';
+import {
+  CommentsCommandRepository,
+  commentsCommandRepository,
+} from '../repositories/commentsCommandRepository';
 import { MongoCommentType } from '../types';
 
 class CommentsService {
-  static async createComment(
-    postId: string,
-    userId: string,
-    content: string,
-  ): Promise<Result<string>> {
-    const post = await postsCommandRepository.findById(postId);
+  constructor(
+    private postsCommandRepository: PostsCommandRepository,
+    private usersCommandRepository: UsersCommandRepository,
+    private commentsCommandRepository: CommentsCommandRepository,
+  ) {}
+
+  async createComment(postId: string, userId: string, content: string): Promise<Result<string>> {
+    const post = await this.postsCommandRepository.findById(postId);
 
     if (!post) {
       return ResultFactory.wrong(ResultStatus.NotFound, 'Post not found', [
@@ -22,7 +33,7 @@ class CommentsService {
       ]);
     }
 
-    const user = await usersCommandRepository.findUserById(userId);
+    const user = await this.usersCommandRepository.findUserById(userId);
 
     if (!user) {
       return ResultFactory.wrong(ResultStatus.InvalidCredentials, 'User not found', [
@@ -43,13 +54,13 @@ class CommentsService {
       createdAt: new Date().toISOString(),
     };
 
-    const createdCommentId = await commentsCommandRepository.save(newComment);
+    const createdCommentId = await this.commentsCommandRepository.save(newComment);
 
     return ResultFactory.success(createdCommentId);
   }
 
-  static async updateComment(commentId: string, userId: string, content: string): Promise<Result> {
-    const comment = await commentsCommandRepository.findById(commentId);
+  async updateComment(commentId: string, userId: string, content: string): Promise<Result> {
+    const comment = await this.commentsCommandRepository.findById(commentId);
 
     if (!comment) {
       return ResultFactory.wrong(ResultStatus.NotFound, `Comment with id ${commentId} not found`, [
@@ -69,13 +80,13 @@ class CommentsService {
       ]);
     }
 
-    await commentsCommandRepository.update(commentId, content);
+    await this.commentsCommandRepository.update(commentId, content);
 
     return ResultFactory.success(null);
   }
 
-  static async deleteComment(commentId: string, userId: string): Promise<Result> {
-    const comment = await commentsCommandRepository.findById(commentId);
+  async deleteComment(commentId: string, userId: string): Promise<Result> {
+    const comment = await this.commentsCommandRepository.findById(commentId);
 
     if (!comment) {
       return ResultFactory.wrong(ResultStatus.NotFound, `Comment with id ${commentId} not found`, [
@@ -95,12 +106,16 @@ class CommentsService {
       ]);
     }
 
-    await commentsCommandRepository.remove(commentId);
+    await this.commentsCommandRepository.remove(commentId);
 
     return ResultFactory.success(null);
   }
 }
 
-const commentsService = CommentsService;
+const commentsService = new CommentsService(
+  postsCommandRepository,
+  usersCommandRepository,
+  commentsCommandRepository,
+);
 
 export { commentsService };

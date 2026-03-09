@@ -45,14 +45,11 @@ async function connectToDB(mongoUri: string) {
     sessionsCollection = dbInstance.collection(SESSION_COLLECTION_NAME);
     requestsCollection = dbInstance.collection(REQUESTS_COLLECTION_NAME);
 
-    await sessionsCollection.createIndex(
-      { expirationDate: 1 },
-      { expireAfterSeconds: 0 }
-    );
+    await sessionsCollection.createIndex({ expirationDate: 1 }, { expireAfterSeconds: 0 });
 
     await requestsCollection.createIndex(
       { date: 1 },
-      { expireAfterSeconds: RATE_LIMIT_WINDOW_IN_SECONDS }
+      { expireAfterSeconds: RATE_LIMIT_WINDOW_IN_SECONDS },
     );
 
     log('Pinged your deployment. You successfully connected to MongoDB!');

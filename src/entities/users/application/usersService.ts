@@ -1,12 +1,16 @@
-import { usersCommandRepository } from '../repositories/usersCommandRepository';
+import {
+  UsersCommandRepository,
+  usersCommandRepository,
+} from '../repositories/usersCommandRepository';
 import { InputUserType } from '../types';
 import { Result, ResultStatus } from '../../../core/utils/Result';
 import { UserFactory } from '../UserFactory';
 import { ResultFactory } from '../../../core/utils/Result/ResultFactory';
 
 class UsersService {
-  static async createUser(credentials: InputUserType): Promise<Result<string>> {
-    const isUserExist = await usersCommandRepository.checkUserByLoginOrEmail(
+  constructor(private usersCommandRepository: UsersCommandRepository) {}
+  async createUser(credentials: InputUserType): Promise<Result<string>> {
+    const isUserExist = await this.usersCommandRepository.checkUserByLoginOrEmail(
       credentials.login,
       credentials.email,
     );
@@ -26,13 +30,13 @@ class UsersService {
       credentials.password,
     );
 
-    const userId = await usersCommandRepository.save(user);
+    const userId = await this.usersCommandRepository.save(user);
 
     return ResultFactory.success(userId);
   }
 
-  static async deleteUserById(userId: string): Promise<Result> {
-    const isDeletedUser = await usersCommandRepository.deleteUser(userId);
+  async deleteUserById(userId: string): Promise<Result> {
+    const isDeletedUser = await this.usersCommandRepository.deleteUser(userId);
 
     if (!isDeletedUser) {
       return ResultFactory.wrong(ResultStatus.NotFound, 'User not found', [
@@ -47,6 +51,6 @@ class UsersService {
   }
 }
 
-const usersService = UsersService;
+const usersService = new UsersService(usersCommandRepository);
 
 export { usersService };

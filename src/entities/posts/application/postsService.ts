@@ -1,12 +1,23 @@
 import { Result, ResultStatus } from '../../../core/utils/Result';
 import { ResultFactory } from '../../../core/utils/Result/ResultFactory';
-import { blogsCommandRepository } from '../../blogs/repositories/blogsCommandRepository';
-import { postsCommandRepository } from '../repositories/postsCommandRepository';
+import {
+  BlogsCommandRepository,
+  blogsCommandRepository,
+} from '../../blogs/repositories/blogsCommandRepository';
+import {
+  PostsCommandRepository,
+  postsCommandRepository,
+} from '../repositories/postsCommandRepository';
 import { InputPostType, InputUpdatePostType, PostType } from '../types';
 
 class PostsService {
-  static async createPost(inputPost: InputPostType): Promise<Result<string>> {
-    const blog = await blogsCommandRepository.findById(inputPost.blogId);
+  constructor(
+    private blogsCommandRepository: BlogsCommandRepository,
+    private postsCommandRepository: PostsCommandRepository,
+  ) {}
+
+  async createPost(inputPost: InputPostType): Promise<Result<string>> {
+    const blog = await this.blogsCommandRepository.findById(inputPost.blogId);
 
     if (!blog) {
       return ResultFactory.wrong(ResultStatus.NotFound, 'Blog not found', [
@@ -26,16 +37,13 @@ class PostsService {
       blogName: blog.name,
     };
 
-    const createdPostId = await postsCommandRepository.save(newPost);
+    const createdPostId = await this.postsCommandRepository.save(newPost);
 
     return ResultFactory.success(createdPostId);
   }
 
-  static async updatePost(
-    postId: string,
-    inputPost: InputPostType,
-  ): Promise<Result<string | null>> {
-    const blog = await blogsCommandRepository.findById(inputPost.blogId);
+  async updatePost(postId: string, inputPost: InputPostType): Promise<Result<string | null>> {
+    const blog = await this.blogsCommandRepository.findById(inputPost.blogId);
 
     if (!blog) {
       return ResultFactory.wrong(ResultStatus.NotFound, 'Blog not found', [
@@ -54,7 +62,7 @@ class PostsService {
       blogName: blog.name,
     };
 
-    const wasUpdated = await postsCommandRepository.update(postId, updatedPost);
+    const wasUpdated = await this.postsCommandRepository.update(postId, updatedPost);
 
     if (!wasUpdated) {
       return ResultFactory.wrong(ResultStatus.NotFound, 'Post not found', [
@@ -68,8 +76,8 @@ class PostsService {
     return ResultFactory.success(null);
   }
 
-  static async deletePost(postId: string): Promise<Result> {
-    const wasDeleted = await postsCommandRepository.remove(postId);
+  async deletePost(postId: string): Promise<Result> {
+    const wasDeleted = await this.postsCommandRepository.remove(postId);
 
     if (!wasDeleted) {
       return ResultFactory.wrong(ResultStatus.NotFound, 'Post not found', [
@@ -83,6 +91,6 @@ class PostsService {
     return ResultFactory.success(null);
   }
 }
-const postsService = PostsService;
+const postsService = new PostsService(blogsCommandRepository, postsCommandRepository);
 
 export { postsService };

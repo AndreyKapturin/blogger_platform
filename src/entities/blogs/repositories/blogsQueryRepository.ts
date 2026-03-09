@@ -4,7 +4,7 @@ import { BlogType, ViewBlogQuery, ViewBlogType } from '../types';
 import { toPaginateMapper } from '../../../core/mappers/toPaginateMapper';
 
 class BlogsQueryRepository {
-  static async findAllWithPagination(blogQuery: ViewBlogQuery) {
+  async findAllWithPagination(blogQuery: ViewBlogQuery) {
     const filter: Filter<BlogType> = {};
     const { searchNameTerm, sortBy, sortDirection, pageSize, pageNumber } = blogQuery;
 
@@ -19,7 +19,7 @@ class BlogsQueryRepository {
       .sort({ [sortBy]: sortDirection })
       .skip(skip)
       .limit(pageSize)
-      .map(BlogsQueryRepository._blogToViewMapper)
+      .map(this._blogToViewMapper)
       .toArray();
 
     const totalCount = await blogsCollection.countDocuments(filter);
@@ -27,16 +27,12 @@ class BlogsQueryRepository {
     return paginatedViewBlogs;
   }
 
-  static async getRawBlogsHandler() {
-    return blogsCollection.find().map(BlogsQueryRepository._blogToViewMapper).toArray();
-  }
-
-  static async findById(blogId: string) {
+  async findById(blogId: string) {
     const foundBlog = await blogsCollection.findOne({ _id: new ObjectId(blogId) });
-    return foundBlog ? BlogsQueryRepository._blogToViewMapper(foundBlog) : null;
+    return foundBlog ? this._blogToViewMapper(foundBlog) : null;
   }
 
-  static _blogToViewMapper(mongoBlog: WithId<BlogType>): ViewBlogType {
+  private _blogToViewMapper(mongoBlog: WithId<BlogType>): ViewBlogType {
     return {
       id: mongoBlog._id.toString(),
       name: mongoBlog.name,
@@ -47,5 +43,5 @@ class BlogsQueryRepository {
     };
   }
 }
-const blogsQueryRepository = BlogsQueryRepository;
+const blogsQueryRepository = new BlogsQueryRepository();
 export { blogsQueryRepository };

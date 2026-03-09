@@ -1,11 +1,22 @@
 import { Result, ResultStatus } from '../../../core/utils/Result';
 import { ResultFactory } from '../../../core/utils/Result/ResultFactory';
-import { postsCommandRepository } from '../../posts/repositories/postsCommandRepository';
-import { blogsCommandRepository } from '../repositories/blogsCommandRepository';
+import {
+  PostsCommandRepository,
+  postsCommandRepository,
+} from '../../posts/repositories/postsCommandRepository';
+import {
+  BlogsCommandRepository,
+  blogsCommandRepository,
+} from '../repositories/blogsCommandRepository';
 import { BlogType, InputBlogType } from '../types';
 
 class BlogsService {
-  static async createBlog(inputBlog: InputBlogType): Promise<Result<string>> {
+  constructor(
+    private blogsCommandRepository: BlogsCommandRepository,
+    private postsCommandRepository: PostsCommandRepository,
+  ) {}
+
+  async createBlog(inputBlog: InputBlogType): Promise<Result<string>> {
     const newBlog: BlogType = {
       name: inputBlog.name,
       description: inputBlog.description,
@@ -14,21 +25,21 @@ class BlogsService {
       isMembership: false,
     };
 
-    const createdBlogId = await blogsCommandRepository.save(newBlog);
+    const createdBlogId = await this.blogsCommandRepository.save(newBlog);
     return ResultFactory.success(createdBlogId);
   }
 
-  static async updateBlog(blogId: string, inputBlog: InputBlogType): Promise<Result<boolean>> {
+  async updateBlog(blogId: string, inputBlog: InputBlogType): Promise<Result<boolean>> {
     const updatedBlog: InputBlogType = {
       name: inputBlog.name,
       description: inputBlog.description,
       websiteUrl: inputBlog.websiteUrl,
     };
 
-    const wasUpdated = await blogsCommandRepository.update(blogId, updatedBlog);
+    const wasUpdated = await this.blogsCommandRepository.update(blogId, updatedBlog);
 
     if (wasUpdated) {
-      await postsCommandRepository.updateRelated(blogId, updatedBlog.name);
+      await this.postsCommandRepository.updateRelated(blogId, updatedBlog.name);
       return ResultFactory.success(wasUpdated);
     }
 
@@ -40,11 +51,11 @@ class BlogsService {
     ]);
   }
 
-  static async deleteBlog(blogId: string): Promise<Result> {
-    const wasDeleted = await blogsCommandRepository.remove(blogId);
+  async deleteBlog(blogId: string): Promise<Result> {
+    const wasDeleted = await this.blogsCommandRepository.remove(blogId);
 
     if (wasDeleted) {
-      await postsCommandRepository.removeRelated(blogId);
+      await this.postsCommandRepository.removeRelated(blogId);
       return ResultFactory.success(null);
     }
 
@@ -56,6 +67,6 @@ class BlogsService {
     ]);
   }
 }
-const blogsService = BlogsService;
+const blogsService = new BlogsService(blogsCommandRepository, postsCommandRepository);
 
 export { blogsService };

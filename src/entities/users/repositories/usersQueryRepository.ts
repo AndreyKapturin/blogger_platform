@@ -4,7 +4,7 @@ import { MongoUserType, UserMeType, ViewUsersQuery, ViewUserType } from '../type
 import { toPaginateMapper } from '../../../core/mappers/toPaginateMapper';
 
 class UsersQueryRepository {
-  static async getPaginatedUsers(usersQuery: ViewUsersQuery) {
+  async getPaginatedUsers(usersQuery: ViewUsersQuery) {
     const filter: Filter<MongoUserType> = {};
     const { sortBy, sortDirection, searchLoginTerm, searchEmailTerm, pageNumber, pageSize } =
       usersQuery;
@@ -29,25 +29,25 @@ class UsersQueryRepository {
 
     const totalCount = await usersCollection.countDocuments(filter);
 
-    const viewUsers = foundUsers.map(UsersQueryRepository._userToViewMapper);
+    const viewUsers = foundUsers.map(this._userToViewMapper);
     const paginatedUsers = toPaginateMapper(viewUsers, usersQuery, totalCount);
 
     return paginatedUsers;
   }
 
-  static async findUserById(userId: string) {
+  async findUserById(userId: string) {
     const foundUser = await usersCollection.findOne({ _id: new ObjectId(userId) });
     if (!foundUser) return null;
-    return UsersQueryRepository._userToViewMapper(foundUser);
+    return this._userToViewMapper(foundUser);
   }
 
-  static async findMe(userId: string) {
+  async findMe(userId: string) {
     const foundUser = await usersCollection.findOne({ _id: new ObjectId(userId) });
     if (!foundUser) return null;
-    return UsersQueryRepository._userToMeViewMapper(foundUser);
+    return this._userToMeViewMapper(foundUser);
   }
 
-  static _userToMeViewMapper(mongoUser: WithId<MongoUserType>): UserMeType {
+  private _userToMeViewMapper(mongoUser: WithId<MongoUserType>): UserMeType {
     return {
       userId: mongoUser._id.toString(),
       email: mongoUser.email,
@@ -55,7 +55,7 @@ class UsersQueryRepository {
     };
   }
 
-  static _userToViewMapper(mongoUser: WithId<MongoUserType>): ViewUserType {
+  private _userToViewMapper(mongoUser: WithId<MongoUserType>): ViewUserType {
     return {
       id: mongoUser._id.toString(),
       email: mongoUser.email,
@@ -65,6 +65,6 @@ class UsersQueryRepository {
   }
 }
 
-const usersQueryRepository = UsersQueryRepository;
+const usersQueryRepository = new UsersQueryRepository();
 
 export { usersQueryRepository };

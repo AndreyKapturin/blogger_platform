@@ -4,14 +4,14 @@ import { Session } from '../types';
 import { ViewSecurityDeviceType } from '../../security/types';
 
 class SessionsQueryRepository {
-  static async getAllDevicesForUser(userId: string) {
+  async getAllDevicesForUser(userId: string) {
     return sessionsCollection
       .find({ $and: [{ userId }, { expirationDate: { $gt: new Date() } }] })
-      .map(SessionsQueryRepository._sessionToDeviceMapper)
+      .map(this._sessionToDeviceMapper)
       .toArray();
   }
 
-  static _sessionToDeviceMapper = (session: WithId<Session>): ViewSecurityDeviceType => {
+  private _sessionToDeviceMapper = (session: WithId<Session>): ViewSecurityDeviceType => {
     return {
       deviceId: session.deviceId,
       ip: session.ip,
@@ -21,6 +21,6 @@ class SessionsQueryRepository {
   };
 }
 
-const sessionsQueryRepository = SessionsQueryRepository;
+const sessionsQueryRepository = new SessionsQueryRepository();
 
 export { sessionsQueryRepository };

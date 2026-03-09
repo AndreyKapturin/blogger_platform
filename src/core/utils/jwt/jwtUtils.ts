@@ -11,36 +11,34 @@ import {
 } from '../../../entities/auth/types';
 
 class JwtService {
-  static async createAccessToken(payload: JwtTokenEncodePayload) {
+  async createAccessToken(payload: JwtTokenEncodePayload) {
     return sign(payload, JWT_SECRET, {
       expiresIn: JWT_ACCESS_TOKEN_LIFETIME_IN_SECONDS,
     });
   }
 
-  static async createRefreshToken(payload: JwtTokenEncodePayload) {
+  async createRefreshToken(payload: JwtTokenEncodePayload) {
     return sign(payload, JWT_SECRET, {
       expiresIn: JWT_REFRESH_TOKEN_LIFETIME_IN_SECONDS,
     });
   }
 
-  static async createAccessAndRefreshTokens(
-    payload: JwtTokenEncodePayload,
-  ): Promise<JwtTokensPair> {
-    const accessToken = await JwtService.createAccessToken(payload);
-    const refreshToken = await JwtService.createRefreshToken(payload);
+  async createAccessAndRefreshTokens(payload: JwtTokenEncodePayload): Promise<JwtTokensPair> {
+    const accessToken = await this.createAccessToken(payload);
+    const refreshToken = await this.createRefreshToken(payload);
     return { accessToken, refreshToken };
   }
 
-  static async verifyToken(token: string) {
+  async verifyToken(token: string) {
     return verify(token, JWT_SECRET) as JwtTokenDecodePayload;
   }
 
-  static decodeToken(token: string) {
+  decodeToken(token: string) {
     return decode(token) as JwtTokenDecodePayload;
   }
 
-  static getTokenIatAndExpDate(token: string) {
-    const { exp, iat } = JwtService.decodeToken(token);
+  getTokenIatAndExpDate(token: string) {
+    const { exp, iat } = this.decodeToken(token);
     return {
       expirationDate: new Date(exp * 1000),
       issuedDate: new Date(iat * 1000),
@@ -48,6 +46,6 @@ class JwtService {
   }
 }
 
-const jwtService = JwtService;
+const jwtService = new JwtService();
 
-export { jwtService };
+export { jwtService, JwtService };
