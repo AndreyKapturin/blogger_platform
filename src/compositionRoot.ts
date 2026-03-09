@@ -1,6 +1,7 @@
 import { CryptoService } from './core/utils/crypto/passwordUtils';
 import { JwtService } from './core/utils/jwt/jwtUtils';
 import { AuthService } from './entities/auth/application/authService';
+import { AuthController } from './entities/auth/controller/AuthController';
 import { SessionsCommandRepository } from './entities/auth/repositories/sessionsCommandRepository';
 import { SessionsQueryRepository } from './entities/auth/repositories/sessionsQueryRepository';
 import { BlogsService } from './entities/blogs/application/blogsService';
@@ -53,3 +54,5 @@ export const authService = new AuthService(
   jwtService,
   sessionsCommandRepository,
 );
+
+export const authController = new AuthController(usersQueryRepository, authService);
