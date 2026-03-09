@@ -2,10 +2,10 @@ import { Response } from 'express';
 import { RequestWithParams } from '../../../../core/types/RequestTypes';
 import { CommentIdParamType } from '../../types';
 import { APIErrorResult } from '../../../../core/types/APIErrorResult';
-import { commentsService } from '../../application/commentsService';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
 import { sendHttpResponseIfWrongResult } from '../../../../core/utils/Result';
 import { isWrongResult } from '../../../../core/utils/Result/sendHttpResponseIfWrongResult';
+import { commentsService } from '../../../../compositionRoot';
 
 const deleteCommentByIdHandler = async (
   req: RequestWithParams<CommentIdParamType>,

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { usersQueryRepository } from '../../../users/repositories/usersQueryRepository';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
 import { UserMeType } from '../../../users/types';
+import { usersQueryRepository } from '../../../../compositionRoot';
 
 const meHandler = async (req: Request, res: Response<UserMeType>) => {
   const foundUser = await usersQueryRepository.findMe(req.user!.userId);

@@ -2,11 +2,10 @@ import { Response } from 'express';
 import { RequestWithBody } from '../../../../core/types/RequestTypes';
 import { InputPostType, ViewPostType } from '../../types';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
-import { postsService } from '../../application/postsService';
-import { postsQueryRepository } from '../../repositories/postsQueryRepository';
 import { APIErrorResult } from '../../../../core/types/APIErrorResult';
 import { sendHttpResponseIfWrongResult } from '../../../../core/utils/Result';
 import { isWrongResult } from '../../../../core/utils/Result/sendHttpResponseIfWrongResult';
+import { postsQueryRepository, postsService } from '../../../../compositionRoot';
 
 const createPostHandler = async (
   req: RequestWithBody<InputPostType>,

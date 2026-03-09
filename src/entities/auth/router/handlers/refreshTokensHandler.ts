@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import { AccessToken } from '../../types';
-import { authService } from '../../application/authService';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
 import { APIErrorResult } from '../../../../core/types/APIErrorResult';
 import { isWrongResult } from '../../../../core/utils/Result/sendHttpResponseIfWrongResult';
 import { sendHttpResponseIfWrongResult } from '../../../../core/utils/Result';
+import { authService } from '../../../../compositionRoot';
 
 const refreshTokensHandler = async (req: Request, res: Response<AccessToken | APIErrorResult>) => {
   const updateTokensResult = await authService.refreshTokens(req.cookies.refreshToken);

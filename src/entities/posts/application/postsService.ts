@@ -1,13 +1,7 @@
 import { Result, ResultStatus } from '../../../core/utils/Result';
 import { ResultFactory } from '../../../core/utils/Result/ResultFactory';
-import {
-  BlogsCommandRepository,
-  blogsCommandRepository,
-} from '../../blogs/repositories/blogsCommandRepository';
-import {
-  PostsCommandRepository,
-  postsCommandRepository,
-} from '../repositories/postsCommandRepository';
+import { BlogsCommandRepository } from '../../blogs/repositories/blogsCommandRepository';
+import { PostsCommandRepository } from '../repositories/postsCommandRepository';
 import { InputPostType, InputUpdatePostType, PostType } from '../types';
 
 class PostsService {
@@ -91,6 +85,5 @@ class PostsService {
     return ResultFactory.success(null);
   }
 }
-const postsService = new PostsService(blogsCommandRepository, postsCommandRepository);
 
-export { postsService };
+export { PostsService };

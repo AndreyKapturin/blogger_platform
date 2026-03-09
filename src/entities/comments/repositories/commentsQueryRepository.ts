@@ -1,15 +1,15 @@
 import { Filter, ObjectId, WithId } from 'mongodb';
 import { commentsCollection } from '../../../database/mongoDB';
-import { CommentType, MongoCommentType, ViewCommentsQuery, ViewCommentType } from '../types';
+import { MongoCommentType, ViewCommentsQuery, ViewCommentType } from '../types';
 import { toPaginateMapper } from '../../../core/mappers/toPaginateMapper';
 
 class CommentsQueryRepository {
-   async findById(commentId: string) {
+  async findById(commentId: string) {
     const foundComment = await commentsCollection.findOne({ _id: new ObjectId(commentId) });
     return foundComment ? this._commentToViewMapper(foundComment) : null;
   }
 
-   async findAllForPostWithPagination(postId: string, commentsQuery: ViewCommentsQuery) {
+  async findAllForPostWithPagination(postId: string, commentsQuery: ViewCommentsQuery) {
     const { sortBy, sortDirection, pageSize, pageNumber } = commentsQuery;
 
     const skip = (pageNumber - 1) * pageSize;
@@ -37,6 +37,4 @@ class CommentsQueryRepository {
   }
 }
 
-const commentsQueryRepository = new CommentsQueryRepository();
-
-export { commentsQueryRepository };
+export { CommentsQueryRepository };

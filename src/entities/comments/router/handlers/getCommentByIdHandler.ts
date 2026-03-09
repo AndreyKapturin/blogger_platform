@@ -1,7 +1,7 @@
 import { Response } from "express";
 import { RequestWithParams } from "../../../../core/types/RequestTypes";
 import { CommentIdParamType, ViewCommentType } from "../../types";
-import { commentsQueryRepository } from "../../repositories/commentsQueryRepository";
+import { commentsQueryRepository } from "../../../../compositionRoot";
 import { HttpStatus } from "../../../../core/types/HttpStatus";
 
 const getCommentByIdHandler = async (

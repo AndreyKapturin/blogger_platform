@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { RequestWithParams } from '../../../../core/types/RequestTypes';
 import { BlogIdParamType, ViewBlogType } from '../../types';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
-import { blogsQueryRepository } from '../../repositories/blogsQueryRepository';
+import { blogsQueryRepository } from '../../../../compositionRoot';
 
 const getBlogByIdHandler = async (req: RequestWithParams<BlogIdParamType>, res: Response<ViewBlogType>) => {
   const foundBlog = await blogsQueryRepository.findById(req.params.id);

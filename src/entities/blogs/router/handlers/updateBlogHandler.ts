@@ -2,9 +2,9 @@ import { Response } from 'express';
 import { RequestWithParamsAndBody } from '../../../../core/types/RequestTypes';
 import { BlogIdParamType, InputBlogType } from '../../types';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
-import { blogsService } from '../../application/blogsService';
 import { sendHttpResponseIfWrongResult } from '../../../../core/utils/Result';
 import { isWrongResult } from '../../../../core/utils/Result/sendHttpResponseIfWrongResult';
+import { blogsService } from '../../../../compositionRoot';
 
 const updateBlogHandler = async (
   req: RequestWithParamsAndBody<BlogIdParamType, InputBlogType>,

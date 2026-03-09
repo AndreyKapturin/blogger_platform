@@ -50,6 +50,4 @@ class BlogsCommandRepository {
   }
 }
 
-const blogsCommandRepository = new BlogsCommandRepository();
-
-export { blogsCommandRepository, BlogsCommandRepository };
+export { BlogsCommandRepository };

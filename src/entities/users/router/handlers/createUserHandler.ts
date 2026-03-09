@@ -1,12 +1,11 @@
 import { Response } from 'express';
 import { RequestWithBody } from '../../../../core/types/RequestTypes';
 import { InputUserType, ViewUserType } from '../../types';
-import { usersService } from '../../application/usersService';
-import { usersQueryRepository } from '../../repositories/usersQueryRepository';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
 import { APIErrorResult } from '../../../../core/types/APIErrorResult';
 import { sendHttpResponseIfWrongResult } from '../../../../core/utils/Result';
 import { isWrongResult } from '../../../../core/utils/Result/sendHttpResponseIfWrongResult';
+import { usersQueryRepository, usersService } from '../../../../compositionRoot';
 
 const createUserHandler = async (
   req: RequestWithBody<InputUserType>,

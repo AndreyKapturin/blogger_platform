@@ -99,6 +99,5 @@ class UsersCommandRepository {
     };
   }
 }
-const usersCommandRepository = new UsersCommandRepository();
 
-export { usersCommandRepository, UsersCommandRepository };
+export { UsersCommandRepository };

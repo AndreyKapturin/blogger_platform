@@ -53,6 +53,18 @@ async function connectToDB(mongoUri: string) {
     );
 
     log('Pinged your deployment. You successfully connected to MongoDB!');
+    return {
+      getCollections() {
+        return {
+          blogsCollection,
+          postsCollection,
+          usersCollection,
+          commentsCollection,
+          sessionsCollection,
+          requestsCollection,
+        };
+      },
+    };
   } catch (error) {
     await client.close();
     throw new Error(`Database connection error: ${error}`);

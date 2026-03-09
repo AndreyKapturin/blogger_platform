@@ -2,7 +2,8 @@ import { Response } from 'express';
 import { RequestWithParams } from '../../../../core/types/RequestTypes';
 import { PostIdParamType, ViewPostType } from '../../types';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
-import { postsQueryRepository } from '../../repositories/postsQueryRepository';
+import { postsQueryRepository } from '../../../../compositionRoot';
+
 
 const getPostByIdHandler = async (
   req: RequestWithParams<PostIdParamType>,

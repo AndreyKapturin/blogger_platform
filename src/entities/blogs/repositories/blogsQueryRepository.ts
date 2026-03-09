@@ -43,5 +43,4 @@ class BlogsQueryRepository {
     };
   }
 }
-const blogsQueryRepository = new BlogsQueryRepository();
-export { blogsQueryRepository };
+export { BlogsQueryRepository };

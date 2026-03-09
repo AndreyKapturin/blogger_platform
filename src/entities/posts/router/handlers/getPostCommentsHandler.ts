@@ -4,9 +4,8 @@ import { ViewCommentsQuery, ViewCommentType } from '../../../comments/types';
 import { PostIdParamType } from '../../types';
 import { Paginator } from '../../../../core/types/PaginationAndSorting';
 import { matchedData } from 'express-validator';
-import { postsCommandRepository } from '../../repositories/postsCommandRepository';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
-import { commentsQueryRepository } from '../../../comments/repositories/commentsQueryRepository';
+import { commentsQueryRepository, postsCommandRepository } from '../../../../compositionRoot';
 
 const getPostCommentsHandler = async (
   req: RequestWithParamsAndQuery<PostIdParamType, ViewCommentsQuery>,
@@ -19,12 +18,14 @@ const getPostCommentsHandler = async (
 
   if (!postExist) {
     res.sendStatus(HttpStatus.Not_Found);
-    return
+    return;
   }
 
-  const paginatedViewComments = await commentsQueryRepository
-    .findAllForPostWithPagination(postId, cleanQuery);
-  
+  const paginatedViewComments = await commentsQueryRepository.findAllForPostWithPagination(
+    postId,
+    cleanQuery,
+  );
+
   res.status(HttpStatus.Ok).json(paginatedViewComments);
 };
 

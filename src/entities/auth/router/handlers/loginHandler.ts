@@ -1,11 +1,11 @@
 import { Response } from 'express';
 import { RequestWithBody } from '../../../../core/types/RequestTypes';
 import { AccessToken, InputAuthData, InputLoginType } from '../../types';
-import { authService } from '../../application/authService';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
 import { APIErrorResult } from '../../../../core/types/APIErrorResult';
 import { sendHttpResponseIfWrongResult } from '../../../../core/utils/Result';
 import { isWrongResult } from '../../../../core/utils/Result/sendHttpResponseIfWrongResult';
+import { authService } from '../../../../compositionRoot';
 
 const loginHandler = async (
   req: RequestWithBody<InputLoginType>,

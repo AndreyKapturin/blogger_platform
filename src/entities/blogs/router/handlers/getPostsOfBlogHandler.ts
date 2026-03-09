@@ -5,8 +5,7 @@ import { RequestWithParamsAndQuery } from '../../../../core/types/RequestTypes';
 import { ViewPostQuery, ViewPostType } from '../../../posts/types';
 import { BlogIdParamType } from '../../types';
 import { matchedData } from 'express-validator';
-import { blogsQueryRepository } from '../../repositories/blogsQueryRepository';
-import { postsQueryRepository } from '../../../posts/repositories/postsQueryRepository';
+import { blogsQueryRepository, postsQueryRepository } from '../../../../compositionRoot';
 
 const getPostsOfBlogHandler = async (
   req: RequestWithParamsAndQuery<BlogIdParamType, ViewPostQuery>,

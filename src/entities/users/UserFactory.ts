@@ -1,4 +1,4 @@
-import { cryptoService } from '../../core/utils/crypto/passwordUtils';
+import { cryptoService } from '../../compositionRoot';
 import { dateUtils } from '../../core/utils/date/dateUtils';
 import { MongoUserType } from './types';
 

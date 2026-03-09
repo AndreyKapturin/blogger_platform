@@ -56,6 +56,5 @@ class SessionsCommandRepository {
     sessionsCollection.deleteMany();
   }
 }
-const sessionsCommandRepository = new SessionsCommandRepository();
 
-export { sessionsCommandRepository, SessionsCommandRepository };
+export { SessionsCommandRepository };

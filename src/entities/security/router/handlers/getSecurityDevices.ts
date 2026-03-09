@@ -1,8 +1,7 @@
 import { Request, Response } from 'express';
 import { SecurityDevice } from '../../../auth/types';
-import { jwtService } from '../../../../core/utils/jwt/jwtUtils';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
-import { sessionsQueryRepository } from '../../../auth/repositories/sessionsQueryRepository';
+import { jwtService, sessionsQueryRepository } from '../../../../compositionRoot';
 
 const getSecurityDevices = async (req: Request, res: Response<SecurityDevice[]>) => {
   const { userId } = jwtService.decodeToken(req.cookies.refreshToken);

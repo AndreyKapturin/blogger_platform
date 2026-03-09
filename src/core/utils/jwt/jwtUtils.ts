@@ -46,6 +46,4 @@ class JwtService {
   }
 }
 
-const jwtService = new JwtService();
-
-export { jwtService, JwtService };
+export { JwtService };

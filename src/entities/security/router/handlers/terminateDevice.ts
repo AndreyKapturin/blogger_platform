@@ -1,11 +1,12 @@
 import { Response } from 'express';
-import { devicesService } from '../../application/devicesService';
+
 import {
   isWrongResult,
   sendHttpResponseIfWrongResult,
 } from '../../../../core/utils/Result/sendHttpResponseIfWrongResult';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
 import { RequestWithParams } from '../../../../core/types/RequestTypes';
+import { devicesService } from '../../../../compositionRoot';
 
 const terminateDevice = async (req: RequestWithParams<{ id: string }>, res: Response) => {
   const deviceId = req.params.id;

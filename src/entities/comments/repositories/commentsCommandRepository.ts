@@ -45,6 +45,4 @@ class CommentsCommandRepository {
   }
 }
 
-const commentsCommandRepository = new CommentsCommandRepository();
-
-export { commentsCommandRepository, CommentsCommandRepository };
+export { CommentsCommandRepository };

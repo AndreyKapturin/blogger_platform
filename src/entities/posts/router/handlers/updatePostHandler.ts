@@ -3,9 +3,9 @@ import { RequestWithParamsAndBody } from '../../../../core/types/RequestTypes';
 import { InputPostType, PostIdParamType } from '../../types';
 import { APIErrorResult } from '../../../../core/types/APIErrorResult';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
-import { postsService } from '../../application/postsService';
 import { sendHttpResponseIfWrongResult } from '../../../../core/utils/Result';
 import { isWrongResult } from '../../../../core/utils/Result/sendHttpResponseIfWrongResult';
+import { postsService } from '../../../../compositionRoot';
 
 const updatePostHandler = async (
   req: RequestWithParamsAndBody<PostIdParamType, InputPostType>,

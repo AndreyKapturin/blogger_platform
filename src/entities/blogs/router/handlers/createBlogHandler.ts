@@ -2,11 +2,10 @@ import { Response } from 'express';
 import { RequestWithBody } from '../../../../core/types/RequestTypes';
 import { InputBlogType, ViewBlogType } from '../../types';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
-import { blogsService } from '../../application/blogsService';
-import { blogsQueryRepository } from '../../repositories/blogsQueryRepository';
 import { APIErrorResult } from '../../../../core/types/APIErrorResult';
 import { sendHttpResponseIfWrongResult } from '../../../../core/utils/Result';
 import { isWrongResult } from '../../../../core/utils/Result/sendHttpResponseIfWrongResult';
+import { blogsQueryRepository, blogsService } from '../../../../compositionRoot';
 
 const createBlogHandler = async (
   req: RequestWithBody<InputBlogType>,

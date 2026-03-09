@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import { APIErrorResult } from '../../../../core/types/APIErrorResult';
-import { authService } from '../../application/authService';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
 import { isWrongResult } from '../../../../core/utils/Result/sendHttpResponseIfWrongResult';
 import { sendHttpResponseIfWrongResult } from '../../../../core/utils/Result';
+import { authService } from '../../../../compositionRoot';
 
 const logoutHandler = async (req: Request, res: Response<APIErrorResult>) => {
   const logoutResult = await authService.logout(req.cookies.refreshToken);

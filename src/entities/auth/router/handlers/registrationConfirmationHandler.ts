@@ -2,10 +2,10 @@ import { Response } from 'express';
 import { RequestWithBody } from '../../../../core/types/RequestTypes';
 import { EmailConfirmationCode } from '../../types';
 import { APIErrorResult } from '../../../../core/types/APIErrorResult';
-import { authService } from '../../application/authService';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
 import { isWrongResult } from '../../../../core/utils/Result/sendHttpResponseIfWrongResult';
 import { sendHttpResponseIfWrongResult } from '../../../../core/utils/Result';
+import { authService } from '../../../../compositionRoot';
 
 const registrationConfirmationHandler = async (
   req: RequestWithBody<EmailConfirmationCode>,

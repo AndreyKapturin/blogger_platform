@@ -3,12 +3,12 @@ import { RATE_LIMIT_WINDOW_IN_SECONDS } from '../constants';
 import { RequestType } from '../types';
 
 class RequestsCommandRepository {
-  static async save(request: RequestType) {
+  async save(request: RequestType) {
     const { insertedId } = await requestsCollection.insertOne(request);
     return insertedId;
   }
 
-  static async getRequestsCount(ip: string, url: string) {
+  async getRequestsCount(ip: string, url: string) {
     const targetDate = new Date();
     targetDate.setSeconds(targetDate.getSeconds() - RATE_LIMIT_WINDOW_IN_SECONDS);
 
@@ -21,11 +21,9 @@ class RequestsCommandRepository {
     return documentCount;
   }
 
-  static async cleanAll() {
+  async cleanAll() {
     await requestsCollection.deleteMany();
   }
 }
 
-const requestsCommandRepository = RequestsCommandRepository;
-
-export { requestsCommandRepository };
+export { RequestsCommandRepository };

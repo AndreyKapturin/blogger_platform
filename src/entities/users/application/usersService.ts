@@ -1,7 +1,4 @@
-import {
-  UsersCommandRepository,
-  usersCommandRepository,
-} from '../repositories/usersCommandRepository';
+import { UsersCommandRepository } from '../repositories/usersCommandRepository';
 import { InputUserType } from '../types';
 import { Result, ResultStatus } from '../../../core/utils/Result';
 import { UserFactory } from '../UserFactory';
@@ -51,6 +48,4 @@ class UsersService {
   }
 }
 
-const usersService = new UsersService(usersCommandRepository);
-
-export { usersService };
+export { UsersService };

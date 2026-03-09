@@ -1,21 +1,15 @@
-import {
-  UsersCommandRepository,
-  usersCommandRepository,
-} from '../../users/repositories/usersCommandRepository';
+import { UsersCommandRepository } from '../../users/repositories/usersCommandRepository';
 import { Result, ResultStatus } from '../../../core/utils/Result';
 import { InputAuthData, InputRegistrationType, Session } from '../types';
-import { CryptoService, cryptoService } from '../../../core/utils/crypto/passwordUtils';
-import { JwtService, jwtService } from '../../../core/utils/jwt/jwtUtils';
+import { CryptoService } from '../../../core/utils/crypto/passwordUtils';
+import { JwtService } from '../../../core/utils/jwt/jwtUtils';
 import { UserFactory } from '../../users/UserFactory';
 import { emailService } from '../../../core/services/emailService';
 import { log } from '../../../core/utils/logger/loggerUtils';
 import { dateUtils } from '../../../core/utils/date/dateUtils';
 import { JwtTokensPair } from '../types';
 import { ResultFactory } from '../../../core/utils/Result/ResultFactory';
-import {
-  SessionsCommandRepository,
-  sessionsCommandRepository,
-} from '../repositories/sessionsCommandRepository';
+import { SessionsCommandRepository } from '../repositories/sessionsCommandRepository';
 
 class AuthService {
   constructor(
@@ -216,11 +210,4 @@ class AuthService {
   }
 }
 
-const authService = new AuthService(
-  usersCommandRepository,
-  cryptoService,
-  jwtService,
-  sessionsCommandRepository,
-);
-
-export { authService };
+export { AuthService };

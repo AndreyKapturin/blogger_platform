@@ -1,5 +1,4 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { authService } from '../../../src/entities/auth/application/authService';
 import {
   closeBbConnection,
   connectToDB,
@@ -14,8 +13,8 @@ import {
   MIN_USER_LOGIN_LENGTH,
 } from '../../../src/entities/users/constants';
 import { emailService } from '../../../src/core/services/emailService';
-import { jwtService } from '../../../src/core/utils/jwt/jwtUtils';
-import { sleep } from "../../e2e/utils/timeUtils";
+import { sleep } from '../../e2e/utils/timeUtils';
+import { authService, jwtService } from '../../../src/compositionRoot';
 
 let mongoMemoryServer: MongoMemoryServer;
 

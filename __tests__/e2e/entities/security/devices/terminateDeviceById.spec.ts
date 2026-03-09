@@ -7,9 +7,9 @@ import { closeBbConnection } from '../../../../../src/database/mongoDB';
 import { faker } from '@faker-js/faker';
 import { extractFromCookieArray } from '../../../../../src/core/utils/cookie/cookieUtils';
 import { ISODateStringRegExp } from '../../../utils/constants';
-import { jwtService } from '../../../../../src/core/utils/jwt/jwtUtils';
 import { createUsersTestManager, UsersTestManagerType } from '../../../utils/usersTestManager';
 import { InputLoginType } from '../../../../../src/entities/auth/types';
+import { jwtService } from '../../../../../src/compositionRoot';
 
 let app: Express;
 let usersTestManager: UsersTestManagerType;
@@ -22,7 +22,7 @@ beforeAll(async () => {
 
 beforeEach(() => {
   jest.spyOn(expressRequest, 'ip', 'get').mockReturnValue(faker.internet.ipv4());
-})
+});
 
 afterEach(() => {
   jest.restoreAllMocks();

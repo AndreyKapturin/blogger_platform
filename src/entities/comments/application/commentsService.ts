@@ -1,17 +1,8 @@
 import { Result, ResultStatus } from '../../../core/utils/Result';
 import { ResultFactory } from '../../../core/utils/Result/ResultFactory';
-import {
-  PostsCommandRepository,
-  postsCommandRepository,
-} from '../../posts/repositories/postsCommandRepository';
-import {
-  UsersCommandRepository,
-  usersCommandRepository,
-} from '../../users/repositories/usersCommandRepository';
-import {
-  CommentsCommandRepository,
-  commentsCommandRepository,
-} from '../repositories/commentsCommandRepository';
+import { PostsCommandRepository } from '../../posts/repositories/postsCommandRepository';
+import { UsersCommandRepository } from '../../users/repositories/usersCommandRepository';
+import { CommentsCommandRepository } from '../repositories/commentsCommandRepository';
 import { MongoCommentType } from '../types';
 
 class CommentsService {
@@ -112,10 +103,4 @@ class CommentsService {
   }
 }
 
-const commentsService = new CommentsService(
-  postsCommandRepository,
-  usersCommandRepository,
-  commentsCommandRepository,
-);
-
-export { commentsService };
+export { CommentsService };

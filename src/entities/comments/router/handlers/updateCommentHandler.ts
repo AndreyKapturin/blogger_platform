@@ -1,10 +1,10 @@
 import { Response } from 'express';
 import { RequestWithParamsAndBody } from '../../../../core/types/RequestTypes';
 import { CommentIdParamType, InputCommentType } from '../../types';
-import { commentsService } from '../../application/commentsService';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
 import { sendHttpResponseIfWrongResult } from '../../../../core/utils/Result';
 import { isWrongResult } from '../../../../core/utils/Result/sendHttpResponseIfWrongResult';
+import { commentsService } from '../../../../compositionRoot';
 
 const updateCommentHandler = async (
   req: RequestWithParamsAndBody<CommentIdParamType, InputCommentType>,

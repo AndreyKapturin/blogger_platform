@@ -2,12 +2,11 @@ import { Response } from 'express';
 import { RequestWithParamsAndBody } from '../../../../core/types/RequestTypes';
 import { InputBlogPostType, InputPostType, ViewPostType } from '../../../posts/types';
 import { BlogIdParamType } from '../../types';
-import { postsService } from '../../../posts/application/postsService';
 import { HttpStatus } from '../../../../core/types/HttpStatus';
-import { postsQueryRepository } from '../../../posts/repositories/postsQueryRepository';
 import { APIErrorResult } from '../../../../core/types/APIErrorResult';
 import { sendHttpResponseIfWrongResult } from '../../../../core/utils/Result';
 import { isWrongResult } from '../../../../core/utils/Result/sendHttpResponseIfWrongResult';
+import { postsQueryRepository, postsService } from '../../../../compositionRoot';
 
 const createPostForBlogHandler = async (
   req: RequestWithParamsAndBody<BlogIdParamType, InputBlogPostType>,

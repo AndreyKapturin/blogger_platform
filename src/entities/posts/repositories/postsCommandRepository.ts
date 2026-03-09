@@ -70,6 +70,4 @@ class PostsCommandRepository {
   }
 }
 
-const postsCommandRepository = new PostsCommandRepository();
-
-export { postsCommandRepository, PostsCommandRepository };
+export { PostsCommandRepository };

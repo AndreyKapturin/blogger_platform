@@ -1,9 +1,6 @@
-import { JwtService, jwtService } from '../../../core/utils/jwt/jwtUtils';
+import { JwtService } from '../../../core/utils/jwt/jwtUtils';
 import { ResultFactory, ResultStatus } from '../../../core/utils/Result';
-import {
-  SessionsCommandRepository,
-  sessionsCommandRepository,
-} from '../../auth/repositories/sessionsCommandRepository';
+import { SessionsCommandRepository } from '../../auth/repositories/sessionsCommandRepository';
 
 class DevicesService {
   constructor(
@@ -49,6 +46,4 @@ class DevicesService {
   }
 }
 
-const devicesService = new DevicesService(jwtService, sessionsCommandRepository);
-
-export { devicesService };
+export { DevicesService };
