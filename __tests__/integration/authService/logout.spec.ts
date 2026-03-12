@@ -12,8 +12,7 @@ import {
   MAX_USER_LOGIN_LENGTH,
   MIN_USER_LOGIN_LENGTH,
 } from '../../../src/entities/users/constants';
-import { emailService } from '../../../src/core/services/emailService';
-import { authService, jwtService } from '../../../src/compositionRoot';
+import { authService, emailService, jwtService } from '../../../src/compositionRoot';
 
 let mongoMemoryServer: MongoMemoryServer;
 

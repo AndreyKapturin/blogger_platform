@@ -1,3 +1,4 @@
+import { EmailService } from './core/services/emailService';
 import { CryptoService } from './core/utils/crypto/passwordUtils';
 import { JwtService } from './core/utils/jwt/jwtUtils';
 import { AuthService } from './entities/auth/application/authService';
@@ -43,6 +44,7 @@ export const requestsCommandRepository = new RequestsCommandRepository();
 
 export const cryptoService = new CryptoService();
 export const jwtService = new JwtService();
+export const emailService = new EmailService();
 
 export const blogsService = new BlogsService(blogsCommandRepository, postsCommandRepository);
 export const postsService = new PostsService(blogsCommandRepository, postsCommandRepository);
@@ -58,6 +60,7 @@ export const authService = new AuthService(
   cryptoService,
   jwtService,
   sessionsCommandRepository,
+  emailService,
 );
 
 export const authController = new AuthController(usersQueryRepository, authService);

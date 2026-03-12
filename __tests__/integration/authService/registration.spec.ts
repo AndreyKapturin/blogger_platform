@@ -1,4 +1,4 @@
-import { emailService } from '../../../src/core/services/emailService';
+import { emailService } from '../../../src/compositionRoot';
 import { InputRegistrationType } from '../../../src/entities/auth/types';
 import { faker } from '@faker-js/faker';
 import {

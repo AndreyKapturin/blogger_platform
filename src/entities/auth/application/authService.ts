@@ -4,7 +4,7 @@ import { InputAuthData, InputRegistrationType, Session } from '../types';
 import { CryptoService } from '../../../core/utils/crypto/passwordUtils';
 import { JwtService } from '../../../core/utils/jwt/jwtUtils';
 import { UserFactory } from '../../users/UserFactory';
-import { emailService } from '../../../core/services/emailService';
+import { EmailService } from '../../../core/services/emailService';
 import { log } from '../../../core/utils/logger/loggerUtils';
 import { dateUtils } from '../../../core/utils/date/dateUtils';
 import { JwtTokensPair } from '../types';
@@ -17,6 +17,7 @@ class AuthService {
     private cryptoService: CryptoService,
     private jwtService: JwtService,
     private sessionsCommandRepository: SessionsCommandRepository,
+    private emailService: EmailService,
   ) {}
 
   async login(inputAuthData: InputAuthData): Promise<Result<JwtTokensPair>> {
@@ -101,7 +102,7 @@ class AuthService {
 
     const createdUserId = await this.usersCommandRepository.save(newUser);
 
-    emailService
+    this.emailService
       .sendConfirmationCode(newUser.email, newUser.emailConfirmation.code)
       .catch((error) => log('Send confirmation code error: ', error));
 
@@ -138,7 +139,7 @@ class AuthService {
       newCodeExpirationDate,
     );
 
-    emailService
+    this.emailService
       .sendConfirmationCode(user.email, newConfirmationCode)
       .catch((error) => log('Send confirmation code error: ', error));
 

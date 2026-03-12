@@ -1,4 +1,4 @@
-import { emailService } from '../../../src/core/services/emailService';
+import { authService, emailService } from '../../../src/compositionRoot';
 import { InputRegistrationType } from '../../../src/entities/auth/types';
 import { faker } from '@faker-js/faker';
 import {
@@ -9,7 +9,6 @@ import { ResultStatus } from '../../../src/core/utils/Result';
 import { closeBbConnection, connectToDB, usersCollection } from '../../../src/database/mongoDB';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { dateUtils } from '../../../src/core/utils/date/dateUtils';
-import { authService } from '../../../src/compositionRoot';
 
 let mongoMemoryServer: MongoMemoryServer;
 
