@@ -5,17 +5,22 @@ import { AuthController } from './entities/auth/controller/AuthController';
 import { SessionsCommandRepository } from './entities/auth/repositories/sessionsCommandRepository';
 import { SessionsQueryRepository } from './entities/auth/repositories/sessionsQueryRepository';
 import { BlogsService } from './entities/blogs/application/blogsService';
+import { BlogsController } from './entities/blogs/controller/BlogsContoller';
 import { BlogsCommandRepository } from './entities/blogs/repositories/blogsCommandRepository';
 import { BlogsQueryRepository } from './entities/blogs/repositories/blogsQueryRepository';
 import { CommentsService } from './entities/comments/application/commentsService';
+import { CommentsController } from './entities/comments/controller/CommentsController';
 import { CommentsCommandRepository } from './entities/comments/repositories/commentsCommandRepository';
 import { CommentsQueryRepository } from './entities/comments/repositories/commentsQueryRepository';
 import { PostsService } from './entities/posts/application/postsService';
+import { PostsController } from './entities/posts/controller/PostsController';
 import { PostsCommandRepository } from './entities/posts/repositories/postsCommandRepository';
 import { PostsQueryRepository } from './entities/posts/repositories/postsQueryRepository';
 import { RequestsCommandRepository } from './entities/requests/repositories/requestsCommandRepository';
 import { DevicesService } from './entities/security/application/devicesService';
+import { SecurityController } from './entities/security/controller/SecurityController';
 import { UsersService } from './entities/users/application/usersService';
+import { UsersController } from './entities/users/controller/UsersController';
 import { UsersCommandRepository } from './entities/users/repositories/usersCommandRepository';
 import { UsersQueryRepository } from './entities/users/repositories/usersQueryRepository';
 
@@ -56,3 +61,23 @@ export const authService = new AuthService(
 );
 
 export const authController = new AuthController(usersQueryRepository, authService);
+export const blogsController = new BlogsController(
+  blogsService,
+  blogsQueryRepository,
+  postsService,
+  postsQueryRepository,
+);
+export const commentsController = new CommentsController(commentsQueryRepository, commentsService);
+export const postsController = new PostsController(
+  postsService,
+  postsQueryRepository,
+  postsCommandRepository,
+  commentsService,
+  commentsQueryRepository,
+);
+export const securityController = new SecurityController(
+  sessionsQueryRepository,
+  devicesService,
+  jwtService,
+);
+export const usersController = new UsersController(usersService, usersQueryRepository);

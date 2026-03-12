@@ -1,12 +1,10 @@
 import { Router } from 'express';
 import { idInParamsCheckMiddleware } from '../../../core/validation/idInParamsCheckMiddleware';
 import { validationResultMiddleware } from '../../../core/middlewares/validationMiddleware';
-import { updateCommentHandler } from './handlers/updateCommentHandler';
 import { inputCommentValidationSchema } from '../validations/inputCommentValidationSchema';
 import { bearerAuthMiddlewate } from '../../../core/middlewares/bearerAuthMiddlewate';
-import { getCommentByIdHandler } from './handlers/getCommentByIdHandler';
-import { deleteCommentByIdHandler } from './handlers/deleteCommentByIdHandler';
 import { Routes } from '../../../app/routes';
+import { commentsController } from '../../../compositionRoot';
 
 const commentsRouter = Router();
 
@@ -14,7 +12,7 @@ commentsRouter.get(
   Routes.ById(':id'),
   idInParamsCheckMiddleware,
   validationResultMiddleware,
-  getCommentByIdHandler,
+  commentsController.getCommentById.bind(commentsController),
 );
 
 commentsRouter.put(
@@ -23,7 +21,7 @@ commentsRouter.put(
   idInParamsCheckMiddleware,
   inputCommentValidationSchema,
   validationResultMiddleware,
-  updateCommentHandler,
+  commentsController.updateComment.bind(commentsController),
 );
 
 commentsRouter.delete(
@@ -31,7 +29,7 @@ commentsRouter.delete(
   bearerAuthMiddlewate,
   idInParamsCheckMiddleware,
   validationResultMiddleware,
-  deleteCommentByIdHandler,
+  commentsController.deleteCommentById.bind(commentsController),
 );
 
 export { commentsRouter };
