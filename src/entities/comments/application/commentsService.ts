@@ -1,112 +1,106 @@
 import { Result, ResultStatus } from '../../../core/utils/Result';
 import { ResultFactory } from '../../../core/utils/Result/ResultFactory';
-import { postsCommandRepository } from '../../posts/repositories/postsCommandRepository';
-import { usersCommandRepository } from '../../users/repositories/usersCommandRepository';
-import { commentsCommandRepository } from '../repositories/commentsCommandRepository';
+import { PostsCommandRepository } from '../../posts/repositories/postsCommandRepository';
+import { UsersCommandRepository } from '../../users/repositories/usersCommandRepository';
+import { CommentsCommandRepository } from '../repositories/commentsCommandRepository';
 import { MongoCommentType } from '../types';
 
-const createComment = async (
-  postId: string,
-  userId: string,
-  content: string,
-): Promise<Result<string>> => {
-  const post = await postsCommandRepository.findById(postId);
+class CommentsService {
+  constructor(
+    private postsCommandRepository: PostsCommandRepository,
+    private usersCommandRepository: UsersCommandRepository,
+    private commentsCommandRepository: CommentsCommandRepository,
+  ) {}
 
-  if (!post) {
-    return ResultFactory.wrong(ResultStatus.NotFound, 'Post not found', [
-      {
-        field: null,
-        message: `Post with id ${postId} not found`,
+  async createComment(postId: string, userId: string, content: string): Promise<Result<string>> {
+    const post = await this.postsCommandRepository.findById(postId);
+
+    if (!post) {
+      return ResultFactory.wrong(ResultStatus.NotFound, 'Post not found', [
+        {
+          field: null,
+          message: `Post with id ${postId} not found`,
+        },
+      ]);
+    }
+
+    const user = await this.usersCommandRepository.findUserById(userId);
+
+    if (!user) {
+      return ResultFactory.wrong(ResultStatus.InvalidCredentials, 'User not found', [
+        {
+          field: 'accessToken',
+          message: 'User access token is invalid',
+        },
+      ]);
+    }
+
+    const newComment: MongoCommentType = {
+      postId,
+      content,
+      commentatorInfo: {
+        userId: user.id,
+        userLogin: user.login,
       },
-    ]);
+      createdAt: new Date().toISOString(),
+    };
+
+    const createdCommentId = await this.commentsCommandRepository.save(newComment);
+
+    return ResultFactory.success(createdCommentId);
   }
 
-  const user = await usersCommandRepository.findUserById(userId);
+  async updateComment(commentId: string, userId: string, content: string): Promise<Result> {
+    const comment = await this.commentsCommandRepository.findById(commentId);
 
-  if (!user) {
-    return ResultFactory.wrong(ResultStatus.InvalidCredentials, 'User not found', [
-      {
-        field: 'accessToken',
-        message: 'User access token is invalid',
-      },
-    ]);
+    if (!comment) {
+      return ResultFactory.wrong(ResultStatus.NotFound, `Comment with id ${commentId} not found`, [
+        {
+          field: 'commentId',
+          message: `Comment with id ${commentId} not found`,
+        },
+      ]);
+    }
+
+    if (comment.commentatorInfo.userId !== userId) {
+      return ResultFactory.wrong(ResultStatus.PermissionError, 'Editing not own comment', [
+        {
+          field: null,
+          message: 'You are not the author of the comment',
+        },
+      ]);
+    }
+
+    await this.commentsCommandRepository.update(commentId, content);
+
+    return ResultFactory.success(null);
   }
 
-  const newComment: MongoCommentType = {
-    postId,
-    content,
-    commentatorInfo: {
-      userId: user.id,
-      userLogin: user.login,
-    },
-    createdAt: new Date().toISOString(),
-  };
+  async deleteComment(commentId: string, userId: string): Promise<Result> {
+    const comment = await this.commentsCommandRepository.findById(commentId);
 
-  const createdCommentId = await commentsCommandRepository.save(newComment);
+    if (!comment) {
+      return ResultFactory.wrong(ResultStatus.NotFound, `Comment with id ${commentId} not found`, [
+        {
+          field: 'commentId',
+          message: `Comment with id ${commentId} not found`,
+        },
+      ]);
+    }
 
-  return ResultFactory.success(createdCommentId);
-};
+    if (comment.commentatorInfo.userId !== userId) {
+      return ResultFactory.wrong(ResultStatus.PermissionError, 'Deliting not own comment', [
+        {
+          field: null,
+          message: 'You are not the author of the comment',
+        },
+      ]);
+    }
 
-const updateComment = async (
-  commentId: string,
-  userId: string,
-  content: string,
-): Promise<Result> => {
-  const comment = await commentsCommandRepository.findById(commentId);
+    await this.commentsCommandRepository.remove(commentId);
 
-  if (!comment) {
-    return ResultFactory.wrong(ResultStatus.NotFound, `Comment with id ${commentId} not found`, [
-      {
-        field: 'commentId',
-        message: `Comment with id ${commentId} not found`,
-      },
-    ]);
+    return ResultFactory.success(null);
   }
+}
 
-  if (comment.commentatorInfo.userId !== userId) {
-    return ResultFactory.wrong(ResultStatus.PermissionError, 'Editing not own comment', [
-      {
-        field: null,
-        message: 'You are not the author of the comment',
-      },
-    ]);
-  }
-
-  await commentsCommandRepository.update(commentId, content);
-
-  return ResultFactory.success(null);
-};
-
-const deleteComment = async (commentId: string, userId: string): Promise<Result> => {
-  const comment = await commentsCommandRepository.findById(commentId);
-
-  if (!comment) {
-    return ResultFactory.wrong(ResultStatus.NotFound, `Comment with id ${commentId} not found`, [
-      {
-        field: 'commentId',
-        message: `Comment with id ${commentId} not found`,
-      },
-    ]);
-  }
-
-  if (comment.commentatorInfo.userId !== userId) {
-    return ResultFactory.wrong(ResultStatus.PermissionError, 'Deliting not own comment', [
-      {
-        field: null,
-        message: 'You are not the author of the comment',
-      },
-    ]);
-  }
-
-  await commentsCommandRepository.remove(commentId);
-
-  return ResultFactory.success(null);
-};
-
-const commentsService = {
-  createComment,
-  updateComment,
-  deleteComment,
-};
-
-export { commentsService };
+export { CommentsService };

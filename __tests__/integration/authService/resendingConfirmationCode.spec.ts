@@ -1,5 +1,4 @@
 import { emailService } from '../../../src/core/services/emailService';
-import { authService } from '../../../src/entities/auth/application/authService';
 import { InputRegistrationType } from '../../../src/entities/auth/types';
 import { faker } from '@faker-js/faker';
 import {
@@ -10,6 +9,7 @@ import {
 import { closeBbConnection, connectToDB, usersCollection } from '../../../src/database/mongoDB';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { ResultStatus } from '../../../src/core/utils/Result';
+import { authService } from '../../../src/compositionRoot';
 
 let mongoMemoryServer: MongoMemoryServer;
 
@@ -73,7 +73,9 @@ describe('AuthService.resendingConfirmationCode', () => {
       await authService.resendingConfirmationCode(unexistedEmail);
 
     expect(resendingConfirmationCodeResult.status).toBe(ResultStatus.InvalidData);
-    expect(resendingConfirmationCodeResult.extensions).toEqual([{ field: 'email', message: expect.any(String) }]);
+    expect(resendingConfirmationCodeResult.extensions).toEqual([
+      { field: 'email', message: expect.any(String) },
+    ]);
   });
 
   it(`should return ${ResultStatus.InvalidData} if user is confirmed`, async () => {
@@ -82,13 +84,16 @@ describe('AuthService.resendingConfirmationCode', () => {
 
     await usersCollection.updateOne(
       { login: inputCredentials.login },
-      { $set: { 'emailConfirmation.isConfirmed': true }}
+      { $set: { 'emailConfirmation.isConfirmed': true } },
     );
 
-    const resendingConfirmationCodeResult =
-      await authService.resendingConfirmationCode(inputCredentials.email);
+    const resendingConfirmationCodeResult = await authService.resendingConfirmationCode(
+      inputCredentials.email,
+    );
 
     expect(resendingConfirmationCodeResult.status).toBe(ResultStatus.InvalidData);
-    expect(resendingConfirmationCodeResult.extensions).toEqual([{ field: 'email', message: expect.any(String) }]);
+    expect(resendingConfirmationCodeResult.extensions).toEqual([
+      { field: 'email', message: expect.any(String) },
+    ]);
   });
 });

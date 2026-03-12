@@ -22,7 +22,7 @@ let blogsCollection: Collection<BlogType>;
 let postsCollection: Collection<PostType>;
 let usersCollection: Collection<MongoUserType>;
 let commentsCollection: Collection<MongoCommentType>;
-let sessionCollection: Collection<Session>;
+let sessionsCollection: Collection<Session>;
 let requestsCollection: Collection<RequestType>;
 
 async function connectToDB(mongoUri: string) {
@@ -42,20 +42,29 @@ async function connectToDB(mongoUri: string) {
     postsCollection = dbInstance.collection(POSTS_COLLECTION_NAME);
     usersCollection = dbInstance.collection(USERS_COLLECTION_NAME);
     commentsCollection = dbInstance.collection(COMMENTS_COLLECTION_NAME);
-    sessionCollection = dbInstance.collection(SESSION_COLLECTION_NAME);
+    sessionsCollection = dbInstance.collection(SESSION_COLLECTION_NAME);
     requestsCollection = dbInstance.collection(REQUESTS_COLLECTION_NAME);
 
-    await sessionCollection.createIndex(
-      { expirationDate: 1 },
-      { expireAfterSeconds: 0 }
-    );
+    await sessionsCollection.createIndex({ expirationDate: 1 }, { expireAfterSeconds: 0 });
 
     await requestsCollection.createIndex(
       { date: 1 },
-      { expireAfterSeconds: RATE_LIMIT_WINDOW_IN_SECONDS }
+      { expireAfterSeconds: RATE_LIMIT_WINDOW_IN_SECONDS },
     );
 
     log('Pinged your deployment. You successfully connected to MongoDB!');
+    return {
+      getCollections() {
+        return {
+          blogsCollection,
+          postsCollection,
+          usersCollection,
+          commentsCollection,
+          sessionsCollection,
+          requestsCollection,
+        };
+      },
+    };
   } catch (error) {
     await client.close();
     throw new Error(`Database connection error: ${error}`);
@@ -73,6 +82,6 @@ export {
   postsCollection,
   usersCollection,
   commentsCollection,
-  sessionCollection,
+  sessionsCollection,
   requestsCollection,
 };

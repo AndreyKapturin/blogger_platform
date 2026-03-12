@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { rateLimitMiddleware } from '../../src/core/middlewares/rateLimitMiddleware';
 import { HttpStatus } from '../../src/core/types/HttpStatus';
-import { requestsCommandRepository } from '../../src/entities/requests/repositories/requestsCommandRepository';
 import { RequestType } from '../../src/entities/requests/types';
 import { ObjectId } from 'mongodb';
 import { faker } from '@faker-js/faker';
@@ -10,6 +9,7 @@ import {
   RATE_LIMIT_WINDOW_IN_SECONDS,
   REQUEST_COUNT_LIMIT,
 } from '../../src/entities/requests/constants';
+import { requestsCommandRepository } from '../../src/compositionRoot';
 
 const requests: RequestType[] = [];
 

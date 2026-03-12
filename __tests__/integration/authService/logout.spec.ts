@@ -1,9 +1,8 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { authService } from '../../../src/entities/auth/application/authService';
 import {
   closeBbConnection,
   connectToDB,
-  sessionCollection,
+  sessionsCollection,
   usersCollection,
 } from '../../../src/database/mongoDB';
 import { Result, ResultStatus } from '../../../src/core/utils/Result';
@@ -14,7 +13,7 @@ import {
   MIN_USER_LOGIN_LENGTH,
 } from '../../../src/entities/users/constants';
 import { emailService } from '../../../src/core/services/emailService';
-import { decodeToken } from '../../../src/core/utils/jwt/jwtUtils';
+import { authService, jwtService } from '../../../src/compositionRoot';
 
 let mongoMemoryServer: MongoMemoryServer;
 
@@ -42,7 +41,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await usersCollection.deleteMany();
-  await sessionCollection.deleteMany();
+  await sessionsCollection.deleteMany();
 });
 
 afterAll(async () => {
@@ -74,11 +73,11 @@ describe('AuthService.logout', () => {
     }
 
     const refreshToken = loginResult.data.refreshToken;
-    const tokenPayload = decodeToken(refreshToken);
+    const tokenPayload = jwtService.decodeToken(refreshToken);
     const deviceId = tokenPayload.deviceId;
     const issuedDate = new Date(tokenPayload.iat * 1000);
 
-    const documentsCountAfterLogin = await sessionCollection.countDocuments({
+    const documentsCountAfterLogin = await sessionsCollection.countDocuments({
       $and: [{ deviceId }, { issuedDate }],
     });
 
@@ -91,7 +90,7 @@ describe('AuthService.logout', () => {
       return;
     }
 
-    const documentsCountAfterLogout = await sessionCollection.countDocuments({
+    const documentsCountAfterLogout = await sessionsCollection.countDocuments({
       $and: [{ deviceId }, { issuedDate }],
     });
 

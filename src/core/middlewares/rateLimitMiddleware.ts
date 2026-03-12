@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import { RequestType } from "../../entities/requests/types";
-import { requestsCommandRepository } from "../../entities/requests/repositories/requestsCommandRepository";
 import { HttpStatus } from "../types/HttpStatus";
 import { REQUEST_COUNT_LIMIT } from "../../entities/requests/constants";
+import { requestsCommandRepository } from "../../compositionRoot";
 
 const rateLimitMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   const ip = req.ip!;

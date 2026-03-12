@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { HttpStatus } from '../types/HttpStatus';
-import { verifyToken } from '../utils/jwt/jwtUtils';
 import { log } from '../utils/logger/loggerUtils';
+import { jwtService } from '../../compositionRoot';
 
 const bearerAuthMiddlewate = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
@@ -9,7 +9,7 @@ const bearerAuthMiddlewate = async (req: Request, res: Response, next: NextFunct
     res.sendStatus(HttpStatus.Unauthorized);
     return;
   }
-  const [ authType, token ] = authHeader.split(' ');
+  const [authType, token] = authHeader.split(' ');
 
   if (authType !== 'Bearer') {
     res.sendStatus(HttpStatus.Unauthorized);
@@ -22,7 +22,7 @@ const bearerAuthMiddlewate = async (req: Request, res: Response, next: NextFunct
   }
 
   try {
-    const payload = await verifyToken(token);
+    const payload = await jwtService.verifyToken(token);
     req.user = { userId: payload.userId };
     next();
   } catch (error) {
@@ -31,4 +31,4 @@ const bearerAuthMiddlewate = async (req: Request, res: Response, next: NextFunct
   }
 };
 
-export { bearerAuthMiddlewate }
+export { bearerAuthMiddlewate };

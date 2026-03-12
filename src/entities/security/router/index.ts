@@ -1,16 +1,26 @@
 import { Router } from 'express';
 import { Routes } from '../../../app/routes';
 import { refreshTokenMiddleware } from '../../../core/middlewares/refreshTokenMiddleware';
-import { getSecurityDevices } from './handlers/getSecurityDevices';
-import { terminateOtherDevices } from './handlers/terminateOtherDevices';
-import { terminateDevice } from './handlers/terminateDevice';
+import { securityController } from '../../../compositionRoot';
 
 const securityRouter = Router();
 
-securityRouter.get(Routes.Devices, refreshTokenMiddleware, getSecurityDevices);
+securityRouter.get(
+  Routes.Devices,
+  refreshTokenMiddleware,
+  securityController.getSecurityDevices.bind(securityController),
+);
 
-securityRouter.delete(Routes.Devices, refreshTokenMiddleware, terminateOtherDevices);
+securityRouter.delete(
+  Routes.Devices,
+  refreshTokenMiddleware,
+  securityController.terminateOtherDevices.bind(securityController),
+);
 
-securityRouter.delete(Routes.DeviceById(':id'), refreshTokenMiddleware, terminateDevice);
+securityRouter.delete(
+  Routes.DeviceById(':id'),
+  refreshTokenMiddleware,
+  securityController.terminateDevice.bind(securityController),
+);
 
 export { securityRouter };

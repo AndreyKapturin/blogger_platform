@@ -1,15 +1,15 @@
 import { emailService } from '../../../src/core/services/emailService';
-import { authService } from '../../../src/entities/auth/application/authService';
 import { InputRegistrationType } from '../../../src/entities/auth/types';
 import { faker } from '@faker-js/faker';
 import {
   MAX_USER_LOGIN_LENGTH,
   MIN_USER_LOGIN_LENGTH,
 } from '../../../src/entities/users/constants';
-import { ResultStatus } from '../../../src/core/utils/Result'; 
+import { ResultStatus } from '../../../src/core/utils/Result';
 import { closeBbConnection, connectToDB, usersCollection } from '../../../src/database/mongoDB';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { dateUtils } from '../../../src/core/utils/date/dateUtils';
+import { authService } from '../../../src/compositionRoot';
 
 let mongoMemoryServer: MongoMemoryServer;
 
@@ -71,7 +71,9 @@ describe('AuthService.confirmRegistration', () => {
       await authService.confirmRegistration(unexistedConfirmationCode);
 
     expect(confirmRegistrationResult.status).toBe(ResultStatus.InvalidData);
-    expect(confirmRegistrationResult.extensions).toEqual([{ field: 'code', message: expect.any(String) }]);
+    expect(confirmRegistrationResult.extensions).toEqual([
+      { field: 'code', message: expect.any(String) },
+    ]);
   });
 
   it(`should return ${ResultStatus.InvalidData} if user is confirmed`, async () => {
@@ -92,7 +94,9 @@ describe('AuthService.confirmRegistration', () => {
     );
 
     expect(confirmRegistrationResult.status).toBe(ResultStatus.InvalidData);
-    expect(confirmRegistrationResult.extensions).toEqual([{ field: 'code', message: expect.any(String) }]);
+    expect(confirmRegistrationResult.extensions).toEqual([
+      { field: 'code', message: expect.any(String) },
+    ]);
   });
 
   it(`should return ${ResultStatus.InvalidData} if confirmation code is expired`, async () => {
@@ -115,6 +119,8 @@ describe('AuthService.confirmRegistration', () => {
     );
 
     expect(confirmRegistrationResult.status).toBe(ResultStatus.InvalidData);
-    expect(confirmRegistrationResult.extensions).toEqual([{ field: 'code', message: expect.any(String) }]);
+    expect(confirmRegistrationResult.extensions).toEqual([
+      { field: 'code', message: expect.any(String) },
+    ]);
   });
 });
