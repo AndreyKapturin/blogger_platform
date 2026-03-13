@@ -132,6 +132,42 @@ paths:
         '401':
           description: Unauthorized
 
+  /auth/password-recovery:
+    post:
+      tags: [Auth]
+      summary: Recovery password using email
+      requestBody:
+        description: User emeil for send instruction
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InputRecoveryPasswordSchema'
+      responses:
+        '204':
+          description: Email with instruction successfully send
+        '400':
+          $ref: '#/components/responses/ValidationErrorResponse'
+        '429':
+          $ref: '#/components/responses/ToManyRequestsResponse'
+
+  /auth/new-password:
+    post:
+      tags: [Auth]
+      summary: Send new password
+      requestBody:
+        description: New password and recovery code
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InputNewPasswordSchema'
+      responses:
+        '204':
+          description: Password successfully updated
+        '400':
+          $ref: '#/components/responses/ValidationErrorResponse'
+        '429':
+          $ref: '#/components/responses/ToManyRequestsResponse'
+
 components:
   schemas:
     InputLoginUserSchema:
@@ -179,6 +215,28 @@ components:
         - code
       properties:
         code:
+          type: string
+
+    InputRecoveryPasswordSchema:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+
+    InputNewPasswordSchema:
+      type: object
+      required:
+        - newPassword
+        - recoveryCode
+      properties:
+        newPassword:
+          type: string
+          minLength: 6
+          maxLength: 20
+        recoveryCode:
           type: string
 
   parameters:
