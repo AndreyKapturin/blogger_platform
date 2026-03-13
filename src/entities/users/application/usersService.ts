@@ -26,7 +26,7 @@ class UsersService {
       credentials.login,
       credentials.password,
     );
-
+    
     const userId = await this.usersCommandRepository.save(user);
 
     return ResultFactory.success(userId);

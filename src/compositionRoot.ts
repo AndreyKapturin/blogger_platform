@@ -3,6 +3,7 @@ import { CryptoService } from './core/utils/crypto/passwordUtils';
 import { JwtService } from './core/utils/jwt/jwtUtils';
 import { AuthService } from './entities/auth/application/authService';
 import { AuthController } from './entities/auth/controller/AuthController';
+import { RecoveryCodesCommandRepository } from './entities/auth/repositories/RecoveryCodesCommandRepository';
 import { SessionsCommandRepository } from './entities/auth/repositories/sessionsCommandRepository';
 import { SessionsQueryRepository } from './entities/auth/repositories/sessionsQueryRepository';
 import { BlogsService } from './entities/blogs/application/blogsService';
@@ -42,6 +43,8 @@ export const commentsQueryRepository = new CommentsQueryRepository();
 
 export const requestsCommandRepository = new RequestsCommandRepository();
 
+export const recoveryCodesCommandRepository = new RecoveryCodesCommandRepository();
+
 export const cryptoService = new CryptoService();
 export const jwtService = new JwtService();
 export const emailService = new EmailService();
@@ -61,6 +64,7 @@ export const authService = new AuthService(
   jwtService,
   sessionsCommandRepository,
   emailService,
+  recoveryCodesCommandRepository,
 );
 
 export const authController = new AuthController(usersQueryRepository, authService);

@@ -8,6 +8,7 @@ import { MongoCommentType } from '../entities/comments/types';
 import { Session } from '../entities/auth/types';
 import { RequestType } from '../entities/requests/types';
 import { RATE_LIMIT_WINDOW_IN_SECONDS } from '../entities/requests/constants';
+import { MongoRecoveryCode } from './types';
 
 const BLOGS_COLLECTION_NAME = 'blogs';
 const POSTS_COLLECTION_NAME = 'posts';
@@ -15,6 +16,7 @@ const USERS_COLLECTION_NAME = 'users';
 const COMMENTS_COLLECTION_NAME = 'comments';
 const SESSION_COLLECTION_NAME = 'session';
 const REQUESTS_COLLECTION_NAME = 'requests';
+const RECOVERY_CODES_COLLECTION_NAME = 'recovery_codes';
 
 let client: MongoClient;
 let dbInstance: Db;
@@ -24,6 +26,7 @@ let usersCollection: Collection<MongoUserType>;
 let commentsCollection: Collection<MongoCommentType>;
 let sessionsCollection: Collection<Session>;
 let requestsCollection: Collection<RequestType>;
+let recoveryCodesCollection: Collection<MongoRecoveryCode>;
 
 async function connectToDB(mongoUri: string) {
   try {
@@ -44,6 +47,7 @@ async function connectToDB(mongoUri: string) {
     commentsCollection = dbInstance.collection(COMMENTS_COLLECTION_NAME);
     sessionsCollection = dbInstance.collection(SESSION_COLLECTION_NAME);
     requestsCollection = dbInstance.collection(REQUESTS_COLLECTION_NAME);
+    recoveryCodesCollection = dbInstance.collection(RECOVERY_CODES_COLLECTION_NAME);
 
     await sessionsCollection.createIndex({ expirationDate: 1 }, { expireAfterSeconds: 0 });
 
@@ -52,19 +56,12 @@ async function connectToDB(mongoUri: string) {
       { expireAfterSeconds: RATE_LIMIT_WINDOW_IN_SECONDS },
     );
 
+    await recoveryCodesCollection.createIndex(
+      { expirationDate: 1 },
+      { expireAfterSeconds: 1 },
+    )
+
     log('Pinged your deployment. You successfully connected to MongoDB!');
-    return {
-      getCollections() {
-        return {
-          blogsCollection,
-          postsCollection,
-          usersCollection,
-          commentsCollection,
-          sessionsCollection,
-          requestsCollection,
-        };
-      },
-    };
   } catch (error) {
     await client.close();
     throw new Error(`Database connection error: ${error}`);
@@ -84,4 +81,5 @@ export {
   commentsCollection,
   sessionsCollection,
   requestsCollection,
+  recoveryCodesCollection,
 };

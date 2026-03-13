@@ -10,6 +10,8 @@ import { dateUtils } from '../../../core/utils/date/dateUtils';
 import { JwtTokensPair } from '../types';
 import { ResultFactory } from '../../../core/utils/Result/ResultFactory';
 import { SessionsCommandRepository } from '../repositories/sessionsCommandRepository';
+import { RecoveryCodesCommandRepository } from '../repositories/RecoveryCodesCommandRepository';
+import { RecoveryCode } from '../RecoveryCode';
 
 class AuthService {
   constructor(
@@ -18,6 +20,7 @@ class AuthService {
     private jwtService: JwtService,
     private sessionsCommandRepository: SessionsCommandRepository,
     private emailService: EmailService,
+    private recoveryCodesCommandRepository: RecoveryCodesCommandRepository,
   ) {}
 
   async login(inputAuthData: InputAuthData): Promise<Result<JwtTokensPair>> {
@@ -207,6 +210,40 @@ class AuthService {
   async logout(refreshToken: string): Promise<Result> {
     const tokenPayload = this.jwtService.decodeToken(refreshToken);
     await this.sessionsCommandRepository.deleteSessionByDeviceId(tokenPayload.deviceId);
+    return ResultFactory.success(null);
+  }
+
+  async recoveryPassword(email: string) {
+    const foundUser = await this.usersCommandRepository.findUserByLoginOrEmail(email);
+    if (!foundUser) return ResultFactory.success(null);
+
+    const recoveryCode = new RecoveryCode(foundUser.id);
+    
+    await this.recoveryCodesCommandRepository.save(recoveryCode);
+
+    this.emailService
+      .sendPasswordRecoveryCode(email, recoveryCode.code)
+      .catch((error) => log('Send password recovery code error: ', error));
+
+    return ResultFactory.success(null);
+  }
+
+  async updatePassword(recoveryCode: string, newPassword: string) {
+    const foundRecoveryCode = await this.recoveryCodesCommandRepository.findCode(recoveryCode);
+
+    if (!foundRecoveryCode) {
+      return ResultFactory.wrong(ResultStatus.InvalidData, 'Invalid recovery code', [
+        {
+          field: 'recoveryCode',
+          message: 'Invalid recovery code',
+        },
+      ]);
+    }
+
+    const newPasswordHash = await this.cryptoService.hashPassword(newPassword);
+
+    await this.usersCommandRepository.updatePasswordHash(foundRecoveryCode.userId, newPasswordHash);
+
     return ResultFactory.success(null);
   }
 }

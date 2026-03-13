@@ -5,6 +5,7 @@ import {
   requestsCommandRepository,
   sessionsCommandRepository,
   usersCommandRepository,
+  recoveryCodesCommandRepository,
 } from '../../../compositionRoot';
 
 const cleanDatabase = async () => {
@@ -16,6 +17,7 @@ const cleanDatabase = async () => {
       commentsCommandRepository,
       sessionsCommandRepository,
       requestsCommandRepository,
+      recoveryCodesCommandRepository,
     ].map((commandRepository) => commandRepository.cleanAll()),
   );
 };

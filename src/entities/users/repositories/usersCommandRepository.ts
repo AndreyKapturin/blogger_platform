@@ -80,6 +80,11 @@ class UsersCommandRepository {
     return updateResult.matchedCount === 1;
   }
 
+  async updatePasswordHash(userId: string, passwordHash: string) {
+    const updateResult = await usersCollection.updateOne({ _id: new ObjectId(userId) }, { $set: { passwordHash } });
+    return updateResult.matchedCount === 1;
+  }
+
   async cleanAll() {
     await usersCollection.deleteMany();
   }

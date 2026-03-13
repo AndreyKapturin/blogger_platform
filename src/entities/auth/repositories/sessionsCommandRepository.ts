@@ -4,7 +4,7 @@ import { Session } from '../types';
 
 class SessionsCommandRepository {
   async save(session: Session) {
-    sessionsCollection.insertOne(session);
+    await sessionsCollection.insertOne(session);
   }
 
   async existsDeviceSession(deviceId: string, issuedDate: Date) {
