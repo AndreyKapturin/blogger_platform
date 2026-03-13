@@ -17,3 +17,5 @@ export {
   EMAIL_SERVICE_USER_EMAIL,
   EMAIL_SERVICE_USER_LOGIN,
 } from './email';
+
+export { PASSWORD_RECOVERY_CODE_LIFETIME_IN_SECONDS } from './password';

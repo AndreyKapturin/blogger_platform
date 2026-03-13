@@ -12,6 +12,7 @@ import { refreshTokenMiddleware } from '../../../core/middlewares/refreshTokenMi
 import { Routes } from '../../../app/routes';
 import { rateLimitMiddleware } from '../../../core/middlewares/rateLimitMiddleware';
 import { authController } from '../../../compositionRoot';
+import { inputNewPasswordValidation } from '../validations/newPasswordValidation';
 
 const authRouter = Router();
 
@@ -54,6 +55,22 @@ authRouter.post(
   Routes.RefreshToken,
   refreshTokenMiddleware,
   authController.refreshTokens.bind(authController),
+);
+
+authRouter.post(
+  Routes.PasswordRecovery,
+  rateLimitMiddleware,
+  emailValidationSchema,
+  validationResultMiddleware,
+  authController.recoveryPassword.bind(authController),
+);
+
+authRouter.post(
+  Routes.NewPassword,
+  rateLimitMiddleware,
+  inputNewPasswordValidation,
+  validationResultMiddleware,
+  authController.newPassword.bind(authController),
 );
 
 authRouter.post(Routes.Logout, refreshTokenMiddleware, authController.logout.bind(authController));

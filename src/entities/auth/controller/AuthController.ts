@@ -9,6 +9,8 @@ import {
   InputAuthData,
   InputEmailResendingType,
   InputLoginType,
+  InputNewPassword,
+  InputRecoveryPasswordType,
   InputRegistrationType,
 } from '../types';
 import { APIErrorResult } from '../../../core/types/APIErrorResult';
@@ -52,7 +54,7 @@ class AuthController {
       sendHttpResponseIfWrongResult(loginResult, res);
       return;
     }
-
+    
     res.cookie('refreshToken', loginResult.data.refreshToken, { httpOnly: true, secure: true });
     res.status(HttpStatus.Ok).json({ accessToken: loginResult.data.accessToken });
   }
@@ -125,6 +127,34 @@ class AuthController {
     }
 
     res.clearCookie('refreshToken', { httpOnly: true, secure: true });
+    res.sendStatus(HttpStatus.No_Content);
+  }
+
+  async recoveryPassword(
+    req: RequestWithBody<InputRecoveryPasswordType>,
+    res: Response<APIErrorResult>,
+  ) {
+    const recoveryPasswordResult = await this.authService.recoveryPassword(req.body.email);
+
+    if (isWrongResult(recoveryPasswordResult)) {
+      sendHttpResponseIfWrongResult(recoveryPasswordResult, res);
+      return;
+    }
+
+    res.sendStatus(HttpStatus.No_Content);
+  }
+
+  async newPassword(req: RequestWithBody<InputNewPassword>, res: Response<APIErrorResult>) {
+    const updatePasswordResult = await this.authService.updatePassword(
+      req.body.recoveryCode,
+      req.body.newPassword,
+    );
+    
+    if (isWrongResult(updatePasswordResult)) {
+      sendHttpResponseIfWrongResult(updatePasswordResult, res);
+      return;
+    }
+
     res.sendStatus(HttpStatus.No_Content);
   }
 }
