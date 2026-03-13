@@ -1,9 +1,8 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { authService } from '../../../src/entities/auth/application/authService';
 import {
   closeBbConnection,
   connectToDB,
-  sessionCollection,
+  sessionsCollection,
   usersCollection,
 } from '../../../src/database/mongoDB';
 import { Result, ResultStatus } from '../../../src/core/utils/Result';
@@ -13,9 +12,9 @@ import {
   MAX_USER_LOGIN_LENGTH,
   MIN_USER_LOGIN_LENGTH,
 } from '../../../src/entities/users/constants';
-import { emailService } from '../../../src/core/services/emailService';
-import { decodeToken } from '../../../src/core/utils/jwt/jwtUtils';
-import { sleep } from "../../e2e/utils/timeUtils";
+
+import { sleep } from '../../e2e/utils/timeUtils';
+import { authService, emailService, jwtService } from '../../../src/compositionRoot';
 
 let mongoMemoryServer: MongoMemoryServer;
 
@@ -43,7 +42,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await usersCollection.deleteMany();
-  await sessionCollection.deleteMany();
+  await sessionsCollection.deleteMany();
 });
 
 afterAll(async () => {
@@ -90,10 +89,10 @@ describe('AuthService.refreshTokens', () => {
       refreshToken: expect.any(String),
     });
 
-    const tokenPayload = decodeToken(firstRefreshToken);
+    const tokenPayload = jwtService.decodeToken(firstRefreshToken);
     const deviceId = tokenPayload.deviceId;
 
-    const deviceSession = await sessionCollection.findOne({ deviceId });
+    const deviceSession = await sessionsCollection.findOne({ deviceId });
 
     const prevSessionIssuedDate = tokenPayload.iat * 1000;
     const prevSessionExpirationDate = tokenPayload.exp * 1000;

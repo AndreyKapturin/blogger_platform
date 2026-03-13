@@ -1,14 +1,12 @@
 import { Router } from 'express';
-import { getUsersHandler } from './handlers/getUsersHandler';
 import { paginationAndSortingUsersValidationSchema } from '../validations/paginationAndSortingUsersValidationSchema';
 import { validationResultMiddleware } from '../../../core/middlewares/validationMiddleware';
 import { searchQueryUsersValidationSchema } from '../validations/searchQueryUsersValidationSchema';
 import { inputUserValidationSchema } from '../validations/inputUserValidationSchema';
-import { createUserHandler } from './handlers/createUserHandler';
-import { deleteUserHandler } from './handlers/deleteUserHandler';
 import { basicAuthMiddleware } from '../../../core/middlewares/basicAuthMiddleware';
 import { idInParamsCheckMiddleware } from '../../../core/validation/idInParamsCheckMiddleware';
 import { Routes } from '../../../app/routes';
+import { usersController } from '../../../compositionRoot';
 
 const usersRouter = Router();
 
@@ -18,7 +16,7 @@ usersRouter.get(
   searchQueryUsersValidationSchema,
   paginationAndSortingUsersValidationSchema,
   validationResultMiddleware,
-  getUsersHandler,
+  usersController.getUsers.bind(usersController),
 );
 
 usersRouter.post(
@@ -26,7 +24,8 @@ usersRouter.post(
   basicAuthMiddleware,
   inputUserValidationSchema,
   validationResultMiddleware,
-  createUserHandler,
+
+  usersController.createUser.bind(usersController),
 );
 
 usersRouter.delete(
@@ -34,7 +33,7 @@ usersRouter.delete(
   basicAuthMiddleware,
   idInParamsCheckMiddleware,
   validationResultMiddleware,
-  deleteUserHandler,
+  usersController.deleteUser.bind(usersController),
 );
 
 export { usersRouter };

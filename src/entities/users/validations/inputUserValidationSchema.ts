@@ -5,6 +5,13 @@ import { LoginStringRegExp } from '../../../core/constants';
 
 const customLoginValidator: CustomValidator = (input) => LoginStringRegExp.test(input);
 
+const createPasswordValidation = (passwordFieldName: string) => body(passwordFieldName)
+  .customSanitizer(customTrim)
+  .isString()
+    .withMessage('Password must have string type')
+  .isLength({ min: MIN_USER_PASSWORD_LENGTH, max: MAX_USER_PASSWORD_LENGTH })
+    .withMessage(`Password must have length in range ${MIN_USER_PASSWORD_LENGTH} - ${MAX_USER_PASSWORD_LENGTH}`);
+
 const loginValidationSchema = body('login')
   .customSanitizer(customTrim)
   .isString()
@@ -14,12 +21,7 @@ const loginValidationSchema = body('login')
   .custom(customLoginValidator)
     .withMessage('Invalid characters. Use A‑Z, a‑z, 0‑9, _, -');
 
-const passwordValidationSchema = body('password')
-  .customSanitizer(customTrim)
-  .isString()
-    .withMessage('Password must have string type')
-  .isLength({ min: MIN_USER_PASSWORD_LENGTH, max: MAX_USER_PASSWORD_LENGTH })
-    .withMessage(`Password must have length in range ${MIN_USER_PASSWORD_LENGTH} - ${MAX_USER_PASSWORD_LENGTH}`);
+const passwordValidationSchema = createPasswordValidation('password');
 
 const emailValidationSchema = body('email')
   .customSanitizer(customTrim)
@@ -37,6 +39,7 @@ const inputUserValidationSchema = [
 export {
   inputUserValidationSchema,
   customLoginValidator,
+  createPasswordValidation,
   emailValidationSchema,
   passwordValidationSchema,
 };

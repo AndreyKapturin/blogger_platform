@@ -1,9 +1,12 @@
-import { sessionCommandRepository } from '../../auth/repositories/sessionCommandRepository';
-import { blogsCommandRepository } from '../../blogs/repositories/blogsCommandRepository';
-import { commentsCommandRepository } from '../../comments/repositories/commentsCommandRepository';
-import { postsCommandRepository } from '../../posts/repositories/postsCommandRepository';
-import { requestsCommandRepository } from '../../requests/repositories/requestsCommandRepository';
-import { usersCommandRepository } from '../../users/repositories/usersCommandRepository';
+import {
+  blogsCommandRepository,
+  commentsCommandRepository,
+  postsCommandRepository,
+  requestsCommandRepository,
+  sessionsCommandRepository,
+  usersCommandRepository,
+  recoveryCodesCommandRepository,
+} from '../../../compositionRoot';
 
 const cleanDatabase = async () => {
   await Promise.all(
@@ -12,8 +15,9 @@ const cleanDatabase = async () => {
       postsCommandRepository,
       usersCommandRepository,
       commentsCommandRepository,
-      sessionCommandRepository,
+      sessionsCommandRepository,
       requestsCommandRepository,
+      recoveryCodesCommandRepository,
     ].map((commandRepository) => commandRepository.cleanAll()),
   );
 };

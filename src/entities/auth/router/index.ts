@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import { loginHandler } from './handlers/loginHandler';
 import { loginOrEmailValidation } from '../validations/loginValidation';
 import {
   emailValidationSchema,
@@ -8,20 +7,16 @@ import {
 } from '../../users/validations/inputUserValidationSchema';
 import { validationResultMiddleware } from '../../../core/middlewares/validationMiddleware';
 import { bearerAuthMiddlewate } from '../../../core/middlewares/bearerAuthMiddlewate';
-import { meHandler } from './handlers/meHandler';
-import { registrationHandler } from './handlers/registrationHandler';
-import { emailResendingHandler } from './handlers/emailResendingHandler';
 import { emailConfirmationCodeValidation } from '../validations/emailConfirmationCodeValidation';
-import { registrationConfirmationHandler } from './handlers/registrationConfirmationHandler';
 import { refreshTokenMiddleware } from '../../../core/middlewares/refreshTokenMiddleware';
-import { refreshTokensHandler } from './handlers/refreshTokensHandler';
-import { logoutHandler } from './handlers/logoutHandler';
 import { Routes } from '../../../app/routes';
 import { rateLimitMiddleware } from '../../../core/middlewares/rateLimitMiddleware';
+import { authController } from '../../../compositionRoot';
+import { inputNewPasswordValidation } from '../validations/newPasswordValidation';
 
 const authRouter = Router();
 
-authRouter.get(Routes.Me, bearerAuthMiddlewate, meHandler);
+authRouter.get(Routes.Me, bearerAuthMiddlewate, authController.me.bind(authController));
 
 authRouter.post(
   Routes.Login,
@@ -29,7 +24,7 @@ authRouter.post(
   loginOrEmailValidation,
   passwordValidationSchema,
   validationResultMiddleware,
-  loginHandler,
+  authController.login.bind(authController),
 );
 
 authRouter.post(
@@ -37,7 +32,7 @@ authRouter.post(
   rateLimitMiddleware,
   inputUserValidationSchema,
   validationResultMiddleware,
-  registrationHandler,
+  authController.registration.bind(authController),
 );
 
 authRouter.post(
@@ -45,7 +40,7 @@ authRouter.post(
   rateLimitMiddleware,
   emailValidationSchema,
   validationResultMiddleware,
-  emailResendingHandler,
+  authController.emailResending.bind(authController),
 );
 
 authRouter.post(
@@ -53,11 +48,31 @@ authRouter.post(
   rateLimitMiddleware,
   emailConfirmationCodeValidation,
   validationResultMiddleware,
-  registrationConfirmationHandler,
+  authController.registrationConfirmation.bind(authController),
 );
 
-authRouter.post(Routes.RefreshToken, refreshTokenMiddleware, refreshTokensHandler);
+authRouter.post(
+  Routes.RefreshToken,
+  refreshTokenMiddleware,
+  authController.refreshTokens.bind(authController),
+);
 
-authRouter.post(Routes.Logout, refreshTokenMiddleware, logoutHandler);
+authRouter.post(
+  Routes.PasswordRecovery,
+  rateLimitMiddleware,
+  emailValidationSchema,
+  validationResultMiddleware,
+  authController.recoveryPassword.bind(authController),
+);
+
+authRouter.post(
+  Routes.NewPassword,
+  rateLimitMiddleware,
+  inputNewPasswordValidation,
+  validationResultMiddleware,
+  authController.newPassword.bind(authController),
+);
+
+authRouter.post(Routes.Logout, refreshTokenMiddleware, authController.logout.bind(authController));
 
 export { authRouter };

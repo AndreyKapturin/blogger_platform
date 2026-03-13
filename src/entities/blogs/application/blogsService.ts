@@ -1,64 +1,65 @@
 import { Result, ResultStatus } from '../../../core/utils/Result';
 import { ResultFactory } from '../../../core/utils/Result/ResultFactory';
-import { postsCommandRepository } from '../../posts/repositories/postsCommandRepository';
-import { blogsCommandRepository } from '../repositories/blogsCommandRepository';
+import { PostsCommandRepository } from '../../posts/repositories/postsCommandRepository';
+import { BlogsCommandRepository } from '../repositories/blogsCommandRepository';
 import { BlogType, InputBlogType } from '../types';
 
-const createBlog = async (inputBlog: InputBlogType): Promise<Result<string>> => {
-  const newBlog: BlogType = {
-    name: inputBlog.name,
-    description: inputBlog.description,
-    websiteUrl: inputBlog.websiteUrl,
-    createdAt: new Date().toISOString(),
-    isMembership: false,
-  };
+class BlogsService {
+  constructor(
+    private blogsCommandRepository: BlogsCommandRepository,
+    private postsCommandRepository: PostsCommandRepository,
+  ) {}
 
-  const createdBlogId = await blogsCommandRepository.save(newBlog);
-  return ResultFactory.success(createdBlogId);
-};
+  async createBlog(inputBlog: InputBlogType): Promise<Result<string>> {
+    const newBlog: BlogType = {
+      name: inputBlog.name,
+      description: inputBlog.description,
+      websiteUrl: inputBlog.websiteUrl,
+      createdAt: new Date().toISOString(),
+      isMembership: false,
+    };
 
-const updateBlog = async (blogId: string, inputBlog: InputBlogType): Promise<Result<boolean>> => {
-  const updatedBlog: InputBlogType = {
-    name: inputBlog.name,
-    description: inputBlog.description,
-    websiteUrl: inputBlog.websiteUrl,
-  };
-
-  const wasUpdated = await blogsCommandRepository.update(blogId, updatedBlog);
-
-  if (wasUpdated) {
-    await postsCommandRepository.updateRelated(blogId, updatedBlog.name);
-    return ResultFactory.success(wasUpdated);
+    const createdBlogId = await this.blogsCommandRepository.save(newBlog);
+    return ResultFactory.success(createdBlogId);
   }
 
-  return ResultFactory.wrong(ResultStatus.NotFound, 'Blog not found', [
-    {
-      field: 'blogId',
-      message: `Blog with id ${blogId} not found`,
-    },
-  ]);
-};
+  async updateBlog(blogId: string, inputBlog: InputBlogType): Promise<Result<boolean>> {
+    const updatedBlog: InputBlogType = {
+      name: inputBlog.name,
+      description: inputBlog.description,
+      websiteUrl: inputBlog.websiteUrl,
+    };
 
-const deleteBlog = async (blogId: string): Promise<Result> => {
-  const wasDeleted = await blogsCommandRepository.remove(blogId);
+    const wasUpdated = await this.blogsCommandRepository.update(blogId, updatedBlog);
 
-  if (wasDeleted) {
-    await postsCommandRepository.removeRelated(blogId);
-    return ResultFactory.success(null);
+    if (wasUpdated) {
+      await this.postsCommandRepository.updateRelated(blogId, updatedBlog.name);
+      return ResultFactory.success(wasUpdated);
+    }
+
+    return ResultFactory.wrong(ResultStatus.NotFound, 'Blog not found', [
+      {
+        field: 'blogId',
+        message: `Blog with id ${blogId} not found`,
+      },
+    ]);
   }
 
-  return ResultFactory.wrong(ResultStatus.NotFound, 'Blog not found', [
-    {
-      field: 'blogId',
-      message: `Blog with id ${blogId} not found`,
-    },
-  ]);
-};
+  async deleteBlog(blogId: string): Promise<Result> {
+    const wasDeleted = await this.blogsCommandRepository.remove(blogId);
 
-const blogsService = {
-  createBlog,
-  updateBlog,
-  deleteBlog,
-};
+    if (wasDeleted) {
+      await this.postsCommandRepository.removeRelated(blogId);
+      return ResultFactory.success(null);
+    }
 
-export { blogsService };
+    return ResultFactory.wrong(ResultStatus.NotFound, 'Blog not found', [
+      {
+        field: 'blogId',
+        message: `Blog with id ${blogId} not found`,
+      },
+    ]);
+  }
+}
+
+export { BlogsService };

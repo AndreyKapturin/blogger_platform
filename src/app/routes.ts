@@ -17,6 +17,8 @@ export const Routes = {
   Docs: '/docs',
   Security: '/security',
   Devices: '/devices',
+  PasswordRecovery: '/password-recovery',
+  NewPassword: '/new-password',
 
   get AuthLogin() {
     return `${this.Auth}${this.Login}`;
@@ -38,6 +40,12 @@ export const Routes = {
   },
   get AuthLogout() {
     return `${this.Auth}${this.Logout}`;
+  },
+  get AuthPasswordRecovery() {
+    return `${this.Auth}${this.PasswordRecovery}`;
+  },
+  get AuthNewPassword(){
+    return `${this.Auth}${this.NewPassword}`;
   },
 
   get SecurityDevices() {

@@ -62,7 +62,18 @@ type Session = {
   expirationDate: Date;
 };
 
+type InputRecoveryPasswordType = {
+  email: string;
+};
+
+type InputNewPassword = {
+  newPassword: string;
+  recoveryCode: string;
+};
+
 export type {
+  InputRecoveryPasswordType,
+  InputNewPassword,
   InputLoginType,
   AccessToken,
   InputRegistrationType,

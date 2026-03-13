@@ -1,6 +1,7 @@
 import { createApp } from './app';
 import { APP_PORT } from './core/config/server';
 import { log } from './core/utils/logger/loggerUtils';
+import './compositionRoot';
 
 (async () => {
   const app = await createApp();

@@ -1,0 +1,90 @@
+import { EmailService } from './core/services/emailService';
+import { CryptoService } from './core/utils/crypto/passwordUtils';
+import { JwtService } from './core/utils/jwt/jwtUtils';
+import { AuthService } from './entities/auth/application/authService';
+import { AuthController } from './entities/auth/controller/AuthController';
+import { RecoveryCodesCommandRepository } from './entities/auth/repositories/RecoveryCodesCommandRepository';
+import { SessionsCommandRepository } from './entities/auth/repositories/sessionsCommandRepository';
+import { SessionsQueryRepository } from './entities/auth/repositories/sessionsQueryRepository';
+import { BlogsService } from './entities/blogs/application/blogsService';
+import { BlogsController } from './entities/blogs/controller/BlogsContoller';
+import { BlogsCommandRepository } from './entities/blogs/repositories/blogsCommandRepository';
+import { BlogsQueryRepository } from './entities/blogs/repositories/blogsQueryRepository';
+import { CommentsService } from './entities/comments/application/commentsService';
+import { CommentsController } from './entities/comments/controller/CommentsController';
+import { CommentsCommandRepository } from './entities/comments/repositories/commentsCommandRepository';
+import { CommentsQueryRepository } from './entities/comments/repositories/commentsQueryRepository';
+import { PostsService } from './entities/posts/application/postsService';
+import { PostsController } from './entities/posts/controller/PostsController';
+import { PostsCommandRepository } from './entities/posts/repositories/postsCommandRepository';
+import { PostsQueryRepository } from './entities/posts/repositories/postsQueryRepository';
+import { RequestsCommandRepository } from './entities/requests/repositories/requestsCommandRepository';
+import { DevicesService } from './entities/security/application/devicesService';
+import { SecurityController } from './entities/security/controller/SecurityController';
+import { UsersService } from './entities/users/application/usersService';
+import { UsersController } from './entities/users/controller/UsersController';
+import { UsersCommandRepository } from './entities/users/repositories/usersCommandRepository';
+import { UsersQueryRepository } from './entities/users/repositories/usersQueryRepository';
+
+export const blogsCommandRepository = new BlogsCommandRepository();
+export const blogsQueryRepository = new BlogsQueryRepository();
+
+export const usersCommandRepository = new UsersCommandRepository();
+export const usersQueryRepository = new UsersQueryRepository();
+
+export const sessionsCommandRepository = new SessionsCommandRepository();
+export const sessionsQueryRepository = new SessionsQueryRepository();
+
+export const postsCommandRepository = new PostsCommandRepository();
+export const postsQueryRepository = new PostsQueryRepository();
+
+export const commentsCommandRepository = new CommentsCommandRepository();
+export const commentsQueryRepository = new CommentsQueryRepository();
+
+export const requestsCommandRepository = new RequestsCommandRepository();
+
+export const recoveryCodesCommandRepository = new RecoveryCodesCommandRepository();
+
+export const cryptoService = new CryptoService();
+export const jwtService = new JwtService();
+export const emailService = new EmailService();
+
+export const blogsService = new BlogsService(blogsCommandRepository, postsCommandRepository);
+export const postsService = new PostsService(blogsCommandRepository, postsCommandRepository);
+export const usersService = new UsersService(usersCommandRepository);
+export const commentsService = new CommentsService(
+  postsCommandRepository,
+  usersCommandRepository,
+  commentsCommandRepository,
+);
+export const devicesService = new DevicesService(jwtService, sessionsCommandRepository);
+export const authService = new AuthService(
+  usersCommandRepository,
+  cryptoService,
+  jwtService,
+  sessionsCommandRepository,
+  emailService,
+  recoveryCodesCommandRepository,
+);
+
+export const authController = new AuthController(usersQueryRepository, authService);
+export const blogsController = new BlogsController(
+  blogsService,
+  blogsQueryRepository,
+  postsService,
+  postsQueryRepository,
+);
+export const commentsController = new CommentsController(commentsQueryRepository, commentsService);
+export const postsController = new PostsController(
+  postsService,
+  postsQueryRepository,
+  postsCommandRepository,
+  commentsService,
+  commentsQueryRepository,
+);
+export const securityController = new SecurityController(
+  sessionsQueryRepository,
+  devicesService,
+  jwtService,
+);
+export const usersController = new UsersController(usersService, usersQueryRepository);
