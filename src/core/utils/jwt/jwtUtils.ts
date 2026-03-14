@@ -9,7 +9,9 @@ import {
   JwtTokenEncodePayload,
   JwtTokensPair,
 } from '../../../entities/auth/types';
+import { injectable } from 'inversify';
 
+@injectable()
 class JwtService {
   async createAccessToken(payload: JwtTokenEncodePayload) {
     return sign(payload, JWT_SECRET, {

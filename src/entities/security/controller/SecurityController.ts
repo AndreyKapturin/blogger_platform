@@ -9,11 +9,16 @@ import {
   isWrongResult,
   sendHttpResponseIfWrongResult,
 } from '../../../core/utils/Result/sendHttpResponseIfWrongResult';
+import { inject, injectable } from 'inversify';
 
+@injectable()
 class SecurityController {
   constructor(
+    @inject(SessionsQueryRepository)
     private sessionsQueryRepository: SessionsQueryRepository,
+    @inject(DevicesService)
     private devicesService: DevicesService,
+    @inject(JwtService)
     private jwtService: JwtService,
   ) {}
 

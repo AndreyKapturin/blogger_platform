@@ -6,7 +6,10 @@ import { inputUserValidationSchema } from '../validations/inputUserValidationSch
 import { basicAuthMiddleware } from '../../../core/middlewares/basicAuthMiddleware';
 import { idInParamsCheckMiddleware } from '../../../core/validation/idInParamsCheckMiddleware';
 import { Routes } from '../../../app/routes';
-import { usersController } from '../../../compositionRoot';
+import { container } from '../../../compositionRoot';
+import { UsersController } from '../controller/UsersController';
+
+const usersController = container.get(UsersController);
 
 const usersRouter = Router();
 

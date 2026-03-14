@@ -1,7 +1,9 @@
 import { ObjectId, WithId } from 'mongodb';
 import { postsCollection } from '../../../database/mongoDB';
 import { InputUpdatePostType, PostType, ViewPostType } from '../types';
+import { injectable } from 'inversify';
 
+@injectable()
 class PostsCommandRepository {
   async findById(postId: string) {
     const foundPost = await postsCollection.findOne({ _id: new ObjectId(postId) });

@@ -1,3 +1,4 @@
+import { container } from '../../../../src/compositionRoot';
 import { Express } from 'express';
 import { Routes } from '../../../../src/app/routes';
 import { createApp } from '../../../../src/app';
@@ -5,11 +6,13 @@ import request from 'supertest';
 import { HttpStatus } from '../../../../src/core/types/HttpStatus';
 import { closeBbConnection } from '../../../../src/database/mongoDB';
 import { createUsersTestManager, UsersTestManagerType } from '../../utils/usersTestManager';
-import { emailService } from '../../../../src/compositionRoot';
 import { InputLoginType, InputNewPassword } from '../../../../src/entities/auth/types';
 import { faker } from '@faker-js/faker';
-import { sleep } from "../../utils/timeUtils";
+import { sleep } from '../../utils/timeUtils';
 import { PASSWORD_RECOVERY_CODE_LIFETIME_IN_SECONDS } from '../../../../src/core/config';
+import { EmailService } from '../../../../src/core/services/emailService';
+
+const emailService = container.get(EmailService);
 
 let app: Express;
 let usersTestManager: UsersTestManagerType;
@@ -43,7 +46,7 @@ describe(`POST ${Routes.NewPassword}`, () => {
     const passwordRecoveryResponse = await request(app)
       .post(Routes.AuthPasswordRecovery)
       .send({ email });
-    
+
     expect(passwordRecoveryResponse.status).toBe(HttpStatus.No_Content);
 
     const recoveryCode = sendPasswordRecoveryCodeSpyOn.mock.calls[0][1];

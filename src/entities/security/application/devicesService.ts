@@ -1,11 +1,15 @@
+import { inject, injectable } from 'inversify';
 import { JwtService } from '../../../core/utils/jwt/jwtUtils';
 import { ResultFactory, ResultStatus } from '../../../core/utils/Result';
 import { SessionsCommandRepository } from '../../auth/repositories/sessionsCommandRepository';
 
+@injectable()
 class DevicesService {
   constructor(
-    private jwtService: JwtService,
+    @inject(SessionsCommandRepository)
     private sessionsCommandRepository: SessionsCommandRepository,
+    @inject(JwtService)
+    private jwtService: JwtService,
   ) {}
 
   async terminateOtherDevices(refreshToken: string) {

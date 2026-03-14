@@ -1,14 +1,21 @@
-import { cryptoService } from '../../compositionRoot';
+import { inject, injectable } from 'inversify';
 import { dateUtils } from '../../core/utils/date/dateUtils';
 import { MongoUserType } from './types';
+import { CryptoService } from '../../core/utils/crypto/passwordUtils';
 
-class UserFactory {
-  static async createConfirmedUser(
+@injectable()
+class UsersFactory {
+  constructor(
+    @inject(CryptoService)
+    private cryptoService: CryptoService,
+  ) {}
+
+  async createConfirmedUser(
     email: string,
     login: string,
     rawPassword: string,
   ): Promise<MongoUserType> {
-    const passwordHash = await cryptoService.hashPassword(rawPassword);
+    const passwordHash = await this.cryptoService.hashPassword(rawPassword);
     const createdAt = new Date().toISOString();
     return {
       email,
@@ -23,12 +30,12 @@ class UserFactory {
     };
   }
 
-  static async createUnconfirmedUser(
+  async createUnconfirmedUser(
     email: string,
     login: string,
     rawPassword: string,
   ): Promise<MongoUserType> {
-    const passwordHash = await cryptoService.hashPassword(rawPassword);
+    const passwordHash = await this.cryptoService.hashPassword(rawPassword);
     return {
       email,
       login,
@@ -43,4 +50,4 @@ class UserFactory {
   }
 }
 
-export { UserFactory };
+export { UsersFactory };

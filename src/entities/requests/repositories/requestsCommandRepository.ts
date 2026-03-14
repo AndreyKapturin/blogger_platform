@@ -1,7 +1,9 @@
+import { injectable } from 'inversify';
 import { requestsCollection } from '../../../database/mongoDB';
 import { RATE_LIMIT_WINDOW_IN_SECONDS } from '../constants';
 import { RequestType } from '../types';
 
+@injectable()
 class RequestsCommandRepository {
   async save(request: RequestType) {
     const { insertedId } = await requestsCollection.insertOne(request);

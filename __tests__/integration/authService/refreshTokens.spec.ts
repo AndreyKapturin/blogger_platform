@@ -14,7 +14,14 @@ import {
 } from '../../../src/entities/users/constants';
 
 import { sleep } from '../../e2e/utils/timeUtils';
-import { authService, emailService, jwtService } from '../../../src/compositionRoot';
+import { container } from '../../../src/compositionRoot';
+import { AuthService } from '../../../src/entities/auth/application/authService';
+import { EmailService } from '../../../src/core/services/emailService';
+import { JwtService } from '../../../src/core/utils/jwt/jwtUtils';
+
+const jwtService = container.get(JwtService);
+const emailService = container.get(EmailService);
+const authService = container.get(AuthService);
 
 let mongoMemoryServer: MongoMemoryServer;
 

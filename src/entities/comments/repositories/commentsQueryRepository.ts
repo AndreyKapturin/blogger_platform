@@ -2,7 +2,9 @@ import { Filter, ObjectId, WithId } from 'mongodb';
 import { commentsCollection } from '../../../database/mongoDB';
 import { MongoCommentType, ViewCommentsQuery, ViewCommentType } from '../types';
 import { toPaginateMapper } from '../../../core/mappers/toPaginateMapper';
+import { injectable } from 'inversify';
 
+@injectable()
 class CommentsQueryRepository {
   async findById(commentId: string) {
     const foundComment = await commentsCollection.findOne({ _id: new ObjectId(commentId) });

@@ -1,7 +1,9 @@
 import { ObjectId, WithId } from 'mongodb';
 import { commentsCollection } from '../../../database/mongoDB';
 import { CommentType, MongoCommentType } from '../types';
+import { injectable } from 'inversify';
 
+@injectable()
 class CommentsCommandRepository {
   async findById(commentId: string) {
     const foundComment = await commentsCollection.findOne({ _id: new ObjectId(commentId) });

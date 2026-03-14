@@ -1,8 +1,11 @@
-import { NextFunction, Request, Response } from "express";
-import { RequestType } from "../../entities/requests/types";
-import { HttpStatus } from "../types/HttpStatus";
-import { REQUEST_COUNT_LIMIT } from "../../entities/requests/constants";
-import { requestsCommandRepository } from "../../compositionRoot";
+import { NextFunction, Request, Response } from 'express';
+import { RequestType } from '../../entities/requests/types';
+import { HttpStatus } from '../types/HttpStatus';
+import { REQUEST_COUNT_LIMIT } from '../../entities/requests/constants';
+import { container } from '../../compositionRoot';
+import { RequestsCommandRepository } from '../../entities/requests/repositories/requestsCommandRepository';
+
+const requestsCommandRepository = container.get(RequestsCommandRepository);
 
 const rateLimitMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   const ip = req.ip!;
@@ -10,16 +13,16 @@ const rateLimitMiddleware = async (req: Request, res: Response, next: NextFuncti
   const date = new Date();
 
   const requestsCount = await requestsCommandRepository.getRequestsCount(ip, url);
-  
+
   if (requestsCount >= REQUEST_COUNT_LIMIT) {
     res.sendStatus(HttpStatus.To_Many_Requests);
-    return 
+    return;
   }
 
   const request: RequestType = { ip, date, url };
   await requestsCommandRepository.save(request);
-  
+
   next();
-}
+};
 
 export { rateLimitMiddleware };

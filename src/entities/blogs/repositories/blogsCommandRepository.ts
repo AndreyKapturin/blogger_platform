@@ -1,7 +1,9 @@
 import { ObjectId, WithId } from 'mongodb';
 import { blogsCollection } from '../../../database/mongoDB';
 import { InputBlogType, BlogType, ViewBlogType } from '../types';
+import { injectable } from 'inversify';
 
+@injectable()
 class BlogsCommandRepository {
   async findById(blogId: string) {
     const foundBlog = await blogsCollection.findOne({ _id: new ObjectId(blogId) });

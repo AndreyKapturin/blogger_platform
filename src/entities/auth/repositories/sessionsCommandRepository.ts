@@ -1,7 +1,9 @@
 import { WithId } from 'mongodb';
 import { sessionsCollection } from '../../../database/mongoDB';
 import { Session } from '../types';
+import { injectable } from 'inversify';
 
+@injectable()
 class SessionsCommandRepository {
   async save(session: Session) {
     await sessionsCollection.insertOne(session);

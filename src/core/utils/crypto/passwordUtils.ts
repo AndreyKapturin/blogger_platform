@@ -1,5 +1,7 @@
 import { compare, genSalt, hash } from 'bcrypt';
+import { injectable } from 'inversify';
 
+@injectable()
 class CryptoService {
   async hashPassword(rawPassword: string, saltRounds = 10): Promise<string> {
     const salt = await genSalt(saltRounds);

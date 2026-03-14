@@ -1,3 +1,4 @@
+import { inject, injectable } from 'inversify';
 import { Result, ResultStatus } from '../../../core/utils/Result';
 import { ResultFactory } from '../../../core/utils/Result/ResultFactory';
 import { PostsCommandRepository } from '../../posts/repositories/postsCommandRepository';
@@ -5,10 +6,14 @@ import { UsersCommandRepository } from '../../users/repositories/usersCommandRep
 import { CommentsCommandRepository } from '../repositories/commentsCommandRepository';
 import { MongoCommentType } from '../types';
 
+@injectable()
 class CommentsService {
   constructor(
+    @inject(PostsCommandRepository)
     private postsCommandRepository: PostsCommandRepository,
+    @inject(UsersCommandRepository)
     private usersCommandRepository: UsersCommandRepository,
+    @inject(CommentsCommandRepository)
     private commentsCommandRepository: CommentsCommandRepository,
   ) {}
 

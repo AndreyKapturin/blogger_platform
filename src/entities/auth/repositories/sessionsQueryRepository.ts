@@ -2,7 +2,9 @@ import { WithId } from 'mongodb';
 import { sessionsCollection } from '../../../database/mongoDB';
 import { Session } from '../types';
 import { ViewSecurityDeviceType } from '../../security/types';
+import { injectable } from 'inversify';
 
+@injectable()
 class SessionsQueryRepository {
   async getAllDevicesForUser(userId: string) {
     return sessionsCollection

@@ -1,7 +1,9 @@
 import { ObjectId, WithId } from 'mongodb';
 import { usersCollection } from '../../../database/mongoDB';
 import { MongoUserType, UserType } from '../types';
+import { injectable } from 'inversify';
 
+@injectable()
 class UsersCommandRepository {
   async checkUserByLoginOrEmail(login: string, email: string) {
     const documentCount = await usersCollection.countDocuments(

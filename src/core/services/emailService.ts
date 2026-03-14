@@ -1,5 +1,7 @@
+import { injectable } from 'inversify';
 import { sendEmail } from '../utils/email/emailUtils';
 
+@injectable()
 class EmailService {
   async sendConfirmationCode(recipientAddress: string, confirmationCode: string) {
     return sendEmail(

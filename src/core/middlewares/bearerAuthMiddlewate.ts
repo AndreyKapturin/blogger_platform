@@ -1,7 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import { HttpStatus } from '../types/HttpStatus';
 import { log } from '../utils/logger/loggerUtils';
-import { jwtService } from '../../compositionRoot';
+import { container } from '../../compositionRoot';
+import { JwtService } from '../utils/jwt/jwtUtils';
+
+const jwtService = container.get(JwtService);
 
 const bearerAuthMiddlewate = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;

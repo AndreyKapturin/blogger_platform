@@ -2,7 +2,9 @@ import { Filter, ObjectId, WithId } from 'mongodb';
 import { usersCollection } from '../../../database/mongoDB';
 import { MongoUserType, UserMeType, ViewUsersQuery, ViewUserType } from '../types';
 import { toPaginateMapper } from '../../../core/mappers/toPaginateMapper';
+import { injectable } from 'inversify';
 
+@injectable()
 class UsersQueryRepository {
   async getPaginatedUsers(usersQuery: ViewUsersQuery) {
     const filter: Filter<MongoUserType> = {};

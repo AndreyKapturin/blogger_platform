@@ -26,13 +26,20 @@ import { PostsQueryRepository } from '../repositories/postsQueryRepository';
 import { Paginator } from '../../../core/types/PaginationAndSorting';
 import { matchedData } from 'express-validator';
 import { PostsCommandRepository } from '../repositories/postsCommandRepository';
+import { inject, injectable } from 'inversify';
 
+@injectable()
 class PostsController {
   constructor(
+    @inject(PostsService)
     private postsService: PostsService,
+    @inject(PostsQueryRepository)
     private postsQueryRepository: PostsQueryRepository,
+    @inject(PostsCommandRepository)
     private postsCommandRepository: PostsCommandRepository,
+    @inject(CommentsService)
     private commentsService: CommentsService,
+    @inject(CommentsQueryRepository)
     private commentsQueryRepository: CommentsQueryRepository,
   ) {}
 

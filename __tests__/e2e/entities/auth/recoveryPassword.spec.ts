@@ -5,7 +5,10 @@ import request from 'supertest';
 import { HttpStatus } from '../../../../src/core/types/HttpStatus';
 import { closeBbConnection } from '../../../../src/database/mongoDB';
 import { createUsersTestManager, UsersTestManagerType } from '../../utils/usersTestManager';
-import { emailService } from '../../../../src/compositionRoot';
+import { container } from '../../../../src/compositionRoot';
+import { EmailService } from '../../../../src/core/services/emailService';
+
+const emailService = container.get(EmailService);
 
 let app: Express;
 let usersTestManager: UsersTestManagerType;

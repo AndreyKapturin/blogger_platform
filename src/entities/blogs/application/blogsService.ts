@@ -1,12 +1,16 @@
+import { inject, injectable } from 'inversify';
 import { Result, ResultStatus } from '../../../core/utils/Result';
 import { ResultFactory } from '../../../core/utils/Result/ResultFactory';
 import { PostsCommandRepository } from '../../posts/repositories/postsCommandRepository';
 import { BlogsCommandRepository } from '../repositories/blogsCommandRepository';
 import { BlogType, InputBlogType } from '../types';
 
+@injectable()
 class BlogsService {
   constructor(
+    @inject(BlogsCommandRepository)
     private blogsCommandRepository: BlogsCommandRepository,
+    @inject(PostsCommandRepository)
     private postsCommandRepository: PostsCommandRepository,
   ) {}
 

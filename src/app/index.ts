@@ -1,3 +1,4 @@
+import '../compositionRoot';
 import express, { Express } from 'express';
 import { Routes } from './routes';
 import { blogsRouter } from '../entities/blogs/router';

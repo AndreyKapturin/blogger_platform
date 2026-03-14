@@ -1,11 +1,18 @@
 import { UsersCommandRepository } from '../repositories/usersCommandRepository';
 import { InputUserType } from '../types';
 import { Result, ResultStatus } from '../../../core/utils/Result';
-import { UserFactory } from '../UserFactory';
+import { UsersFactory } from '../UsersFactory';
 import { ResultFactory } from '../../../core/utils/Result/ResultFactory';
+import { inject, injectable } from 'inversify';
 
+@injectable()
 class UsersService {
-  constructor(private usersCommandRepository: UsersCommandRepository) {}
+  constructor(
+    @inject(UsersCommandRepository)
+    private usersCommandRepository: UsersCommandRepository,
+    @inject(UsersFactory)
+    private usersFactory: UsersFactory,
+  ) {}
   async createUser(credentials: InputUserType): Promise<Result<string>> {
     const isUserExist = await this.usersCommandRepository.checkUserByLoginOrEmail(
       credentials.login,
@@ -21,12 +28,12 @@ class UsersService {
       ]);
     }
 
-    const user = await UserFactory.createConfirmedUser(
+    const user = await this.usersFactory.createConfirmedUser(
       credentials.email,
       credentials.login,
       credentials.password,
     );
-    
+
     const userId = await this.usersCommandRepository.save(user);
 
     return ResultFactory.success(userId);

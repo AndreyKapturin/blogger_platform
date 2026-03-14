@@ -9,10 +9,14 @@ import {
   sendHttpResponseIfWrongResult,
 } from '../../../core/utils/Result/sendHttpResponseIfWrongResult';
 import { APIErrorResult } from '../../../core/types/APIErrorResult';
+import { inject, injectable } from 'inversify';
 
+@injectable()
 class CommentsController {
   constructor(
+    @inject(CommentsQueryRepository)
     private commentsQueryRepository: CommentsQueryRepository,
+    @inject(CommentsService)
     private commentsService: CommentsService,
   ) {}
 

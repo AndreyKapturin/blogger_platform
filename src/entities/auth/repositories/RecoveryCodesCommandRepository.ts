@@ -2,7 +2,9 @@ import { WithId } from 'mongodb';
 import { recoveryCodesCollection } from '../../../database/mongoDB';
 import { MongoRecoveryCode } from '../../../database/types';
 import { RecoveryCode } from '../RecoveryCode';
+import { injectable } from 'inversify';
 
+@injectable()
 class RecoveryCodesCommandRepository {
   async save(recoveryCode: MongoRecoveryCode) {
     const { insertedId } = await recoveryCodesCollection.insertOne(recoveryCode);

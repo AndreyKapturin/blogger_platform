@@ -19,10 +19,14 @@ import {
   isWrongResult,
   sendHttpResponseIfWrongResult,
 } from '../../../core/utils/Result/sendHttpResponseIfWrongResult';
+import { inject, injectable } from 'inversify';
 
+@injectable()
 class AuthController {
   constructor(
+    @inject(UsersQueryRepository)
     private usersQueryRepository: UsersQueryRepository,
+    @inject(AuthService)
     private authService: AuthService,
   ) {}
 

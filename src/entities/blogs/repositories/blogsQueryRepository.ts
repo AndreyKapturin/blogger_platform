@@ -2,7 +2,9 @@ import { Filter, ObjectId, WithId } from 'mongodb';
 import { blogsCollection } from '../../../database/mongoDB';
 import { BlogType, ViewBlogQuery, ViewBlogType } from '../types';
 import { toPaginateMapper } from '../../../core/mappers/toPaginateMapper';
+import { injectable } from 'inversify';
 
+@injectable()
 class BlogsQueryRepository {
   async findAllWithPagination(blogQuery: ViewBlogQuery) {
     const filter: Filter<BlogType> = {};

@@ -3,7 +3,7 @@ import { Result, ResultStatus } from '../../../core/utils/Result';
 import { InputAuthData, InputRegistrationType, Session } from '../types';
 import { CryptoService } from '../../../core/utils/crypto/passwordUtils';
 import { JwtService } from '../../../core/utils/jwt/jwtUtils';
-import { UserFactory } from '../../users/UserFactory';
+import { UsersFactory } from '../../users/UsersFactory';
 import { EmailService } from '../../../core/services/emailService';
 import { log } from '../../../core/utils/logger/loggerUtils';
 import { dateUtils } from '../../../core/utils/date/dateUtils';
@@ -12,15 +12,25 @@ import { ResultFactory } from '../../../core/utils/Result/ResultFactory';
 import { SessionsCommandRepository } from '../repositories/sessionsCommandRepository';
 import { RecoveryCodesCommandRepository } from '../repositories/RecoveryCodesCommandRepository';
 import { RecoveryCode } from '../RecoveryCode';
+import { inject, injectable } from 'inversify';
 
+@injectable()
 class AuthService {
   constructor(
+    @inject(UsersCommandRepository)
     private usersCommandRepository: UsersCommandRepository,
+    @inject(CryptoService)
     private cryptoService: CryptoService,
+    @inject(JwtService)
     private jwtService: JwtService,
+    @inject(SessionsCommandRepository)
     private sessionsCommandRepository: SessionsCommandRepository,
+    @inject(EmailService)
     private emailService: EmailService,
+    @inject(RecoveryCodesCommandRepository)
     private recoveryCodesCommandRepository: RecoveryCodesCommandRepository,
+    @inject(UsersFactory)
+    private usersFactory: UsersFactory
   ) {}
 
   async login(inputAuthData: InputAuthData): Promise<Result<JwtTokensPair>> {
@@ -97,7 +107,9 @@ class AuthService {
       ]);
     }
 
-    const newUser = await UserFactory.createUnconfirmedUser(
+    const passwordHash = await this.cryptoService.hashPassword(credentials.password);
+
+    const newUser = await this.usersFactory.createUnconfirmedUser(
       credentials.email,
       credentials.login,
       credentials.password,
@@ -218,7 +230,7 @@ class AuthService {
     if (!foundUser) return ResultFactory.success(null);
 
     const recoveryCode = new RecoveryCode(foundUser.id);
-    
+
     await this.recoveryCodesCommandRepository.save(recoveryCode);
 
     this.emailService

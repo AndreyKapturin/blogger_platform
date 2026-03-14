@@ -9,7 +9,10 @@ import {
   RATE_LIMIT_WINDOW_IN_SECONDS,
   REQUEST_COUNT_LIMIT,
 } from '../../src/entities/requests/constants';
-import { requestsCommandRepository } from '../../src/compositionRoot';
+import { container } from '../../src/compositionRoot';
+import { RequestsCommandRepository } from '../../src/entities/requests/repositories/requestsCommandRepository';
+
+const requestsCommandRepository = container.get(RequestsCommandRepository);
 
 const requests: RequestType[] = [];
 

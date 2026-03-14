@@ -20,12 +20,18 @@ import { PostsService } from '../../posts/application/postsService';
 import { PostsQueryRepository } from '../../posts/repositories/postsQueryRepository';
 import { Paginator } from '../../../core/types/PaginationAndSorting';
 import { matchedData } from 'express-validator';
+import { inject, injectable } from 'inversify';
 
+@injectable()
 class BlogsController {
   constructor(
+    @inject(BlogsService)
     private blogsService: BlogsService,
+    @inject(BlogsQueryRepository)
     private blogsQueryRepository: BlogsQueryRepository,
+    @inject(PostsService)
     private postsService: PostsService,
+    @inject(PostsQueryRepository)
     private postsQueryRepository: PostsQueryRepository,
   ) {}
 
@@ -86,10 +92,7 @@ class BlogsController {
     res.status(HttpStatus.Ok).json(foundBlog);
   }
 
-  async getBlogs(
-    req: RequestWithQuery<ViewBlogQuery>,
-    res: Response<Paginator<ViewBlogType>>,
-  ) {
+  async getBlogs(req: RequestWithQuery<ViewBlogQuery>, res: Response<Paginator<ViewBlogType>>) {
     const cleanQuery = matchedData<ViewBlogQuery>(req, { locations: ['query'] });
     const paginatedViewBlogs = await this.blogsQueryRepository.findAllWithPagination(cleanQuery);
     res.status(HttpStatus.Ok).json(paginatedViewBlogs);
@@ -115,10 +118,7 @@ class BlogsController {
     res.status(HttpStatus.Ok).json(paginatedViewPosts);
   }
 
-  async updateBlog(
-    req: RequestWithParamsAndBody<BlogIdParamType, InputBlogType>,
-    res: Response,
-  ) {
+  async updateBlog(req: RequestWithParamsAndBody<BlogIdParamType, InputBlogType>, res: Response) {
     const updateBlogResult = await this.blogsService.updateBlog(req.params.id, req.body);
 
     if (isWrongResult(updateBlogResult)) {

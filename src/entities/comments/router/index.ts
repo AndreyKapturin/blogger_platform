@@ -4,7 +4,10 @@ import { validationResultMiddleware } from '../../../core/middlewares/validation
 import { inputCommentValidationSchema } from '../validations/inputCommentValidationSchema';
 import { bearerAuthMiddlewate } from '../../../core/middlewares/bearerAuthMiddlewate';
 import { Routes } from '../../../app/routes';
-import { commentsController } from '../../../compositionRoot';
+import { container } from '../../../compositionRoot';
+import { CommentsController } from '../controller/CommentsController';
+
+const commentsController = container.get(CommentsController);
 
 const commentsRouter = Router();
 

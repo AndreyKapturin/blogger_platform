@@ -1,3 +1,4 @@
+import { Container } from 'inversify';
 import { EmailService } from './core/services/emailService';
 import { CryptoService } from './core/utils/crypto/passwordUtils';
 import { JwtService } from './core/utils/jwt/jwtUtils';
@@ -25,66 +26,37 @@ import { UsersService } from './entities/users/application/usersService';
 import { UsersController } from './entities/users/controller/UsersController';
 import { UsersCommandRepository } from './entities/users/repositories/usersCommandRepository';
 import { UsersQueryRepository } from './entities/users/repositories/usersQueryRepository';
+import { UsersFactory } from './entities/users/UsersFactory';
 
-export const blogsCommandRepository = new BlogsCommandRepository();
-export const blogsQueryRepository = new BlogsQueryRepository();
+export const container = new Container();
 
-export const usersCommandRepository = new UsersCommandRepository();
-export const usersQueryRepository = new UsersQueryRepository();
-
-export const sessionsCommandRepository = new SessionsCommandRepository();
-export const sessionsQueryRepository = new SessionsQueryRepository();
-
-export const postsCommandRepository = new PostsCommandRepository();
-export const postsQueryRepository = new PostsQueryRepository();
-
-export const commentsCommandRepository = new CommentsCommandRepository();
-export const commentsQueryRepository = new CommentsQueryRepository();
-
-export const requestsCommandRepository = new RequestsCommandRepository();
-
-export const recoveryCodesCommandRepository = new RecoveryCodesCommandRepository();
-
-export const cryptoService = new CryptoService();
-export const jwtService = new JwtService();
-export const emailService = new EmailService();
-
-export const blogsService = new BlogsService(blogsCommandRepository, postsCommandRepository);
-export const postsService = new PostsService(blogsCommandRepository, postsCommandRepository);
-export const usersService = new UsersService(usersCommandRepository);
-export const commentsService = new CommentsService(
-  postsCommandRepository,
-  usersCommandRepository,
-  commentsCommandRepository,
-);
-export const devicesService = new DevicesService(jwtService, sessionsCommandRepository);
-export const authService = new AuthService(
-  usersCommandRepository,
-  cryptoService,
-  jwtService,
-  sessionsCommandRepository,
-  emailService,
-  recoveryCodesCommandRepository,
-);
-
-export const authController = new AuthController(usersQueryRepository, authService);
-export const blogsController = new BlogsController(
-  blogsService,
-  blogsQueryRepository,
-  postsService,
-  postsQueryRepository,
-);
-export const commentsController = new CommentsController(commentsQueryRepository, commentsService);
-export const postsController = new PostsController(
-  postsService,
-  postsQueryRepository,
-  postsCommandRepository,
-  commentsService,
-  commentsQueryRepository,
-);
-export const securityController = new SecurityController(
-  sessionsQueryRepository,
-  devicesService,
-  jwtService,
-);
-export const usersController = new UsersController(usersService, usersQueryRepository);
+[
+  BlogsCommandRepository,
+  BlogsQueryRepository,
+  UsersCommandRepository,
+  UsersQueryRepository,
+  SessionsCommandRepository,
+  SessionsQueryRepository,
+  PostsCommandRepository,
+  PostsQueryRepository,
+  CommentsCommandRepository,
+  CommentsQueryRepository,
+  RequestsCommandRepository,
+  RecoveryCodesCommandRepository,
+  CryptoService,
+  JwtService,
+  EmailService,
+  UsersFactory,
+  BlogsService,
+  PostsService,
+  UsersService,
+  CommentsService,
+  DevicesService,
+  AuthService,
+  AuthController,
+  BlogsController,
+  CommentsController,
+  PostsController,
+  SecurityController,
+  UsersController,
+].forEach((dependencyClass) => container.bind(dependencyClass).toSelf().inSingletonScope());

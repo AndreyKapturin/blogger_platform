@@ -9,7 +9,10 @@ import { extractFromCookieArray } from '../../../../../src/core/utils/cookie/coo
 import { ISODateStringRegExp } from '../../../utils/constants';
 import { createUsersTestManager, UsersTestManagerType } from '../../../utils/usersTestManager';
 import { InputLoginType } from '../../../../../src/entities/auth/types';
-import { jwtService } from '../../../../../src/compositionRoot';
+import { container } from '../../../../../src/compositionRoot';
+import { JwtService } from '../../../../../src/core/utils/jwt/jwtUtils';
+
+const jwtService = container.get(JwtService);
 
 let app: Express;
 let usersTestManager: UsersTestManagerType;

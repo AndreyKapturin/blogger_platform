@@ -2,7 +2,9 @@ import { Filter, ObjectId, WithId } from 'mongodb';
 import { postsCollection } from '../../../database/mongoDB';
 import { PostType, ViewPostQuery, ViewPostType } from '../types';
 import { toPaginateMapper } from '../../../core/mappers/toPaginateMapper';
+import { injectable } from 'inversify';
 
+@injectable()
 class PostsQueryRepository {
   async findAllWithPagination(postsQuery: ViewPostQuery) {
     const { sortBy, sortDirection, pageSize, pageNumber } = postsQuery;

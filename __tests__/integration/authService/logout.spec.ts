@@ -12,7 +12,14 @@ import {
   MAX_USER_LOGIN_LENGTH,
   MIN_USER_LOGIN_LENGTH,
 } from '../../../src/entities/users/constants';
-import { authService, emailService, jwtService } from '../../../src/compositionRoot';
+import { container } from '../../../src/compositionRoot';
+import { JwtService } from '../../../src/core/utils/jwt/jwtUtils';
+import { EmailService } from '../../../src/core/services/emailService';
+import { AuthService } from '../../../src/entities/auth/application/authService';
+
+const jwtService = container.get(JwtService);
+const emailService = container.get(EmailService);
+const authService = container.get(AuthService);
 
 let mongoMemoryServer: MongoMemoryServer;
 

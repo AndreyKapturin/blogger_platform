@@ -15,10 +15,14 @@ import { HttpStatus } from '../../../core/types/HttpStatus';
 import { UsersQueryRepository } from '../repositories/usersQueryRepository';
 import { Paginator } from '../../../core/types/PaginationAndSorting';
 import { matchedData } from 'express-validator';
+import { inject, injectable } from 'inversify';
 
+@injectable()
 class UsersController {
   constructor(
+    @inject(UsersService)
     private usersService: UsersService,
+    @inject(UsersQueryRepository)
     private usersQueryRepository: UsersQueryRepository,
   ) {}
 

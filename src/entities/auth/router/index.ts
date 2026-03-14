@@ -11,8 +11,11 @@ import { emailConfirmationCodeValidation } from '../validations/emailConfirmatio
 import { refreshTokenMiddleware } from '../../../core/middlewares/refreshTokenMiddleware';
 import { Routes } from '../../../app/routes';
 import { rateLimitMiddleware } from '../../../core/middlewares/rateLimitMiddleware';
-import { authController } from '../../../compositionRoot';
+import { container } from '../../../compositionRoot';
 import { inputNewPasswordValidation } from '../validations/newPasswordValidation';
+import { AuthController } from '../controller/AuthController';
+
+const authController = container.get(AuthController);
 
 const authRouter = Router();
 

@@ -10,7 +10,10 @@ import { paginationAndSortingPostsValidationSchema } from '../../posts/validatio
 import { inputBlogPostValidationSchema } from '../../posts/validations/inputBlogPostValidationSchema';
 import { idInParamsCheckMiddleware } from '../../../core/validation/idInParamsCheckMiddleware';
 import { Routes } from '../../../app/routes';
-import { blogsController } from '../../../compositionRoot';
+import { container } from '../../../compositionRoot';
+import { BlogsController } from '../controller/BlogsContoller';
+
+const blogsController = container.get(BlogsController);
 
 const blogsRouter = Router();
 

@@ -10,7 +10,10 @@ import { inputCommentValidationSchema } from '../../comments/validations/inputCo
 import { bearerAuthMiddlewate } from '../../../core/middlewares/bearerAuthMiddlewate';
 import { paginationAndSortingCommentValidationSchema } from '../../comments/validations/paginationAndSortingCommentValidationSchema';
 import { Routes } from '../../../app/routes';
-import { postsController } from '../../../compositionRoot';
+import { container } from '../../../compositionRoot';
+import { PostsController } from '../controller/PostsController';
+
+const postsController = container.get(PostsController);
 
 const postsRouter = Router();
 
