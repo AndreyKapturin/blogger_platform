@@ -6,11 +6,11 @@ import {
   MIN_USER_LOGIN_LENGTH,
 } from '../../../src/entities/users/constants';
 import { ResultStatus } from '../../../src/core/utils/Result';
-import { closeBbConnection, connectToDB, usersCollection } from '../../../src/database/mongoDB';
+import { closeBbConnection, connectToDB } from '../../../src/database/mongoDB';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { dateUtils } from '../../../src/core/utils/date/dateUtils';
 import { AuthService } from '../../../src/entities/auth/application/authService';
 import { EmailService } from '../../../src/core/services/emailService';
+import { UserModel } from '../../../src/entities/users/domain/UserModel';
 
 const authService = container.get(AuthService);
 const emailService = container.get(EmailService);
@@ -28,7 +28,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  await usersCollection.deleteMany();
+  await UserModel.deleteMany();
   sendConfirmationCodeSpyOn.mockClear();
 });
 
@@ -52,7 +52,7 @@ describe('AuthService.confirmRegistration', () => {
     const inputCredentials = getInputRegistratonData();
     await authService.registration(inputCredentials);
 
-    const userInDatabase = await usersCollection.findOne({
+    const userInDatabase = await UserModel.findOne({
       $or: [{ login: inputCredentials.login }, { email: inputCredentials.email }],
     });
 
@@ -60,7 +60,7 @@ describe('AuthService.confirmRegistration', () => {
       userInDatabase!.emailConfirmation.code,
     );
 
-    const userInDatabaseAfterConfirmation = await usersCollection.findOne({
+    const userInDatabaseAfterConfirmation = await UserModel.findOne({
       $or: [{ login: inputCredentials.login }, { email: inputCredentials.email }],
     });
 
@@ -84,11 +84,11 @@ describe('AuthService.confirmRegistration', () => {
     const inputCredentials = getInputRegistratonData();
     await authService.registration(inputCredentials);
 
-    const userInDatabase = await usersCollection.findOne({
+    const userInDatabase = await UserModel.findOne({
       $or: [{ login: inputCredentials.login }, { email: inputCredentials.email }],
     });
 
-    await usersCollection.updateOne(
+    await UserModel.updateOne(
       { login: inputCredentials.login },
       { $set: { 'emailConfirmation.isConfirmed': true } },
     );
@@ -107,15 +107,13 @@ describe('AuthService.confirmRegistration', () => {
     const inputCredentials = getInputRegistratonData();
     await authService.registration(inputCredentials);
 
-    const userInDatabase = await usersCollection.findOne({
+    const userInDatabase = await UserModel.findOne({
       $or: [{ login: inputCredentials.login }, { email: inputCredentials.email }],
     });
 
-    const nowDate = dateUtils.getEmailConfirmationCodeExpirationDate(-10);
-
-    await usersCollection.updateOne(
+    await UserModel.updateOne(
       { login: inputCredentials.login },
-      { $set: { 'emailConfirmation.codeExpirationDate': nowDate } },
+      { $set: { 'emailConfirmation.codeExpirationDate': new Date() } },
     );
 
     const confirmRegistrationResult = await authService.confirmRegistration(

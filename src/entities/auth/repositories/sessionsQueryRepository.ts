@@ -1,24 +1,25 @@
-import { WithId } from 'mongodb';
-import { sessionsCollection } from '../../../database/mongoDB';
-import { Session } from '../types';
 import { ViewSecurityDeviceType } from '../../security/types';
 import { injectable } from 'inversify';
+import { SessionLeanDocument, SessionModel } from '../domain/SessionModel';
 
 @injectable()
 class SessionsQueryRepository {
   async getAllDevicesForUser(userId: string) {
-    return sessionsCollection
-      .find({ $and: [{ userId }, { expirationDate: { $gt: new Date() } }] })
-      .map(this._sessionToDeviceMapper)
-      .toArray();
+    const sessionLeanDocuments: SessionLeanDocument[] = await SessionModel.find({
+      $and: [{ userId }, { expirationDate: { $gt: new Date() } }],
+    }).lean();
+    const viewDevices = sessionLeanDocuments.map(this._sessionToDeviceMapper);
+    return viewDevices;
   }
 
-  private _sessionToDeviceMapper = (session: WithId<Session>): ViewSecurityDeviceType => {
+  private _sessionToDeviceMapper = (
+    sessionLeanDocument: SessionLeanDocument,
+  ): ViewSecurityDeviceType => {
     return {
-      deviceId: session.deviceId,
-      ip: session.ip,
-      lastActiveDate: session.issuedDate.toISOString(),
-      title: session.deviceName,
+      deviceId: sessionLeanDocument.deviceId,
+      ip: sessionLeanDocument.ip,
+      lastActiveDate: sessionLeanDocument.issuedDate.toISOString(),
+      title: sessionLeanDocument.deviceName,
     };
   };
 }

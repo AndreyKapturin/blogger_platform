@@ -8,11 +8,18 @@ type BlogType = {
   name: string;
   description: string;
   websiteUrl: string;
-  createdAt: string;
+  createdAt: Date;
   isMembership: boolean;
 };
 
-type ViewBlogType = BlogType & BlogIdParamType;
+type ViewBlogType = {
+  id: string,
+  name: string;
+  description: string;
+  websiteUrl: string;
+  createdAt: string;
+  isMembership: boolean;
+};
 
 type InputBlogType = Omit<BlogType, 'createdAt' | 'isMembership'>;
 

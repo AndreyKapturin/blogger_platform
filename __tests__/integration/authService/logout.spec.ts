@@ -1,10 +1,5 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import {
-  closeBbConnection,
-  connectToDB,
-  sessionsCollection,
-  usersCollection,
-} from '../../../src/database/mongoDB';
+import { closeBbConnection, connectToDB } from '../../../src/database/mongoDB';
 import { Result, ResultStatus } from '../../../src/core/utils/Result';
 import { InputAuthData, InputRegistrationType } from '../../../src/entities/auth/types';
 import { faker } from '@faker-js/faker';
@@ -16,6 +11,8 @@ import { container } from '../../../src/compositionRoot';
 import { JwtService } from '../../../src/core/utils/jwt/jwtUtils';
 import { EmailService } from '../../../src/core/services/emailService';
 import { AuthService } from '../../../src/entities/auth/application/authService';
+import { UserModel } from '../../../src/entities/users/domain/UserModel';
+import { SessionModel } from '../../../src/entities/auth/domain/SessionModel';
 
 const jwtService = container.get(JwtService);
 const emailService = container.get(EmailService);
@@ -46,8 +43,8 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  await usersCollection.deleteMany();
-  await sessionsCollection.deleteMany();
+  await UserModel.deleteMany();
+  await SessionModel.deleteMany();
 });
 
 afterAll(async () => {
@@ -83,7 +80,7 @@ describe('AuthService.logout', () => {
     const deviceId = tokenPayload.deviceId;
     const issuedDate = new Date(tokenPayload.iat * 1000);
 
-    const documentsCountAfterLogin = await sessionsCollection.countDocuments({
+    const documentsCountAfterLogin = await SessionModel.countDocuments({
       $and: [{ deviceId }, { issuedDate }],
     });
 
@@ -96,7 +93,7 @@ describe('AuthService.logout', () => {
       return;
     }
 
-    const documentsCountAfterLogout = await sessionsCollection.countDocuments({
+    const documentsCountAfterLogout = await SessionModel.countDocuments({
       $and: [{ deviceId }, { issuedDate }],
     });
 

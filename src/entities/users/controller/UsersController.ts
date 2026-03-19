@@ -37,7 +37,7 @@ class UsersController {
       return;
     }
 
-    const createdUser = await this.usersQueryRepository.findUserById(createUserResult.data);
+    const createdUser = await this.usersQueryRepository.findById(createUserResult.data);
     res.status(HttpStatus.Created).json(createdUser!);
   }
 

@@ -21,6 +21,9 @@ import { PostsQueryRepository } from '../../posts/repositories/postsQueryReposit
 import { Paginator } from '../../../core/types/PaginationAndSorting';
 import { matchedData } from 'express-validator';
 import { inject, injectable } from 'inversify';
+import { InputCreateBlogDto } from '../domain/InputCreateBlogDto';
+import { InputUpdateBlogDto } from '../domain/InputUpdateBlogDto';
+import { InputCreatePostDto } from '../../posts/domain/InputCreatePostDto';
 
 @injectable()
 class BlogsController {
@@ -34,12 +37,17 @@ class BlogsController {
     @inject(PostsQueryRepository)
     private postsQueryRepository: PostsQueryRepository,
   ) {}
-
   async createBlog(
     req: RequestWithBody<InputBlogType>,
     res: Response<ViewBlogType | APIErrorResult>,
   ) {
-    const createBlogResult = await this.blogsService.createBlog(req.body);
+    const inputCreateBlogDto = new InputCreateBlogDto(
+      req.body.name,
+      req.body.description,
+      req.body.websiteUrl,
+    );
+
+    const createBlogResult = await this.blogsService.createBlog(inputCreateBlogDto);
 
     if (isWrongResult(createBlogResult)) {
       sendHttpResponseIfWrongResult(createBlogResult, res);
@@ -47,6 +55,7 @@ class BlogsController {
     }
 
     const blog = await this.blogsQueryRepository.findById(createBlogResult.data);
+
     res.status(HttpStatus.Created).json(blog!);
   }
 
@@ -54,14 +63,14 @@ class BlogsController {
     req: RequestWithParamsAndBody<BlogIdParamType, InputBlogPostType>,
     res: Response<ViewPostType | APIErrorResult>,
   ) {
-    const inputPost: InputPostType = {
-      title: req.body.title,
-      shortDescription: req.body.shortDescription,
-      content: req.body.content,
-      blogId: req.params.id,
-    };
+    const inputCreatePostDto = new InputCreatePostDto(
+      req.body.title,
+      req.body.content,
+      req.body.shortDescription,
+      req.params.id,
+    );
 
-    const createdPostResult = await this.postsService.createPost(inputPost);
+    const createdPostResult = await this.postsService.createPost(inputCreatePostDto);
 
     if (isWrongResult(createdPostResult)) {
       sendHttpResponseIfWrongResult(createdPostResult, res);
@@ -85,10 +94,12 @@ class BlogsController {
 
   async getBlogById(req: RequestWithParams<BlogIdParamType>, res: Response<ViewBlogType>) {
     const foundBlog = await this.blogsQueryRepository.findById(req.params.id);
+
     if (!foundBlog) {
       res.sendStatus(HttpStatus.Not_Found);
       return;
     }
+
     res.status(HttpStatus.Ok).json(foundBlog);
   }
 
@@ -119,7 +130,13 @@ class BlogsController {
   }
 
   async updateBlog(req: RequestWithParamsAndBody<BlogIdParamType, InputBlogType>, res: Response) {
-    const updateBlogResult = await this.blogsService.updateBlog(req.params.id, req.body);
+    const inputUpdateBlogDto = new InputUpdateBlogDto(
+      req.body.name,
+      req.body.description,
+      req.body.websiteUrl,
+    );
+
+    const updateBlogResult = await this.blogsService.updateBlog(req.params.id, inputUpdateBlogDto);
 
     if (isWrongResult(updateBlogResult)) {
       sendHttpResponseIfWrongResult(updateBlogResult, res);

@@ -4,7 +4,7 @@ import { ResultFactory } from '../../../core/utils/Result/ResultFactory';
 import { PostsCommandRepository } from '../../posts/repositories/postsCommandRepository';
 import { UsersCommandRepository } from '../../users/repositories/usersCommandRepository';
 import { CommentsCommandRepository } from '../repositories/commentsCommandRepository';
-import { MongoCommentType } from '../types';
+import { CommentModel } from '../domain/CommentModel';
 
 @injectable()
 class CommentsService {
@@ -16,11 +16,10 @@ class CommentsService {
     @inject(CommentsCommandRepository)
     private commentsCommandRepository: CommentsCommandRepository,
   ) {}
-
   async createComment(postId: string, userId: string, content: string): Promise<Result<string>> {
-    const post = await this.postsCommandRepository.findById(postId);
+    const postDocument = await this.postsCommandRepository.findById(postId);
 
-    if (!post) {
+    if (!postDocument) {
       return ResultFactory.wrong(ResultStatus.NotFound, 'Post not found', [
         {
           field: null,
@@ -29,9 +28,9 @@ class CommentsService {
       ]);
     }
 
-    const user = await this.usersCommandRepository.findUserById(userId);
+    const userDocument = await this.usersCommandRepository.findById(userId);
 
-    if (!user) {
+    if (!userDocument) {
       return ResultFactory.wrong(ResultStatus.InvalidCredentials, 'User not found', [
         {
           field: 'accessToken',
@@ -40,15 +39,15 @@ class CommentsService {
       ]);
     }
 
-    const newComment: MongoCommentType = {
-      postId,
+    const newComment = new CommentModel({
       content,
+      postId,
       commentatorInfo: {
-        userId: user.id,
-        userLogin: user.login,
+        userId,
+        userLogin: userDocument.login,
       },
-      createdAt: new Date().toISOString(),
-    };
+      createdAt: new Date(),
+    });
 
     const createdCommentId = await this.commentsCommandRepository.save(newComment);
 
@@ -56,9 +55,9 @@ class CommentsService {
   }
 
   async updateComment(commentId: string, userId: string, content: string): Promise<Result> {
-    const comment = await this.commentsCommandRepository.findById(commentId);
+    const commentDocument = await this.commentsCommandRepository.findById(commentId);
 
-    if (!comment) {
+    if (!commentDocument) {
       return ResultFactory.wrong(ResultStatus.NotFound, `Comment with id ${commentId} not found`, [
         {
           field: 'commentId',
@@ -67,7 +66,7 @@ class CommentsService {
       ]);
     }
 
-    if (comment.commentatorInfo.userId !== userId) {
+    if (commentDocument.commentatorInfo.userId !== userId) {
       return ResultFactory.wrong(ResultStatus.PermissionError, 'Editing not own comment', [
         {
           field: null,
@@ -76,15 +75,17 @@ class CommentsService {
       ]);
     }
 
-    await this.commentsCommandRepository.update(commentId, content);
+    commentDocument.content = content;
+
+    await this.commentsCommandRepository.update(commentDocument);
 
     return ResultFactory.success(null);
   }
 
   async deleteComment(commentId: string, userId: string): Promise<Result> {
-    const comment = await this.commentsCommandRepository.findById(commentId);
+    const commentDocument = await this.commentsCommandRepository.findById(commentId);
 
-    if (!comment) {
+    if (!commentDocument) {
       return ResultFactory.wrong(ResultStatus.NotFound, `Comment with id ${commentId} not found`, [
         {
           field: 'commentId',
@@ -93,7 +94,7 @@ class CommentsService {
       ]);
     }
 
-    if (comment.commentatorInfo.userId !== userId) {
+    if (commentDocument.commentatorInfo.userId !== userId) {
       return ResultFactory.wrong(ResultStatus.PermissionError, 'Deliting not own comment', [
         {
           field: null,
@@ -102,7 +103,7 @@ class CommentsService {
       ]);
     }
 
-    await this.commentsCommandRepository.remove(commentId);
+    await this.commentsCommandRepository.delete(commentDocument);
 
     return ResultFactory.success(null);
   }

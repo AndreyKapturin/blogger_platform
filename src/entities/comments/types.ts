@@ -1,4 +1,4 @@
-import { PaginationAndSortQuery } from "../../core/types/PaginationAndSorting";
+import { PaginationAndSortQuery } from '../../core/types/PaginationAndSorting';
 
 type CommentIdParamType = {
   id: string;
@@ -8,25 +8,23 @@ type InputCommentType = {
   content: string;
 };
 
+type CommentatorInfoType = {
+  userId: string;
+  userLogin: string;
+};
+
 type ViewCommentType = {
   id: string;
   content: string;
-  commentatorInfo: {
-    userId: string;
-    userLogin: string;
-  };
+  commentatorInfo: CommentatorInfoType;
   createdAt: string;
 };
 
 type CommentType = {
-  id: string;
   postId: string;
   content: string;
-  commentatorInfo: {
-    userId: string;
-    userLogin: string;
-  };
-  createdAt: string;
+  commentatorInfo: CommentatorInfoType;
+  createdAt: Date;
 };
 
 type MongoCommentType = {
@@ -47,6 +45,7 @@ type ViewCommentsQuery = PaginationAndSortQuery<CommentsSortField>;
 
 export { CommentsSortField };
 export type {
+  CommentatorInfoType,
   CommentIdParamType,
   InputCommentType,
   CommentType,

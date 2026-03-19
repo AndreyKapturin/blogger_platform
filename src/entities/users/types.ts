@@ -4,19 +4,21 @@ type UserIdParamType = {
   id: string;
 };
 
+type EmailConfirmationType = {
+  isConfirmed: boolean;
+  code: string;
+  codeExpirationDate: Date;
+};
+
 type MongoUserType = {
   login: string;
   email: string;
-  createdAt: string;
+  createdAt: Date;
   passwordHash: string;
-  emailConfirmation: {
-    isConfirmed: boolean,
-    code: string,
-    codeExpirationDate: string,
-  }
+  emailConfirmation: EmailConfirmationType;
 };
 
-type UserType = MongoUserType & UserIdParamType;
+type UserType = MongoUserType;
 
 type UserMeType = {
   login: string;
@@ -49,6 +51,7 @@ type ViewUsersQuery = PaginationAndSortQuery<UsersSortFields> & {
 
 export { UsersSortFields };
 export type {
+  EmailConfirmationType,
   UserIdParamType,
   MongoUserType,
   InputUserType,

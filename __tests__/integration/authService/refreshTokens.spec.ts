@@ -1,10 +1,5 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import {
-  closeBbConnection,
-  connectToDB,
-  sessionsCollection,
-  usersCollection,
-} from '../../../src/database/mongoDB';
+import { closeBbConnection, connectToDB } from '../../../src/database/mongoDB';
 import { Result, ResultStatus } from '../../../src/core/utils/Result';
 import { InputAuthData, InputRegistrationType } from '../../../src/entities/auth/types';
 import { faker } from '@faker-js/faker';
@@ -18,6 +13,8 @@ import { container } from '../../../src/compositionRoot';
 import { AuthService } from '../../../src/entities/auth/application/authService';
 import { EmailService } from '../../../src/core/services/emailService';
 import { JwtService } from '../../../src/core/utils/jwt/jwtUtils';
+import { UserModel } from '../../../src/entities/users/domain/UserModel';
+import { SessionModel } from '../../../src/entities/auth/domain/SessionModel';
 
 const jwtService = container.get(JwtService);
 const emailService = container.get(EmailService);
@@ -48,8 +45,8 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  await usersCollection.deleteMany();
-  await sessionsCollection.deleteMany();
+  await UserModel.deleteMany();
+  await SessionModel.deleteMany();
 });
 
 afterAll(async () => {
@@ -99,7 +96,7 @@ describe('AuthService.refreshTokens', () => {
     const tokenPayload = jwtService.decodeToken(firstRefreshToken);
     const deviceId = tokenPayload.deviceId;
 
-    const deviceSession = await sessionsCollection.findOne({ deviceId });
+    const deviceSession = await SessionModel.findOne({ deviceId });
 
     const prevSessionIssuedDate = tokenPayload.iat * 1000;
     const prevSessionExpirationDate = tokenPayload.exp * 1000;

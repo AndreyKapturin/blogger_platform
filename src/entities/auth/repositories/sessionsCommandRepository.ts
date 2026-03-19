@@ -1,16 +1,14 @@
-import { WithId } from 'mongodb';
-import { sessionsCollection } from '../../../database/mongoDB';
-import { Session } from '../types';
 import { injectable } from 'inversify';
+import { SessionDocumentType, SessionModel } from '../domain/SessionModel';
 
 @injectable()
 class SessionsCommandRepository {
-  async save(session: Session) {
-    await sessionsCollection.insertOne(session);
+  async save(sessionDocument: SessionDocumentType): Promise<void> {
+    await sessionDocument.save();
   }
 
   async existsDeviceSession(deviceId: string, issuedDate: Date) {
-    const documentsCount = await sessionsCollection.countDocuments(
+    const documentsCount = await SessionModel.countDocuments(
       {
         $and: [{ deviceId }, { issuedDate }],
       },
@@ -19,43 +17,28 @@ class SessionsCommandRepository {
     return Boolean(documentsCount);
   }
 
-  async deleteSessionByDeviceId(deviceId: string) {
-    const { deletedCount } = await sessionsCollection.deleteOne({ deviceId });
+  async delete(sessionDocument: SessionDocumentType): Promise<boolean> {
+    const { deletedCount } = await sessionDocument.deleteOne();
     return Boolean(deletedCount);
   }
 
-  async updateSessionIatAndExpDate(deviceId: string, issuedDate: Date, expirationDate: Date) {
-    const { matchedCount } = await sessionsCollection.updateOne(
-      { deviceId },
-      { $set: { issuedDate, expirationDate } },
-    );
-    return Boolean(matchedCount);
+  async update(sessionDocument: SessionDocumentType): Promise<boolean> {
+    await sessionDocument.save();
+    return true;
   }
 
-  async terminateOtherSession(userId: string, deviceId: string) {
-    await sessionsCollection.deleteMany({
+  async terminateOtherSession(userId: string, deviceId: string): Promise<void> {
+    await SessionModel.deleteMany({
       $and: [{ userId }, { deviceId: { $ne: deviceId } }],
     });
   }
 
-  async findSessionByDeviceId(deviceId: string) {
-    const foundSession = await sessionsCollection.findOne({ deviceId });
-    return foundSession ? this._cleanObjectIdMapper(foundSession) : null;
+  async findSessionByDeviceId(deviceId: string): Promise<SessionDocumentType | null> {
+    return await SessionModel.findOne({ deviceId });
   }
 
-  private _cleanObjectIdMapper(mongoSession: WithId<Session>): Session {
-    return {
-      deviceId: mongoSession.deviceId,
-      deviceName: mongoSession.deviceName,
-      expirationDate: mongoSession.expirationDate,
-      ip: mongoSession.ip,
-      issuedDate: mongoSession.issuedDate,
-      userId: mongoSession.userId,
-    };
-  }
-
-  async cleanAll() {
-    sessionsCollection.deleteMany();
+  async cleanAll(): Promise<void> {
+    await SessionModel.deleteMany();
   }
 }
 

@@ -11,7 +11,7 @@ class DevicesService {
     @inject(JwtService)
     private jwtService: JwtService,
   ) {}
-
+  
   async terminateOtherDevices(refreshToken: string) {
     const tokenPayload = this.jwtService.decodeToken(refreshToken);
     await this.sessionsCommandRepository.terminateOtherSession(
@@ -22,9 +22,9 @@ class DevicesService {
   }
 
   async terminateDeviceById(deviceId: string, refreshToken: string) {
-    const foundSession = await this.sessionsCommandRepository.findSessionByDeviceId(deviceId);
+    const sessionDocument = await this.sessionsCommandRepository.findSessionByDeviceId(deviceId);
 
-    if (!foundSession) {
+    if (!sessionDocument) {
       return ResultFactory.wrong(ResultStatus.NotFound, 'Device not found', [
         {
           field: 'deviceId',
@@ -35,7 +35,7 @@ class DevicesService {
 
     const tokenPayload = this.jwtService.decodeToken(refreshToken);
 
-    if (foundSession.userId !== tokenPayload.userId) {
+    if (sessionDocument.userId !== tokenPayload.userId) {
       return ResultFactory.wrong(ResultStatus.PermissionError, 'Deleting not own device', [
         {
           field: 'deviceId',
@@ -44,7 +44,7 @@ class DevicesService {
       ]);
     }
 
-    await this.sessionsCommandRepository.deleteSessionByDeviceId(deviceId);
+    await this.sessionsCommandRepository.delete(sessionDocument);
 
     return ResultFactory.success(null);
   }

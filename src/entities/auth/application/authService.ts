@@ -1,9 +1,8 @@
 import { UsersCommandRepository } from '../../users/repositories/usersCommandRepository';
 import { Result, ResultStatus } from '../../../core/utils/Result';
-import { InputAuthData, InputRegistrationType, Session } from '../types';
+import { InputAuthData } from '../types';
 import { CryptoService } from '../../../core/utils/crypto/passwordUtils';
 import { JwtService } from '../../../core/utils/jwt/jwtUtils';
-import { UsersFactory } from '../../users/UsersFactory';
 import { EmailService } from '../../../core/services/emailService';
 import { log } from '../../../core/utils/logger/loggerUtils';
 import { dateUtils } from '../../../core/utils/date/dateUtils';
@@ -11,8 +10,15 @@ import { JwtTokensPair } from '../types';
 import { ResultFactory } from '../../../core/utils/Result/ResultFactory';
 import { SessionsCommandRepository } from '../repositories/sessionsCommandRepository';
 import { RecoveryCodesCommandRepository } from '../repositories/RecoveryCodesCommandRepository';
-import { RecoveryCode } from '../RecoveryCode';
 import { inject, injectable } from 'inversify';
+import { UserModel } from '../../users/domain/UserModel';
+import { RecoveryCodeModel } from '../domain/RecoveryCodeModel';
+import {
+  EMAIL_CONFORMATION_CODE_LIFETIME_IN_MINUTES,
+  PASSWORD_RECOVERY_CODE_LIFETIME_IN_SECONDS,
+} from '../../../core/config';
+import { SessionModel } from '../domain/SessionModel';
+import { InputRegistrationDto } from '../domain/InputRegistrationDto';
 
 @injectable()
 class AuthService {
@@ -29,15 +35,14 @@ class AuthService {
     private emailService: EmailService,
     @inject(RecoveryCodesCommandRepository)
     private recoveryCodesCommandRepository: RecoveryCodesCommandRepository,
-    @inject(UsersFactory)
-    private usersFactory: UsersFactory
   ) {}
-
   async login(inputAuthData: InputAuthData): Promise<Result<JwtTokensPair>> {
     const { credentials, requestDevice } = inputAuthData;
-    const user = await this.usersCommandRepository.findUserByLoginOrEmail(credentials.loginOrEmail);
+    const userDocument = await this.usersCommandRepository.findByLoginOrEmail(
+      credentials.loginOrEmail,
+    );
 
-    if (!user) {
+    if (!userDocument) {
       return ResultFactory.wrong(ResultStatus.InvalidCredentials, 'Invalid credentials', [
         {
           field: null,
@@ -48,7 +53,7 @@ class AuthService {
 
     const isValidPassword = await this.cryptoService.comparePassword(
       credentials.password,
-      user.passwordHash,
+      userDocument.passwordHash,
     );
 
     if (!isValidPassword) {
@@ -62,7 +67,7 @@ class AuthService {
 
     const deviceId = crypto.randomUUID();
     const jwtTokensPair = await this.jwtService.createAccessAndRefreshTokens({
-      userId: user.id,
+      userId: userDocument.id,
       deviceId,
     });
 
@@ -70,22 +75,22 @@ class AuthService {
       jwtTokensPair.refreshToken,
     );
 
-    const session: Session = {
-      userId: user.id,
+    const newSessionDocument = new SessionModel({
+      userId: userDocument.id,
       deviceId,
       issuedDate,
       deviceName: requestDevice.deviceName,
       ip: requestDevice.ip,
       expirationDate,
-    };
+    });
 
-    await this.sessionsCommandRepository.save(session);
+    await this.sessionsCommandRepository.save(newSessionDocument);
 
     return ResultFactory.success(jwtTokensPair);
   }
 
-  async registration(credentials: InputRegistrationType): Promise<Result<string>> {
-    let isUserExist = await this.usersCommandRepository.checkUserByEmail(credentials.email);
+  async registration(inputRegistrationDto: InputRegistrationDto): Promise<Result<string>> {
+    let isUserExist = await this.usersCommandRepository.checkByEmail(inputRegistrationDto.email);
 
     if (isUserExist) {
       return ResultFactory.wrong(ResultStatus.InvalidData, 'User already exists', [
@@ -96,7 +101,7 @@ class AuthService {
       ]);
     }
 
-    isUserExist = await this.usersCommandRepository.checkUserByLogin(credentials.login);
+    isUserExist = await this.usersCommandRepository.checkByLogin(inputRegistrationDto.login);
 
     if (isUserExist) {
       return ResultFactory.wrong(ResultStatus.InvalidData, 'User already exists', [
@@ -107,27 +112,36 @@ class AuthService {
       ]);
     }
 
-    const passwordHash = await this.cryptoService.hashPassword(credentials.password);
+    const passwordHash = await this.cryptoService.hashPassword(inputRegistrationDto.password);
+    const emailConfirmationCode = crypto.randomUUID();
 
-    const newUser = await this.usersFactory.createUnconfirmedUser(
-      credentials.email,
-      credentials.login,
-      credentials.password,
-    );
+    const newUserDocument = new UserModel({
+      login: inputRegistrationDto.login,
+      email: inputRegistrationDto.email,
+      emailConfirmation: {
+        isConfirmed: false,
+        code: emailConfirmationCode,
+        codeExpirationDate: dateUtils.getDatePlusMinutes(
+          EMAIL_CONFORMATION_CODE_LIFETIME_IN_MINUTES,
+        ),
+      },
+      passwordHash,
+      createdAt: new Date(),
+    });
 
-    const createdUserId = await this.usersCommandRepository.save(newUser);
+    const createdUserId = await this.usersCommandRepository.save(newUserDocument);
 
     this.emailService
-      .sendConfirmationCode(newUser.email, newUser.emailConfirmation.code)
+      .sendConfirmationCode(newUserDocument.email, emailConfirmationCode)
       .catch((error) => log('Send confirmation code error: ', error));
 
     return ResultFactory.success(createdUserId);
   }
 
   async resendingConfirmationCode(email: string): Promise<Result> {
-    const user = await this.usersCommandRepository.findUserByLoginOrEmail(email);
+    const userDocument = await this.usersCommandRepository.findByLoginOrEmail(email);
 
-    if (!user) {
+    if (!userDocument) {
       return ResultFactory.wrong(ResultStatus.InvalidData, 'User not found', [
         {
           field: 'email',
@@ -136,7 +150,7 @@ class AuthService {
       ]);
     }
 
-    if (user.emailConfirmation.isConfirmed) {
+    if (userDocument.emailConfirmation.isConfirmed) {
       return ResultFactory.wrong(ResultStatus.InvalidData, 'Email is already confirmed', [
         {
           field: 'email',
@@ -146,26 +160,26 @@ class AuthService {
     }
 
     const newConfirmationCode = crypto.randomUUID();
-    const newCodeExpirationDate = dateUtils.getEmailConfirmationCodeExpirationDate();
 
-    await this.usersCommandRepository.updateEmailConfirmationCode(
-      user.id,
-      newConfirmationCode,
-      newCodeExpirationDate,
+    userDocument.emailConfirmation.code = newConfirmationCode;
+    userDocument.emailConfirmation.codeExpirationDate = dateUtils.getDatePlusMinutes(
+      EMAIL_CONFORMATION_CODE_LIFETIME_IN_MINUTES,
     );
 
+    await this.usersCommandRepository.update(userDocument);
+
     this.emailService
-      .sendConfirmationCode(user.email, newConfirmationCode)
+      .sendConfirmationCode(userDocument.email, newConfirmationCode)
       .catch((error) => log('Send confirmation code error: ', error));
 
     return ResultFactory.success(null);
   }
 
   async confirmRegistration(emailConfirmationCode: string): Promise<Result> {
-    const user =
-      await this.usersCommandRepository.findUserByEmailConfirmationCode(emailConfirmationCode);
+    const userDocument =
+      await this.usersCommandRepository.findByEmailConfirmationCode(emailConfirmationCode);
 
-    if (!user) {
+    if (!userDocument) {
       return ResultFactory.wrong(ResultStatus.InvalidData, 'User not found', [
         {
           field: 'code',
@@ -174,7 +188,7 @@ class AuthService {
       ]);
     }
 
-    if (user.emailConfirmation.isConfirmed) {
+    if (userDocument.emailConfirmation.isConfirmed) {
       return ResultFactory.wrong(ResultStatus.InvalidData, 'Email is already confirmed', [
         {
           field: 'code',
@@ -183,7 +197,9 @@ class AuthService {
       ]);
     }
 
-    const isExpiredCode = dateUtils.dateIsExpired(user.emailConfirmation.codeExpirationDate);
+    const isExpiredCode = dateUtils.dateIsExpired(
+      userDocument.emailConfirmation.codeExpirationDate,
+    );
 
     if (isExpiredCode) {
       return ResultFactory.wrong(ResultStatus.InvalidData, 'Confirmation code is expired', [
@@ -194,7 +210,9 @@ class AuthService {
       ]);
     }
 
-    await this.usersCommandRepository.confirmEmail(user.email);
+    userDocument.emailConfirmation.isConfirmed = true;
+
+    await this.usersCommandRepository.update(userDocument);
 
     return ResultFactory.success(null);
   }
@@ -210,28 +228,40 @@ class AuthService {
       jwtTokensPair.refreshToken,
     );
 
-    await this.sessionsCommandRepository.updateSessionIatAndExpDate(
+    const sessionDocument = await this.sessionsCommandRepository.findSessionByDeviceId(
       tokenPayload.deviceId,
-      issuedDate,
-      expirationDate,
     );
+
+    sessionDocument!.deviceId = tokenPayload.deviceId;
+    sessionDocument!.issuedDate = issuedDate;
+    sessionDocument!.expirationDate = expirationDate;
+
+    await this.sessionsCommandRepository.update(sessionDocument!);
 
     return ResultFactory.success(jwtTokensPair);
   }
 
   async logout(refreshToken: string): Promise<Result> {
     const tokenPayload = this.jwtService.decodeToken(refreshToken);
-    await this.sessionsCommandRepository.deleteSessionByDeviceId(tokenPayload.deviceId);
+    const sessionDocument = await this.sessionsCommandRepository.findSessionByDeviceId(
+      tokenPayload.deviceId,
+    );
+    await this.sessionsCommandRepository.delete(sessionDocument!);
     return ResultFactory.success(null);
   }
 
   async recoveryPassword(email: string) {
-    const foundUser = await this.usersCommandRepository.findUserByLoginOrEmail(email);
-    if (!foundUser) return ResultFactory.success(null);
+    const userDocument = await this.usersCommandRepository.findByLoginOrEmail(email);
+    if (!userDocument) return ResultFactory.success(null);
 
-    const recoveryCode = new RecoveryCode(foundUser.id);
+    const recoveryCode = new RecoveryCodeModel({
+      code: crypto.randomUUID(),
+      userId: userDocument.id,
+      expirationDate: dateUtils.getDatePlusSeconds(PASSWORD_RECOVERY_CODE_LIFETIME_IN_SECONDS),
+    });
 
     await this.recoveryCodesCommandRepository.save(recoveryCode);
+    console.log('Auth Service recoveryPassword', recoveryCode);
 
     this.emailService
       .sendPasswordRecoveryCode(email, recoveryCode.code)
@@ -241,9 +271,9 @@ class AuthService {
   }
 
   async updatePassword(recoveryCode: string, newPassword: string) {
-    const foundRecoveryCode = await this.recoveryCodesCommandRepository.findCode(recoveryCode);
+    const recoveryCodeDocument = await this.recoveryCodesCommandRepository.findCode(recoveryCode);
 
-    if (!foundRecoveryCode) {
+    if (!recoveryCodeDocument) {
       return ResultFactory.wrong(ResultStatus.InvalidData, 'Invalid recovery code', [
         {
           field: 'recoveryCode',
@@ -252,9 +282,22 @@ class AuthService {
       ]);
     }
 
+    const userDocument = await this.usersCommandRepository.findById(recoveryCodeDocument.userId);
+
+    if (!userDocument) {
+      return ResultFactory.wrong(ResultStatus.InvalidData, 'User not found', [
+        {
+          field: 'recoveryCode',
+          message: 'User with passed recovery code not exist',
+        },
+      ]);
+    }
+
     const newPasswordHash = await this.cryptoService.hashPassword(newPassword);
 
-    await this.usersCommandRepository.updatePasswordHash(foundRecoveryCode.userId, newPasswordHash);
+    userDocument.passwordHash = newPasswordHash;
+
+    await this.usersCommandRepository.update(userDocument);
 
     return ResultFactory.success(null);
   }

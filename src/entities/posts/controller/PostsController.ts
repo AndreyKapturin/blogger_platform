@@ -27,6 +27,8 @@ import { Paginator } from '../../../core/types/PaginationAndSorting';
 import { matchedData } from 'express-validator';
 import { PostsCommandRepository } from '../repositories/postsCommandRepository';
 import { inject, injectable } from 'inversify';
+import { InputCreatePostDto } from '../domain/InputCreatePostDto';
+import { InputUpdatePostDto } from '../domain/InputUpdatePostDto';
 
 @injectable()
 class PostsController {
@@ -66,7 +68,14 @@ class PostsController {
     req: RequestWithBody<InputPostType>,
     res: Response<ViewPostType | APIErrorResult>,
   ) {
-    const createdPostResult = await this.postsService.createPost(req.body);
+    const inputCreatePostDto = new InputCreatePostDto(
+      req.body.title,
+      req.body.content,
+      req.body.shortDescription,
+      req.body.blogId,
+    );
+
+    const createdPostResult = await this.postsService.createPost(inputCreatePostDto);
 
     if (isWrongResult(createdPostResult)) {
       sendHttpResponseIfWrongResult(createdPostResult, res);
@@ -90,10 +99,12 @@ class PostsController {
 
   async getPostById(req: RequestWithParams<PostIdParamType>, res: Response<ViewPostType>) {
     const foundPost = await this.postsQueryRepository.findById(req.params.id);
+
     if (!foundPost) {
       res.sendStatus(HttpStatus.Not_Found);
       return;
     }
+
     res.status(HttpStatus.Ok).json(foundPost);
   }
 
@@ -124,12 +135,19 @@ class PostsController {
     const paginateViewPosts = await this.postsQueryRepository.findAllWithPagination(cleanQuery);
     res.status(HttpStatus.Ok).json(paginateViewPosts);
   }
-
+  
   async updatePost(
     req: RequestWithParamsAndBody<PostIdParamType, InputPostType>,
     res: Response<APIErrorResult>,
   ) {
-    const updatePostResult = await this.postsService.updatePost(req.params.id, req.body);
+    const inputUpdatePostDto = new InputUpdatePostDto(
+      req.body.title,
+      req.body.content,
+      req.body.shortDescription,
+      req.body.blogId,
+    );
+
+    const updatePostResult = await this.postsService.updatePost(req.params.id, inputUpdatePostDto);
 
     if (isWrongResult(updatePostResult)) {
       sendHttpResponseIfWrongResult(updatePostResult, res);

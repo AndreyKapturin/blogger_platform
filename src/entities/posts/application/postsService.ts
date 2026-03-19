@@ -3,7 +3,9 @@ import { Result, ResultStatus } from '../../../core/utils/Result';
 import { ResultFactory } from '../../../core/utils/Result/ResultFactory';
 import { BlogsCommandRepository } from '../../blogs/repositories/blogsCommandRepository';
 import { PostsCommandRepository } from '../repositories/postsCommandRepository';
-import { InputPostType, InputUpdatePostType, PostType } from '../types';
+import { PostModel } from '../domain/PostModel';
+import { InputCreatePostDto } from '../domain/InputCreatePostDto';
+import { InputUpdatePostDto } from '../domain/InputUpdatePostDto';
 
 @injectable()
 class PostsService {
@@ -13,56 +15,50 @@ class PostsService {
     @inject(PostsCommandRepository)
     private postsCommandRepository: PostsCommandRepository,
   ) {}
+  async createPost(inputCreatePostDto: InputCreatePostDto): Promise<Result<string>> {
+    const blogDocument = await this.blogsCommandRepository.findById(inputCreatePostDto.blogId);
 
-  async createPost(inputPost: InputPostType): Promise<Result<string>> {
-    const blog = await this.blogsCommandRepository.findById(inputPost.blogId);
-
-    if (!blog) {
+    if (!blogDocument) {
       return ResultFactory.wrong(ResultStatus.NotFound, 'Blog not found', [
         {
           field: 'blogId',
-          message: `Blog with id ${inputPost.blogId} not found`,
+          message: `Blog with id ${inputCreatePostDto.blogId} not found`,
         },
       ]);
     }
 
-    const newPost: PostType = {
-      title: inputPost.title,
-      content: inputPost.content,
-      shortDescription: inputPost.shortDescription,
-      createdAt: new Date().toISOString(),
-      blogId: blog.id,
-      blogName: blog.name,
-    };
+    const newPostDocument = new PostModel({
+      title: inputCreatePostDto.title,
+      content: inputCreatePostDto.content,
+      shortDescription: inputCreatePostDto.shortDescription,
+      blogName: blogDocument.name,
+      blogId: blogDocument.id,
+      createdAt: new Date(),
+    });
 
-    const createdPostId = await this.postsCommandRepository.save(newPost);
+    const createdPostId = await this.postsCommandRepository.save(newPostDocument);
 
     return ResultFactory.success(createdPostId);
   }
 
-  async updatePost(postId: string, inputPost: InputPostType): Promise<Result<string | null>> {
-    const blog = await this.blogsCommandRepository.findById(inputPost.blogId);
+  async updatePost(
+    postId: string,
+    inputUpdatePostDto: InputUpdatePostDto,
+  ): Promise<Result<string | null>> {
+    const blogDocument = await this.blogsCommandRepository.findById(inputUpdatePostDto.blogId);
 
-    if (!blog) {
+    if (!blogDocument) {
       return ResultFactory.wrong(ResultStatus.NotFound, 'Blog not found', [
         {
           field: 'blogId',
-          message: `Blog with id ${inputPost.blogId} not found`,
+          message: `Blog with id ${inputUpdatePostDto.blogId} not found`,
         },
       ]);
     }
 
-    const updatedPost: InputUpdatePostType = {
-      title: inputPost.title,
-      content: inputPost.content,
-      shortDescription: inputPost.shortDescription,
-      blogId: blog.id,
-      blogName: blog.name,
-    };
+    const postDocument = await this.postsCommandRepository.findById(postId);
 
-    const wasUpdated = await this.postsCommandRepository.update(postId, updatedPost);
-
-    if (!wasUpdated) {
+    if (!postDocument) {
       return ResultFactory.wrong(ResultStatus.NotFound, 'Post not found', [
         {
           field: 'id',
@@ -71,21 +67,29 @@ class PostsService {
       ]);
     }
 
+    postDocument.title = inputUpdatePostDto.title;
+    postDocument.content = inputUpdatePostDto.content;
+    postDocument.shortDescription = inputUpdatePostDto.shortDescription;
+    postDocument.blogId = blogDocument.id;
+    postDocument.blogName = blogDocument.name;
+
+    await this.postsCommandRepository.update(postDocument);
     return ResultFactory.success(null);
   }
 
-  async deletePost(postId: string): Promise<Result> {
-    const wasDeleted = await this.postsCommandRepository.remove(postId);
+  async deletePost(id: string): Promise<Result> {
+    const postDocument = await this.postsCommandRepository.findById(id);
 
-    if (!wasDeleted) {
+    if (!postDocument) {
       return ResultFactory.wrong(ResultStatus.NotFound, 'Post not found', [
         {
           field: 'id',
-          message: `Post with id ${postId} not exist`,
+          message: `Post with id ${id} not exist`,
         },
       ]);
     }
 
+    await this.postsCommandRepository.delete(postDocument);
     return ResultFactory.success(null);
   }
 }
