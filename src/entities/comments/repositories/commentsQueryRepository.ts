@@ -1,17 +1,31 @@
-import { CommentType, ViewCommentsQuery, ViewCommentType } from '../types';
+import {
+  CommentType,
+  LikesInfoType,
+  LikeStatus,
+  ViewCommentsQuery,
+  ViewCommentType,
+} from '../types';
 import { toPaginateMapper } from '../../../core/mappers/toPaginateMapper';
 import { injectable } from 'inversify';
 import { CommentLeanDocument, CommentModel } from '../domain/CommentModel';
 import { QueryFilter } from 'mongoose';
+import { Paginator } from '../../../core/types/PaginationAndSorting';
 
 @injectable()
 class CommentsQueryRepository {
-  async findById(id: string): Promise<ViewCommentType | null> {
+  async findById(id: string, userId?: string): Promise<ViewCommentType | null> {
     const foundCommentDocument = await CommentModel.findById(id);
-    return foundCommentDocument ? this._commentToViewMapper(foundCommentDocument) : null;
+    
+    if (!foundCommentDocument) return null;
+    if (userId) return this._commentForUserToViewMapper(foundCommentDocument, userId);
+    return this._commentToViewMapper(foundCommentDocument);
   }
 
-  async findAllForPostWithPagination(postId: string, commentsQuery: ViewCommentsQuery) {
+  async findAllForPostWithPagination(
+    postId: string,
+    commentsQuery: ViewCommentsQuery,
+    userId?: string,
+  ): Promise<Paginator<ViewCommentType>> {
     const { sortBy, sortDirection, pageSize, pageNumber } = commentsQuery;
 
     const skip = (pageNumber - 1) * pageSize;
@@ -23,7 +37,13 @@ class CommentsQueryRepository {
       .limit(pageSize)
       .lean();
 
-    const viewComments = foundComments.map(this._commentToViewMapper);
+    let viewComments: ViewCommentType[];
+
+    if (userId) {
+      viewComments = foundComments.map((c) => this._commentForUserToViewMapper(c, userId));
+    } else {
+      viewComments = foundComments.map(this._commentToViewMapper);
+    }
 
     const totalCount = await CommentModel.countDocuments(filter);
 
@@ -36,8 +56,38 @@ class CommentsQueryRepository {
       id: commentLeanDocument._id.toString(),
       content: commentLeanDocument.content,
       commentatorInfo: commentLeanDocument.commentatorInfo,
+      likesInfo: {
+        likesCount: commentLeanDocument.likesInfo.likesUserIds.length,
+        dislikesCount: commentLeanDocument.likesInfo.dislikesUserIds.length,
+        myStatus: LikeStatus.None,
+      },
       createdAt: commentLeanDocument.createdAt.toISOString(),
     };
+  }
+
+  private _commentForUserToViewMapper(
+    commentLeanDocument: CommentLeanDocument,
+    userId: string,
+  ): ViewCommentType {
+    return {
+      id: commentLeanDocument._id.toString(),
+      content: commentLeanDocument.content,
+      commentatorInfo: commentLeanDocument.commentatorInfo,
+      likesInfo: {
+        likesCount: commentLeanDocument.likesInfo.likesUserIds.length,
+        dislikesCount: commentLeanDocument.likesInfo.dislikesUserIds.length,
+        myStatus: this._getCurrentUserLikeStatus(commentLeanDocument.likesInfo, userId),
+      },
+      createdAt: commentLeanDocument.createdAt.toISOString(),
+    };
+  }
+
+  private _getCurrentUserLikeStatus(likesInfo: LikesInfoType, userId: string): LikeStatus {
+    const isLike = likesInfo.likesUserIds.includes(userId);
+    if (isLike) return LikeStatus.Like;
+    const isDislike = likesInfo.dislikesUserIds.includes(userId);
+    if (isDislike) return LikeStatus.Dislike;
+    return LikeStatus.None;
   }
 }
 

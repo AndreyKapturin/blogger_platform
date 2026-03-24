@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema<UserType>({
   email: { type: 'String', required: true, unique: true, maxLength: MAX_USER_EMAIL_LENGTH_DB },
   passwordHash: { type: 'String', required: true },
   emailConfirmation: emailConfirmationSchema,
-  createdAt: { type: 'Date', required: true, default: new Date() },
+  createdAt: { type: 'Date', required: true, default: () => new Date() },
 });
 
 const UserModel = mongoose.model<UserType>('User', userSchema);

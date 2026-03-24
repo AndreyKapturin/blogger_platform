@@ -125,6 +125,7 @@ class PostsController {
     const paginatedViewComments = await this.commentsQueryRepository.findAllForPostWithPagination(
       postId,
       cleanQuery,
+      req.user?.userId,
     );
 
     res.status(HttpStatus.Ok).json(paginatedViewComments);
@@ -135,7 +136,7 @@ class PostsController {
     const paginateViewPosts = await this.postsQueryRepository.findAllWithPagination(cleanQuery);
     res.status(HttpStatus.Ok).json(paginateViewPosts);
   }
-  
+
   async updatePost(
     req: RequestWithParamsAndBody<PostIdParamType, InputPostType>,
     res: Response<APIErrorResult>,

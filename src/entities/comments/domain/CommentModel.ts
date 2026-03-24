@@ -1,15 +1,15 @@
-import mongoose from 'mongoose';
-import { CommentatorInfoType, CommentType } from '../types';
+import { HydratedDocument, Schema, model } from 'mongoose';
+import { CommentatorInfoType, CommentType, LikesInfoType } from '../types';
 import {
   MIN_COMMENT_CONTENT_LENGTH_DB,
   MAX_COMMENT_CONTENT_LENGTH_DB,
 } from '../../../database/constants';
 import { LeanDocument } from '../../../database/types';
 
-type CommentDocumentType = mongoose.HydratedDocument<CommentType>;
+type CommentDocumentType = HydratedDocument<CommentType>;
 type CommentLeanDocument = LeanDocument<CommentType>;
 
-const commentatorInfoSchema = new mongoose.Schema<CommentatorInfoType>(
+const commentatorInfoSchema = new Schema<CommentatorInfoType>(
   {
     userId: { type: 'String', required: true },
     userLogin: { type: 'String', required: true },
@@ -19,7 +19,17 @@ const commentatorInfoSchema = new mongoose.Schema<CommentatorInfoType>(
   },
 );
 
-const commentSchema = new mongoose.Schema<CommentType>({
+const likesInfoSchema = new Schema<LikesInfoType>(
+  {
+    likesUserIds: { type: [{ type: 'String' }], default: [] },
+    dislikesUserIds: { type: [{ type: 'String' }], default: [] },
+  },
+  {
+    _id: false,
+  },
+);
+
+const commentSchema: Schema<CommentType> = new Schema<CommentType>({
   postId: { type: 'String', required: true },
   content: {
     type: 'String',
@@ -28,10 +38,11 @@ const commentSchema = new mongoose.Schema<CommentType>({
     maxLength: MAX_COMMENT_CONTENT_LENGTH_DB,
   },
   commentatorInfo: commentatorInfoSchema,
-  createdAt: { type: 'Date', required: true, default: new Date() },
+  likesInfo: { type: likesInfoSchema, default: { likesUserIds: [], dislikesUserIds: [] } },
+  createdAt: { type: 'Date', required: true, default: () => new Date() },
 });
 
-const CommentModel = mongoose.model<CommentType>('Comment', commentSchema);
+const CommentModel = model('Comment', commentSchema);
 
 export { CommentModel };
 export type { CommentDocumentType, CommentLeanDocument };
