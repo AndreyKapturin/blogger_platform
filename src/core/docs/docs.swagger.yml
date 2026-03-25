@@ -48,6 +48,21 @@ components:
         - desc
       default: desc
 
+    LikeStatus:
+      type: string
+      enum:
+        - Like
+        - Dislike
+        - None
+    
+    InputLikeStatusSchema:
+      type: object
+      required:
+        - likeStatus
+      properties:
+        likeStatus:
+          $ref: '#/components/schemas/LikeStatus'
+
   parameters:
     PageNumberQueryParam:
       in: query
