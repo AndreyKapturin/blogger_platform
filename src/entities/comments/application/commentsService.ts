@@ -4,8 +4,8 @@ import { ResultFactory } from '../../../core/utils/Result/ResultFactory';
 import { PostsCommandRepository } from '../../posts/repositories/postsCommandRepository';
 import { UsersCommandRepository } from '../../users/repositories/usersCommandRepository';
 import { CommentsCommandRepository } from '../repositories/commentsCommandRepository';
-import { CommentDocumentType, CommentModel } from '../domain/CommentModel';
-import { LikesInfoType, LikeStatus } from '../types';
+import { CommentModel } from '../domain/CommentModel';
+import { LikeStatus } from '../types';
 
 @injectable()
 class CommentsService {
@@ -139,58 +139,10 @@ class CommentsService {
       ]);
     }
 
-    const currentUserStatus = this._getCurrentUserLikeStatus(commentDocument.likesInfo, userId);
-
-    switch (newStatus) {
-      case LikeStatus.Like:
-        if (currentUserStatus === LikeStatus.Like) break;
-        if (currentUserStatus === LikeStatus.Dislike) this._removeDislike(commentDocument, userId);
-        commentDocument.likesInfo.likesUserIds.push(userId);
-        break;
-
-      case LikeStatus.Dislike:
-        if (currentUserStatus === LikeStatus.Dislike) break;
-        if (currentUserStatus === LikeStatus.Like) {
-          this._removeLike(commentDocument, userId);
-        }
-        commentDocument.likesInfo.dislikesUserIds.push(userId);
-        break;
-
-      case LikeStatus.None:
-        if (currentUserStatus === LikeStatus.Like) {
-          this._removeLike(commentDocument, userId);
-        }
-        if (currentUserStatus === LikeStatus.Dislike) {
-          this._removeDislike(commentDocument, userId);
-        }
-        break;
-
-      default:
-        break;
-    }
+    commentDocument.changeLikeStatus(userId, newStatus);
 
     await this.commentsCommandRepository.update(commentDocument);
     return ResultFactory.success(null);
-  }
-
-  private _removeLike(commentDocument: CommentDocumentType, userId: string) {
-    commentDocument.likesInfo.likesUserIds = commentDocument.likesInfo.likesUserIds.filter(
-      (id) => id !== userId,
-    );
-  }
-
-  private _removeDislike(commentDocument: CommentDocumentType, userId: string) {
-    commentDocument.likesInfo.dislikesUserIds = commentDocument.likesInfo.dislikesUserIds.filter(
-      (id) => id !== userId,
-    );
-  }
-
-  private _getCurrentUserLikeStatus(likesInfo: LikesInfoType, userId: string): LikeStatus {
-    const isLike = likesInfo.likesUserIds.includes(userId);
-    if (isLike) return LikeStatus.Like;
-    const isDislike = likesInfo.dislikesUserIds.includes(userId);
-    if (isDislike) return LikeStatus.Dislike;
-    return LikeStatus.None;
   }
 }
 
