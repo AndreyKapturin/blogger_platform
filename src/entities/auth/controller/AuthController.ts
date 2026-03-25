@@ -20,6 +20,7 @@ import {
   sendHttpResponseIfWrongResult,
 } from '../../../core/utils/Result/sendHttpResponseIfWrongResult';
 import { inject, injectable } from 'inversify';
+import { InputRegistrationDto } from '../domain/InputRegistrationDto';
 
 @injectable()
 class AuthController {
@@ -29,7 +30,6 @@ class AuthController {
     @inject(AuthService)
     private authService: AuthService,
   ) {}
-
   async me(req: Request, res: Response<UserMeType>) {
     const foundUser = await this.usersQueryRepository.findMe(req.user!.userId);
 
@@ -58,13 +58,18 @@ class AuthController {
       sendHttpResponseIfWrongResult(loginResult, res);
       return;
     }
-    
+
     res.cookie('refreshToken', loginResult.data.refreshToken, { httpOnly: true, secure: true });
     res.status(HttpStatus.Ok).json({ accessToken: loginResult.data.accessToken });
   }
 
   async registration(req: RequestWithBody<InputRegistrationType>, res: Response) {
-    const registrationResult = await this.authService.registration(req.body);
+    const inputRegistrationDto = new InputRegistrationDto(
+      req.body.login,
+      req.body.email,
+      req.body.password,
+    );
+    const registrationResult = await this.authService.registration(inputRegistrationDto);
 
     if (isWrongResult(registrationResult)) {
       sendHttpResponseIfWrongResult(registrationResult, res);
@@ -153,7 +158,7 @@ class AuthController {
       req.body.recoveryCode,
       req.body.newPassword,
     );
-    
+
     if (isWrongResult(updatePasswordResult)) {
       sendHttpResponseIfWrongResult(updatePasswordResult, res);
       return;

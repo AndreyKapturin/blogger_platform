@@ -1,0 +1,17 @@
+// Blogs
+export const MAX_BLOG_NAME_LENGTH_DB = 30;
+export const MAX_BLOG_DESCRIPTION_LENGTH_DB = 1000;
+export const MAX_BLOG_WEBSITE_URL_LENGTH_DB = 150;
+
+// Posts
+export const MAX_POST_TITLE_LENGTH_DB = 60;
+export const MAX_POST_SHORT_DESCRIPTION_LENGTH_DB = 200;
+export const MAX_POST_CONTENT_LENGTH_DB = 2000;
+
+// Users
+export const MAX_USER_EMAIL_LENGTH_DB = 50;
+export const MAX_USER_LOGIN_LENGTH_DB = 20;
+
+// Comment
+export const MIN_COMMENT_CONTENT_LENGTH_DB = 10;
+export const MAX_COMMENT_CONTENT_LENGTH_DB = 600;

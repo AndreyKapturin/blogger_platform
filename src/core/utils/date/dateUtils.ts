@@ -1,21 +1,31 @@
-const getEmailConfirmationCodeExpirationDate = (addMinutes = 10) => {
-  const date = new Date();
-  date.setMinutes(date.getMinutes() + addMinutes);
-  return date.toISOString();
-};
-
 const getCreatedAtDate = () => new Date().toISOString();
 
-const dateIsExpired = (ISODateString: string) => {
+const dateIsExpired = (date: Date) => new Date() > date;
+
+const getDatePlusMinutes = (minutes = 0): Date => {
   const now = new Date();
-  const date = new Date(ISODateString);
-  return now > date;
+  now.setMinutes(now.getMinutes() + minutes);
+  return now;
+};
+
+const getDatePlusSeconds = (seconds = 0): Date => {
+  const now = new Date();
+  now.setSeconds(now.getSeconds() + seconds);
+  return now;
+};
+
+const getDateMinusMinutes = (minutes = 0): Date => {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - minutes);
+  return now;
 };
 
 const dateUtils = {
   getCreatedAtDate,
-  getEmailConfirmationCodeExpirationDate,
+  getDatePlusMinutes,
   dateIsExpired,
+  getDatePlusSeconds,
+  getDateMinusMinutes,
 };
 
 export { dateUtils };

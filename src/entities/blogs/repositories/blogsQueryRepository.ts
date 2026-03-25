@@ -1,13 +1,13 @@
-import { Filter, ObjectId, WithId } from 'mongodb';
-import { blogsCollection } from '../../../database/mongoDB';
 import { BlogType, ViewBlogQuery, ViewBlogType } from '../types';
 import { toPaginateMapper } from '../../../core/mappers/toPaginateMapper';
 import { injectable } from 'inversify';
+import { BlogModel, BlogLeanDocument } from '../domain/BlogModel';
+import { QueryFilter } from 'mongoose';
 
 @injectable()
 class BlogsQueryRepository {
   async findAllWithPagination(blogQuery: ViewBlogQuery) {
-    const filter: Filter<BlogType> = {};
+    const filter: QueryFilter<BlogType> = {};
     const { searchNameTerm, sortBy, sortDirection, pageSize, pageNumber } = blogQuery;
 
     const skip = (pageNumber - 1) * pageSize;
@@ -16,32 +16,32 @@ class BlogsQueryRepository {
       filter.name = { $regex: searchNameTerm, $options: 'i' };
     }
 
-    const foundBlogs = await blogsCollection
-      .find(filter)
+    const foundBlogs: BlogLeanDocument[] = await BlogModel.find(filter)
       .sort({ [sortBy]: sortDirection })
       .skip(skip)
       .limit(pageSize)
-      .map(this._blogToViewMapper)
-      .toArray();
+      .lean();
 
-    const totalCount = await blogsCollection.countDocuments(filter);
-    const paginatedViewBlogs = toPaginateMapper(foundBlogs, blogQuery, totalCount);
+    const viewBlogs: ViewBlogType[] = foundBlogs.map(this._blogToViewMapper);
+    const totalCount = await BlogModel.countDocuments(filter);
+
+    const paginatedViewBlogs = toPaginateMapper(viewBlogs, blogQuery, totalCount);
     return paginatedViewBlogs;
   }
 
-  async findById(blogId: string) {
-    const foundBlog = await blogsCollection.findOne({ _id: new ObjectId(blogId) });
-    return foundBlog ? this._blogToViewMapper(foundBlog) : null;
+  async findById(id: string) {
+    const foundBlogLeanDocument = await BlogModel.findById(id).lean();
+    return foundBlogLeanDocument ? this._blogToViewMapper(foundBlogLeanDocument) : null;
   }
 
-  private _blogToViewMapper(mongoBlog: WithId<BlogType>): ViewBlogType {
+  private _blogToViewMapper(blogLeanDocument: BlogLeanDocument): ViewBlogType {
     return {
-      id: mongoBlog._id.toString(),
-      name: mongoBlog.name,
-      createdAt: mongoBlog.createdAt,
-      isMembership: mongoBlog.isMembership,
-      description: mongoBlog.description,
-      websiteUrl: mongoBlog.websiteUrl,
+      id: blogLeanDocument._id.toString(),
+      name: blogLeanDocument.name,
+      createdAt: blogLeanDocument.createdAt.toISOString(),
+      isMembership: blogLeanDocument.isMembership,
+      description: blogLeanDocument.description,
+      websiteUrl: blogLeanDocument.websiteUrl,
     };
   }
 }

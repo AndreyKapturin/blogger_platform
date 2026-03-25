@@ -3,10 +3,16 @@ import { HttpStatus } from '../../../src/core/types/HttpStatus';
 import request from 'supertest';
 import { Express } from 'express';
 import { faker } from '@faker-js/faker';
-import { InputCommentType, ViewCommentType } from '../../../src/entities/comments/types';
+import {
+  InputCommentType,
+  LikeStatus,
+  ViewCommentType,
+} from '../../../src/entities/comments/types';
 import { getRandomIntInRange } from '../../../src/core/utils/numbers/numberUtils';
 import { Paginator } from '../../../src/core/types/PaginationAndSorting';
 import { ISODateStringRegExp } from './constants';
+
+const likeStatusesRegExp = new RegExp('^' + Object.values(LikeStatus).join('|') + '$');
 
 const expectedViewComment: ViewCommentType = {
   id: expect.any(String),
@@ -15,6 +21,11 @@ const expectedViewComment: ViewCommentType = {
   commentatorInfo: {
     userId: expect.any(String),
     userLogin: expect.any(String),
+  },
+  likesInfo: {
+    likesCount: expect.any(Number),
+    dislikesCount: expect.any(Number),
+    myStatus: expect.stringMatching(likeStatusesRegExp),
   },
 };
 
@@ -66,5 +77,5 @@ const createCommentsTestManager = (app: Express) => {
   };
 };
 
-export { createCommentsTestManager, expectedPaginatedViewComments };
+export { createCommentsTestManager, expectedPaginatedViewComments, expectedViewComment };
 export type CommentsTestManagerType = ReturnType<typeof createCommentsTestManager>;

@@ -9,11 +9,19 @@ type PostType = {
   shortDescription: string;
   content: string;
   blogId: string;
-  createdAt: string;
+  createdAt: Date;
   blogName: string;
 };
 
-type ViewPostType = PostType & PostIdParamType;
+type ViewPostType = {
+  id: string,
+  title: string;
+  shortDescription: string;
+  content: string;
+  blogId: string;
+  createdAt: string;
+  blogName: string;
+}
 
 type InputUpdatePostType = Omit<PostType, 'createdAt'>;
 type InputPostType = Omit<InputUpdatePostType, 'blogName'>;

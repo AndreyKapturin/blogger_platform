@@ -1,13 +1,13 @@
-import { Filter, ObjectId, WithId } from 'mongodb';
-import { usersCollection } from '../../../database/mongoDB';
-import { MongoUserType, UserMeType, ViewUsersQuery, ViewUserType } from '../types';
+import { UserMeType, UserType, ViewUsersQuery, ViewUserType } from '../types';
 import { toPaginateMapper } from '../../../core/mappers/toPaginateMapper';
 import { injectable } from 'inversify';
+import { UserLeanDocument, UserModel } from '../domain/UserModel';
+import { QueryFilter } from 'mongoose';
 
 @injectable()
 class UsersQueryRepository {
   async getPaginatedUsers(usersQuery: ViewUsersQuery) {
-    const filter: Filter<MongoUserType> = {};
+    const filter: QueryFilter<UserType> = {};
     const { sortBy, sortDirection, searchLoginTerm, searchEmailTerm, pageNumber, pageSize } =
       usersQuery;
     const skip = (pageNumber - 1) * pageSize;
@@ -22,14 +22,12 @@ class UsersQueryRepository {
       }
     }
 
-    const foundUsers = await usersCollection
-      .find(filter)
+    const foundUsers = await UserModel.find(filter)
       .sort({ [sortBy]: sortDirection })
       .skip(skip)
-      .limit(pageSize)
-      .toArray();
+      .lean();
 
-    const totalCount = await usersCollection.countDocuments(filter);
+    const totalCount = await UserModel.countDocuments(filter);
 
     const viewUsers = foundUsers.map(this._userToViewMapper);
     const paginatedUsers = toPaginateMapper(viewUsers, usersQuery, totalCount);
@@ -37,32 +35,30 @@ class UsersQueryRepository {
     return paginatedUsers;
   }
 
-  async findUserById(userId: string) {
-    const foundUser = await usersCollection.findOne({ _id: new ObjectId(userId) });
-    if (!foundUser) return null;
-    return this._userToViewMapper(foundUser);
+  async findById(id: string) {
+    const foundUser = await UserModel.findById(id).lean();
+    return foundUser ? this._userToViewMapper(foundUser) : null;
   }
 
-  async findMe(userId: string) {
-    const foundUser = await usersCollection.findOne({ _id: new ObjectId(userId) });
-    if (!foundUser) return null;
-    return this._userToMeViewMapper(foundUser);
+  async findMe(id: string): Promise<UserMeType | null> {
+    const userDocument = await UserModel.findById(id).lean();
+    return userDocument ? this._userToMeViewMapper(userDocument) : null;
   }
 
-  private _userToMeViewMapper(mongoUser: WithId<MongoUserType>): UserMeType {
+  private _userToMeViewMapper(userLeanDocument: UserLeanDocument): UserMeType {
     return {
-      userId: mongoUser._id.toString(),
-      email: mongoUser.email,
-      login: mongoUser.login,
+      userId: userLeanDocument._id.toString(),
+      email: userLeanDocument.email,
+      login: userLeanDocument.login,
     };
   }
 
-  private _userToViewMapper(mongoUser: WithId<MongoUserType>): ViewUserType {
+  private _userToViewMapper(userLeanDocument: UserLeanDocument): ViewUserType {
     return {
-      id: mongoUser._id.toString(),
-      email: mongoUser.email,
-      login: mongoUser.login,
-      createdAt: mongoUser.createdAt,
+      id: userLeanDocument._id.toString(),
+      email: userLeanDocument.email,
+      login: userLeanDocument.login,
+      createdAt: userLeanDocument.createdAt.toISOString(),
     };
   }
 }

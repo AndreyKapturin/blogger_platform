@@ -1,20 +1,19 @@
 import { injectable } from 'inversify';
-import { requestsCollection } from '../../../database/mongoDB';
 import { RATE_LIMIT_WINDOW_IN_SECONDS } from '../constants';
-import { RequestType } from '../types';
+import { RequestDocumentType, RequestModel } from '../domain/RequestModel';
 
 @injectable()
 class RequestsCommandRepository {
-  async save(request: RequestType) {
-    const { insertedId } = await requestsCollection.insertOne(request);
-    return insertedId;
+  async save(newRequestDocument: RequestDocumentType): Promise<string> {
+    const savedRequestDocument = await newRequestDocument.save();
+    return savedRequestDocument.id;
   }
 
-  async getRequestsCount(ip: string, url: string) {
+  async getRequestsCount(ip: string, url: string): Promise<number> {
     const targetDate = new Date();
     targetDate.setSeconds(targetDate.getSeconds() - RATE_LIMIT_WINDOW_IN_SECONDS);
 
-    const documentCount = await requestsCollection.countDocuments({
+    const documentCount = await RequestModel.countDocuments({
       ip,
       url,
       date: { $gte: targetDate },
@@ -23,8 +22,8 @@ class RequestsCommandRepository {
     return documentCount;
   }
 
-  async cleanAll() {
-    await requestsCollection.deleteMany();
+  async cleanAll(): Promise<void> {
+    await RequestModel.deleteMany();
   }
 }
 

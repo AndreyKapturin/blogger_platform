@@ -6,10 +6,11 @@ import {
   MIN_USER_LOGIN_LENGTH,
 } from '../../../src/entities/users/constants';
 import { ResultStatus } from '../../../src/core/utils/Result';
-import { closeBbConnection, connectToDB, usersCollection } from '../../../src/database/mongoDB';
+import { closeBbConnection, connectToDB } from '../../../src/database/mongoDB';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { AuthService } from '../../../src/entities/auth/application/authService';
 import { EmailService } from '../../../src/core/services/emailService';
+import { UserModel } from '../../../src/entities/users/domain/UserModel';
 
 const emailService = container.get(EmailService);
 const authService = container.get(AuthService);
@@ -27,7 +28,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  await usersCollection.deleteMany();
+  await UserModel.deleteMany();
   sendConfirmationCodeSpyOn.mockClear();
 });
 
@@ -50,7 +51,7 @@ describe('AuthService.registration', () => {
   it(`should return ${ResultStatus.Success} result and save user in database if input data is correct`, async () => {
     const inputCredentials = getInputRegistratonData();
     const registrationResult = await authService.registration(inputCredentials);
-    const userInDatabase = await usersCollection.findOne({
+    const userInDatabase = await UserModel.findOne({
       $or: [{ login: inputCredentials.login }, { email: inputCredentials.email }],
     });
 
@@ -71,7 +72,7 @@ describe('AuthService.registration', () => {
       email: getInputRegistratonData().email,
     });
 
-    const userInDatabaseCount = await usersCollection.countDocuments({
+    const userInDatabaseCount = await UserModel.countDocuments({
       $or: [{ login: inputCredentials.login }, { email: inputCredentials.email }],
     });
 

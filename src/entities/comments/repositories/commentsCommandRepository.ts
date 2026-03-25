@@ -1,49 +1,29 @@
-import { ObjectId, WithId } from 'mongodb';
-import { commentsCollection } from '../../../database/mongoDB';
-import { CommentType, MongoCommentType } from '../types';
 import { injectable } from 'inversify';
+import { CommentDocumentType, CommentModel } from '../domain/CommentModel';
 
 @injectable()
 class CommentsCommandRepository {
-  async findById(commentId: string) {
-    const foundComment = await commentsCollection.findOne({ _id: new ObjectId(commentId) });
-    return foundComment ? this._cleanObjectIdMapper(foundComment) : null;
+  async findById(id: string): Promise<CommentDocumentType | null> {
+    return await CommentModel.findById(id);
   }
 
-  async save(inputComment: MongoCommentType) {
-    const { insertedId } = await commentsCollection.insertOne(inputComment);
-    return insertedId.toString();
+  async save(newCommentDocument: CommentDocumentType): Promise<string> {
+    const savedCommentDocument = await newCommentDocument.save();
+    return savedCommentDocument.id;
   }
 
-  async update(commentId: string, content: string) {
-    const updateResult = await commentsCollection.updateOne(
-      { _id: new ObjectId(commentId) },
-      { $set: { content } },
-    );
-
-    return updateResult.matchedCount === 1;
+  async update(updatedCommentDocument: CommentDocumentType): Promise<boolean> {
+    const updateResult = await updatedCommentDocument.save();
+    return true;
   }
 
-  async remove(commentId: string) {
-    const deleteResult = await commentsCollection.deleteOne({ _id: new ObjectId(commentId) });
+  async delete(commentDocument: CommentDocumentType): Promise<boolean> {
+    const deleteResult = await commentDocument.deleteOne();
     return deleteResult.deletedCount === 1;
   }
 
-  async cleanAll() {
-    await commentsCollection.deleteMany();
-  }
-
-  private _cleanObjectIdMapper(mongoComment: WithId<MongoCommentType>): CommentType {
-    return {
-      id: mongoComment._id.toString(),
-      content: mongoComment.content,
-      commentatorInfo: {
-        userId: mongoComment.commentatorInfo.userId,
-        userLogin: mongoComment.commentatorInfo.userLogin,
-      },
-      createdAt: mongoComment.createdAt,
-      postId: mongoComment.postId,
-    };
+  async cleanAll(): Promise<void> {
+    await CommentModel.deleteMany();
   }
 }
 

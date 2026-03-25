@@ -1,8 +1,8 @@
-import { Filter, ObjectId, WithId } from 'mongodb';
-import { postsCollection } from '../../../database/mongoDB';
 import { PostType, ViewPostQuery, ViewPostType } from '../types';
 import { toPaginateMapper } from '../../../core/mappers/toPaginateMapper';
 import { injectable } from 'inversify';
+import { PostLeanDocument, PostModel } from '../domain/PostModel';
+import { QueryFilter } from 'mongoose';
 
 @injectable()
 class PostsQueryRepository {
@@ -10,16 +10,16 @@ class PostsQueryRepository {
     const { sortBy, sortDirection, pageSize, pageNumber } = postsQuery;
 
     const skip = (pageNumber - 1) * pageSize;
-    const foundPosts = await postsCollection
-      .find()
+    const foundPosts: PostLeanDocument[] = await PostModel.find()
       .sort({ [sortBy]: sortDirection })
       .skip(skip)
       .limit(pageSize)
-      .map(this._postToViewMapper)
-      .toArray();
+      .lean();
 
-    const totalCount = await postsCollection.countDocuments();
-    const paginatedViewPosts = toPaginateMapper(foundPosts, postsQuery, totalCount);
+    const viewPosts: ViewPostType[] = foundPosts.map(this._postToViewMapper);
+
+    const totalCount = await PostModel.countDocuments();
+    const paginatedViewPosts = toPaginateMapper(viewPosts, postsQuery, totalCount);
     return paginatedViewPosts;
   }
 
@@ -27,34 +27,35 @@ class PostsQueryRepository {
     const { sortBy, sortDirection, pageSize, pageNumber } = postsQuery;
 
     const skip = (pageNumber - 1) * pageSize;
-    const filter: Filter<PostType> = { blogId };
-    const foundPosts = await postsCollection
-      .find(filter)
+    const filter: QueryFilter<PostType> = { blogId };
+
+    const foundPosts = await PostModel.find(filter)
       .sort({ [sortBy]: sortDirection })
       .skip(skip)
       .limit(pageSize)
-      .map(this._postToViewMapper)
-      .toArray();
+      .lean();
 
-    const totalCount = await postsCollection.countDocuments(filter);
-    const paginatedViewPosts = toPaginateMapper(foundPosts, postsQuery, totalCount);
+    const viewPosts: ViewPostType[] = foundPosts.map(this._postToViewMapper);
+    const totalCount = await PostModel.countDocuments(filter);
+
+    const paginatedViewPosts = toPaginateMapper(viewPosts, postsQuery, totalCount);
     return paginatedViewPosts;
   }
 
-  async findById(postId: string) {
-    const foundPost = await postsCollection.findOne({ _id: new ObjectId(postId) });
-    return foundPost ? this._postToViewMapper(foundPost) : null;
+  async findById(id: string): Promise<ViewPostType | null> {
+    const foundPostDocument = await PostModel.findById(id);
+    return foundPostDocument ? this._postToViewMapper(foundPostDocument) : null;
   }
 
-  private _postToViewMapper(mongoPost: WithId<PostType>): ViewPostType {
+  private _postToViewMapper(postLeanDocument: PostLeanDocument): ViewPostType {
     return {
-      id: mongoPost._id.toString(),
-      title: mongoPost.title,
-      content: mongoPost.content,
-      shortDescription: mongoPost.shortDescription,
-      createdAt: mongoPost.createdAt,
-      blogId: mongoPost.blogId,
-      blogName: mongoPost.blogName,
+      id: postLeanDocument._id.toString(),
+      title: postLeanDocument.title,
+      content: postLeanDocument.content,
+      shortDescription: postLeanDocument.shortDescription,
+      createdAt: postLeanDocument.createdAt.toISOString(),
+      blogId: postLeanDocument.blogId,
+      blogName: postLeanDocument.blogName,
     };
   }
 }

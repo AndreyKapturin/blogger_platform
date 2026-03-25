@@ -1,74 +1,44 @@
-import { ObjectId, WithId } from 'mongodb';
-import { postsCollection } from '../../../database/mongoDB';
-import { InputUpdatePostType, PostType, ViewPostType } from '../types';
 import { injectable } from 'inversify';
+import { PostDocumentType, PostModel } from '../domain/PostModel';
 
 @injectable()
 class PostsCommandRepository {
-  async findById(postId: string) {
-    const foundPost = await postsCollection.findOne({ _id: new ObjectId(postId) });
-    if (!foundPost) return null;
-    return this._cleanObjectIdMapper(foundPost);
+  async findById(id: string): Promise<PostDocumentType | null> {
+    return await PostModel.findById(id);
   }
 
-  async checkById(postId: string) {
-    const documentsCount = await postsCollection.countDocuments(
-      { _id: new ObjectId(postId) },
-      { limit: 1 },
-    );
-    return Boolean(documentsCount);
+  async checkById(id: string): Promise<boolean> {
+    const foundPostDocument = await PostModel.exists({ _id: id });
+    return Boolean(foundPostDocument);
   }
 
-  async save(inputPost: PostType): Promise<string> {
-    const { insertedId } = await postsCollection.insertOne(inputPost);
-    return insertedId.toString();
+  async save(newPostDocument: PostDocumentType): Promise<string> {
+    const savedPostDocument = await newPostDocument.save();
+    return savedPostDocument.id;
   }
 
-  async update(postId: string, inputPost: InputUpdatePostType) {
-    const updateResult = await postsCollection.updateOne(
-      { _id: new ObjectId(postId) },
-      {
-        $set: {
-          title: inputPost.title,
-          content: inputPost.content,
-          shortDescription: inputPost.shortDescription,
-          blogId: inputPost.blogId,
-          blogName: inputPost.blogName,
-        },
-      },
-    );
-    return updateResult.matchedCount === 1;
+  async update(updatedPostDocument: PostDocumentType): Promise<boolean> {
+    await updatedPostDocument.save();
+    return true;
   }
 
-  async remove(postId: string) {
-    const deleteResult = await postsCollection.deleteOne({ _id: new ObjectId(postId) });
+  async delete(postDocument: PostDocumentType): Promise<boolean> {
+    const deleteResult = await postDocument.deleteOne();
     return deleteResult.deletedCount === 1;
   }
 
   async removeRelated(blogId: string) {
-    const deleteResult = await postsCollection.deleteMany({ blogId });
+    const deleteResult = await PostModel.deleteMany({ blogId });
     return deleteResult.deletedCount !== 0;
   }
 
   async updateRelated(blogId: string, blogName: string) {
-    const updateREsult = await postsCollection.updateMany({ blogId }, { $set: { blogName } });
+    const updateREsult = await PostModel.updateMany({ blogId }, { $set: { blogName } });
     return updateREsult.matchedCount !== 0;
   }
 
-  async cleanAll() {
-    postsCollection.deleteMany();
-  }
-
-  private _cleanObjectIdMapper(mongoUser: WithId<PostType>): ViewPostType {
-    return {
-      id: mongoUser._id.toString(),
-      title: mongoUser.title,
-      content: mongoUser.content,
-      shortDescription: mongoUser.shortDescription,
-      blogName: mongoUser.blogName,
-      blogId: mongoUser.blogId,
-      createdAt: mongoUser.createdAt,
-    };
+  async cleanAll(): Promise<void> {
+    await PostModel.deleteMany();
   }
 }
 

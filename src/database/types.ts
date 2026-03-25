@@ -1,7 +1,8 @@
-type MongoRecoveryCode = {
-  code: string;
-  expirationDate: Date;
-  userId: string;
+import mongoose from 'mongoose';
+
+type LeanDocument<T> = T & {
+  _id: mongoose.Types.ObjectId;
+  __v: number;
 };
 
-export type { MongoRecoveryCode };
+export type { LeanDocument };

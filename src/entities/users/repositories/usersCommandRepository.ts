@@ -1,109 +1,57 @@
-import { ObjectId, WithId } from 'mongodb';
-import { usersCollection } from '../../../database/mongoDB';
-import { MongoUserType, UserType } from '../types';
 import { injectable } from 'inversify';
+import { UserDocumentType, UserModel } from '../domain/UserModel';
 
 @injectable()
 class UsersCommandRepository {
-  async checkUserByLoginOrEmail(login: string, email: string) {
-    const documentCount = await usersCollection.countDocuments(
+  async checkByLoginOrEmail(login: string, email: string): Promise<boolean> {
+    const documentCount = await UserModel.countDocuments(
       { $or: [{ login }, { email }] },
       { limit: 1 },
     );
     return Boolean(documentCount);
   }
 
-  async checkUserByLogin(login: string) {
-    const documentCount = await usersCollection.countDocuments({ login }, { limit: 1 });
+  async checkByLogin(login: string): Promise<boolean> {
+    const documentCount = await UserModel.countDocuments({ login }, { limit: 1 });
     return Boolean(documentCount);
   }
 
-  async checkUserByEmail(email: string) {
-    const documentCount = await usersCollection.countDocuments({ email }, { limit: 1 });
+  async checkByEmail(email: string): Promise<boolean> {
+    const documentCount = await UserModel.countDocuments({ email }, { limit: 1 });
     return Boolean(documentCount);
   }
 
-  async findUserById(userId: string) {
-    const foundUser = await usersCollection.findOne({ _id: new ObjectId(userId) });
-    return foundUser ? this._cleanObjectIdMapper(foundUser) : null;
+  async findById(id: string): Promise<UserDocumentType | null> {
+    return UserModel.findById(id);
   }
 
-  async findUserByLoginOrEmail(loginOrEmail: string) {
-    const foundUser = await usersCollection.findOne({
-      $or: [{ login: loginOrEmail }, { email: loginOrEmail }],
-    });
-    return foundUser ? this._cleanObjectIdMapper(foundUser) : null;
+  async findByLoginOrEmail(loginOrEmail: string): Promise<UserDocumentType | null> {
+    return UserModel.findOne({ $or: [{ login: loginOrEmail }, { email: loginOrEmail }] });
   }
 
-  async findUserByEmailConfirmationCode(emailConfirmationCode: string) {
-    const foundUser = await usersCollection.findOne({
-      'emailConfirmation.code': emailConfirmationCode,
-    });
-    return foundUser ? this._cleanObjectIdMapper(foundUser) : null;
+  async findByEmailConfirmationCode(
+    emailConfirmationCode: string,
+  ): Promise<UserDocumentType | null> {
+    return UserModel.findOne({ 'emailConfirmation.code': emailConfirmationCode });
   }
 
-  async confirmEmail(email: string) {
-    const updateResult = await usersCollection.updateOne(
-      { email },
-      {
-        $set: {
-          'emailConfirmation.isConfirmed': true,
-        },
-      },
-    );
-
-    return updateResult.matchedCount === 1;
+  async save(newUserDocument: UserDocumentType): Promise<string> {
+    const savedUserDocument = await newUserDocument.save();
+    return savedUserDocument.id;
   }
 
-  async save(user: MongoUserType) {
-    const { insertedId } = await usersCollection.insertOne(user);
-    return insertedId.toString();
+  async update(updatedUserDocument: UserDocumentType): Promise<boolean> {
+    await updatedUserDocument.save();
+    return true;
   }
 
-  async deleteUser(userId: string) {
-    const { deletedCount } = await usersCollection.deleteOne({ _id: new ObjectId(userId) });
-    return Boolean(deletedCount);
+  async delete(userDocument: UserDocumentType): Promise<boolean> {
+    const deleteResult = await userDocument.deleteOne();
+    return deleteResult.deletedCount === 1;
   }
 
-  async updateEmailConfirmationCode(userId: string, code: string, codeExpirationDate: string) {
-    const updateResult = await usersCollection.updateOne(
-      { _id: new ObjectId(userId) },
-      {
-        $set: {
-          emailConfirmation: {
-            isConfirmed: false,
-            code,
-            codeExpirationDate,
-          },
-        },
-      },
-    );
-
-    return updateResult.matchedCount === 1;
-  }
-
-  async updatePasswordHash(userId: string, passwordHash: string) {
-    const updateResult = await usersCollection.updateOne({ _id: new ObjectId(userId) }, { $set: { passwordHash } });
-    return updateResult.matchedCount === 1;
-  }
-
-  async cleanAll() {
-    await usersCollection.deleteMany();
-  }
-
-  private _cleanObjectIdMapper(mongoUser: WithId<MongoUserType>): UserType {
-    return {
-      id: mongoUser._id.toString(),
-      email: mongoUser.email,
-      login: mongoUser.login,
-      createdAt: mongoUser.createdAt,
-      passwordHash: mongoUser.passwordHash,
-      emailConfirmation: {
-        isConfirmed: mongoUser.emailConfirmation.isConfirmed,
-        code: mongoUser.emailConfirmation.code,
-        codeExpirationDate: mongoUser.emailConfirmation.codeExpirationDate,
-      },
-    };
+  async cleanAll(): Promise<void> {
+    await UserModel.deleteMany();
   }
 }
 

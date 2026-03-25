@@ -1,20 +1,22 @@
 import { UsersCommandRepository } from '../repositories/usersCommandRepository';
 import { InputUserType } from '../types';
 import { Result, ResultStatus } from '../../../core/utils/Result';
-import { UsersFactory } from '../UsersFactory';
 import { ResultFactory } from '../../../core/utils/Result/ResultFactory';
 import { inject, injectable } from 'inversify';
+import { UserModel } from '../domain/UserModel';
+import { CryptoService } from '../../../core/utils/crypto/passwordUtils';
 
 @injectable()
 class UsersService {
   constructor(
     @inject(UsersCommandRepository)
     private usersCommandRepository: UsersCommandRepository,
-    @inject(UsersFactory)
-    private usersFactory: UsersFactory,
+    @inject(CryptoService)
+    private cryptoService: CryptoService,
   ) {}
+
   async createUser(credentials: InputUserType): Promise<Result<string>> {
-    const isUserExist = await this.usersCommandRepository.checkUserByLoginOrEmail(
+    const isUserExist = await this.usersCommandRepository.checkByLoginOrEmail(
       credentials.login,
       credentials.email,
     );
@@ -28,28 +30,37 @@ class UsersService {
       ]);
     }
 
-    const user = await this.usersFactory.createConfirmedUser(
-      credentials.email,
-      credentials.login,
-      credentials.password,
-    );
+    const passwordHash = await this.cryptoService.hashPassword(credentials.password);
 
-    const userId = await this.usersCommandRepository.save(user);
+    const newUser = new UserModel({
+      login: credentials.login,
+      email: credentials.email,
+      emailConfirmation: {
+        isConfirmed: true,
+        code: '',
+        codeExpirationDate: new Date(),
+      },
+      passwordHash,
+    });
+
+    const userId = await this.usersCommandRepository.save(newUser);
 
     return ResultFactory.success(userId);
   }
+  
+  async deleteUserById(id: string): Promise<Result> {
+    const userDocument = await this.usersCommandRepository.findById(id);
 
-  async deleteUserById(userId: string): Promise<Result> {
-    const isDeletedUser = await this.usersCommandRepository.deleteUser(userId);
-
-    if (!isDeletedUser) {
+    if (!userDocument) {
       return ResultFactory.wrong(ResultStatus.NotFound, 'User not found', [
         {
           field: 'id',
-          message: `User not found by ${userId} id`,
+          message: `User not found by ${id} id`,
         },
       ]);
     }
+
+    await this.usersCommandRepository.delete(userDocument);
 
     return ResultFactory.success(null);
   }

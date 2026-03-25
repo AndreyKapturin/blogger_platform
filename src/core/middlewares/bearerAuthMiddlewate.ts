@@ -34,4 +34,21 @@ const bearerAuthMiddlewate = async (req: Request, res: Response, next: NextFunct
   }
 };
 
-export { bearerAuthMiddlewate };
+const optionalBearerAuthMiddlewate = async (req: Request, res: Response, next: NextFunction) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return next();
+
+  const [authType, token] = authHeader.split(' ');
+  if (authType !== 'Bearer') return next();
+  if (!token || token.length === 0) return next();
+
+  try {
+    const payload = await jwtService.verifyToken(token);
+    req.user = { userId: payload.userId };
+  } catch (error) {
+    log(error);
+  }
+  next();
+};
+
+export { bearerAuthMiddlewate, optionalBearerAuthMiddlewate };

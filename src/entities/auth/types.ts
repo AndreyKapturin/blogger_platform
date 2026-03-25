@@ -53,7 +53,7 @@ type SecurityDevice = {
   deviceId: string;
 };
 
-type Session = {
+type SessionType = {
   userId: string;
   deviceId: string;
   issuedDate: Date;
@@ -71,6 +71,12 @@ type InputNewPassword = {
   recoveryCode: string;
 };
 
+type RecoveryCodeType = {
+  code: string;
+  expirationDate: Date;
+  userId: string;
+};
+
 export type {
   InputRecoveryPasswordType,
   InputNewPassword,
@@ -85,5 +91,6 @@ export type {
   InputAuthData,
   RequestDevice,
   SecurityDevice,
-  Session,
+  SessionType,
+  RecoveryCodeType,
 };

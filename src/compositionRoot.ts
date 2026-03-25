@@ -26,7 +26,6 @@ import { UsersService } from './entities/users/application/usersService';
 import { UsersController } from './entities/users/controller/UsersController';
 import { UsersCommandRepository } from './entities/users/repositories/usersCommandRepository';
 import { UsersQueryRepository } from './entities/users/repositories/usersQueryRepository';
-import { UsersFactory } from './entities/users/UsersFactory';
 
 export const container = new Container();
 
@@ -46,7 +45,6 @@ export const container = new Container();
   CryptoService,
   JwtService,
   EmailService,
-  UsersFactory,
   BlogsService,
   PostsService,
   UsersService,

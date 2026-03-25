@@ -6,11 +6,12 @@ import {
   MIN_USER_LOGIN_LENGTH,
 } from '../../../src/entities/users/constants';
 
-import { closeBbConnection, connectToDB, usersCollection } from '../../../src/database/mongoDB';
+import { closeBbConnection, connectToDB } from '../../../src/database/mongoDB';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { ResultStatus } from '../../../src/core/utils/Result';
 import { AuthService } from '../../../src/entities/auth/application/authService';
 import { EmailService } from '../../../src/core/services/emailService';
+import { UserModel } from '../../../src/entities/users/domain/UserModel';
 
 const authService = container.get(AuthService);
 const emailService = container.get(EmailService);
@@ -28,7 +29,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  await usersCollection.deleteMany();
+  await UserModel.deleteMany();
   sendConfirmationCodeSpyOn.mockClear();
 });
 
@@ -52,7 +53,7 @@ describe('AuthService.resendingConfirmationCode', () => {
     const inputCredentials = getInputRegistratonData();
     await authService.registration(inputCredentials);
 
-    const userInDatabase = await usersCollection.findOne({
+    const userInDatabase = await UserModel.findOne({
       $or: [{ login: inputCredentials.login }, { email: inputCredentials.email }],
     });
 
@@ -60,7 +61,7 @@ describe('AuthService.resendingConfirmationCode', () => {
       inputCredentials.email,
     );
 
-    const userInDatabaseAfterResendCode = await usersCollection.findOne({
+    const userInDatabaseAfterResendCode = await UserModel.findOne({
       $or: [{ login: inputCredentials.login }, { email: inputCredentials.email }],
     });
 
@@ -86,7 +87,7 @@ describe('AuthService.resendingConfirmationCode', () => {
     const inputCredentials = getInputRegistratonData();
     await authService.registration(inputCredentials);
 
-    await usersCollection.updateOne(
+    await UserModel.updateOne(
       { login: inputCredentials.login },
       { $set: { 'emailConfirmation.isConfirmed': true } },
     );

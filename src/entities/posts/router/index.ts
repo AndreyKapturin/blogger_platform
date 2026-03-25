@@ -7,7 +7,7 @@ import { validationResultMiddleware } from '../../../core/middlewares/validation
 import { basicAuthMiddleware } from '../../../core/middlewares/basicAuthMiddleware';
 import { idInParamsCheckMiddleware } from '../../../core/validation/idInParamsCheckMiddleware';
 import { inputCommentValidationSchema } from '../../comments/validations/inputCommentValidationSchema';
-import { bearerAuthMiddlewate } from '../../../core/middlewares/bearerAuthMiddlewate';
+import { bearerAuthMiddlewate, optionalBearerAuthMiddlewate } from '../../../core/middlewares/bearerAuthMiddlewate';
 import { paginationAndSortingCommentValidationSchema } from '../../comments/validations/paginationAndSortingCommentValidationSchema';
 import { Routes } from '../../../app/routes';
 import { container } from '../../../compositionRoot';
@@ -33,6 +33,7 @@ postsRouter.get(
 
 postsRouter.get(
   Routes.PostIdComments(':id'),
+  optionalBearerAuthMiddlewate,
   idInParamsCheckMiddleware,
   paginationAndSortingCommentValidationSchema,
   validationResultMiddleware,

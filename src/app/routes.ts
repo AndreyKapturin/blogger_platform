@@ -19,6 +19,7 @@ export const Routes = {
   Devices: '/devices',
   PasswordRecovery: '/password-recovery',
   NewPassword: '/new-password',
+  LikeStatus: '/like-status',
 
   get AuthLogin() {
     return `${this.Auth}${this.Login}`;
@@ -60,24 +61,30 @@ export const Routes = {
     return `${this.Blogs}/${id}`;
   },
   BlogIdPosts(id: string) {
-    return `/${id}/${this.Posts}`;
+    return `/${id}${this.Posts}`;
   },
   BlogPostsById(id: string) {
-    return `${this.Blogs}/${id}/${this.Posts}`;
+    return `${this.Blogs}/${id}${this.Posts}`;
   },
 
   PostById(id: string) {
     return `${this.Posts}/${id}`;
   },
   PostIdComments(id: string) {
-    return `/${id}/${this.Comments}`;
+    return `/${id}${this.Comments}`;
   },
   PostCommentsById(id: string) {
-    return `${this.Posts}/${id}/${this.Comments}`;
+    return `${this.Posts}/${id}${this.Comments}`;
   },
 
   CommentById(id: string) {
     return `${this.Comments}/${id}`;
+  },
+  CommentIdLikeStatus(id: string) {
+    return `/${id}${this.LikeStatus}`;
+  },
+  CommentLikeStatus(id: string) {
+    return `${this.Comments}/${id}${this.LikeStatus}`;
   },
 
   UserById(id: string) {
