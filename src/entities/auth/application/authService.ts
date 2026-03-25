@@ -261,7 +261,6 @@ class AuthService {
     });
 
     await this.recoveryCodesCommandRepository.save(recoveryCode);
-    console.log('Auth Service recoveryPassword', recoveryCode);
 
     this.emailService
       .sendPasswordRecoveryCode(email, recoveryCode.code)

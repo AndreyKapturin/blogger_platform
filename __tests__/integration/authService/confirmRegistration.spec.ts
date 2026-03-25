@@ -11,6 +11,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { AuthService } from '../../../src/entities/auth/application/authService';
 import { EmailService } from '../../../src/core/services/emailService';
 import { UserModel } from '../../../src/entities/users/domain/UserModel';
+import { dateUtils } from '../../../src/core/utils/date/dateUtils';
 
 const authService = container.get(AuthService);
 const emailService = container.get(EmailService);
@@ -113,7 +114,7 @@ describe('AuthService.confirmRegistration', () => {
 
     await UserModel.updateOne(
       { login: inputCredentials.login },
-      { $set: { 'emailConfirmation.codeExpirationDate': new Date() } },
+      { $set: { 'emailConfirmation.codeExpirationDate': dateUtils.getDateMinusMinutes(1) } },
     );
 
     const confirmRegistrationResult = await authService.confirmRegistration(

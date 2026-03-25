@@ -4,6 +4,7 @@ import { Routes } from '../../../../src/app/routes';
 import { ViewPostType } from '../../../../src/entities/posts/types';
 import { createPostsTestManager, PostsTestManagerType } from '../../utils/postsTestManager';
 import { createBlogsTestManager, BlogsTestManagerType } from '../../utils/blogsTestManager';
+import { expectedViewComment } from '../../utils/commentsTestManager';
 import { ViewBlogType } from '../../../../src/entities/blogs/types';
 import request from 'supertest';
 import { HttpStatus } from '../../../../src/core/types/HttpStatus';
@@ -51,19 +52,12 @@ describe(`POST ${Routes.PostCommentsById(':id')}`, () => {
       .send({
         content: validCommentContent,
       });
-
+      
     expect(createCommentResponse.status).toBe(HttpStatus.Created);
-    expect(createCommentResponse.body).toEqual(
-      expect.objectContaining({
-        id: expect.any(String),
-        content: validCommentContent,
-        commentatorInfo: {
-          userId: user.id,
-          userLogin: user.login,
-        },
-        createdAt: expect.stringMatching(ISODateStringRegExp),
-      }),
-    );
+    expect(createCommentResponse.body).toEqual({
+      ...expectedViewComment,
+      content: validCommentContent,
+    });
   });
 
   it(`should return ${HttpStatus.Bad_Request} if data is invalid`, async () => {

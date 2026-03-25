@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { RequestWithParams, RequestWithParamsAndBody } from '../../../core/types/RequestTypes';
-import { CommentIdParamType, InputCommentType, ViewCommentType } from '../types';
+import { CommentIdParamType, InputCommentType, InputLikeStatus, ViewCommentType } from '../types';
 import { CommentsQueryRepository } from '../repositories/commentsQueryRepository';
 import { HttpStatus } from '../../../core/types/HttpStatus';
 import { CommentsService } from '../application/commentsService';
@@ -21,7 +21,7 @@ class CommentsController {
   ) {}
 
   async getCommentById(req: RequestWithParams<CommentIdParamType>, res: Response<ViewCommentType>) {
-    const foundComment = await this.commentsQueryRepository.findById(req.params.id);
+    const foundComment = await this.commentsQueryRepository.findById(req.params.id, req.user?.userId);
 
     if (!foundComment) {
       res.sendStatus(HttpStatus.Not_Found);
@@ -60,6 +60,24 @@ class CommentsController {
 
     if (isWrongResult(deleteCommentResult)) {
       sendHttpResponseIfWrongResult(deleteCommentResult, res);
+      return;
+    }
+
+    res.sendStatus(HttpStatus.No_Content);
+  }
+
+  async changeLikeStatus(
+    req: RequestWithParamsAndBody<CommentIdParamType, InputLikeStatus>,
+    res: Response<APIErrorResult>,
+  ) {
+    const changeLikeStatusResult = await this.commentsService.changeLikeStatus(
+      req.params.id,
+      req.user!.userId,
+      req.body.likeStatus,
+    );
+
+    if (isWrongResult(changeLikeStatusResult)) {
+      sendHttpResponseIfWrongResult(changeLikeStatusResult, res);
       return;
     }
 

@@ -1,5 +1,26 @@
 import { PaginationAndSortQuery } from '../../core/types/PaginationAndSorting';
 
+enum LikeStatus {
+  Like = 'Like',
+  Dislike = 'Dislike',
+  None = 'None',
+}
+
+type InputLikeStatus = {
+  likeStatus: LikeStatus;
+};
+
+type LikesInfoType = {
+  likesUserIds: string[];
+  dislikesUserIds: string[];
+};
+
+type ViewLikesInfoType = {
+  likesCount: number;
+  dislikesCount: number;
+  myStatus: LikeStatus;
+};
+
 type CommentIdParamType = {
   id: string;
 };
@@ -17,6 +38,7 @@ type ViewCommentType = {
   id: string;
   content: string;
   commentatorInfo: CommentatorInfoType;
+  likesInfo: ViewLikesInfoType;
   createdAt: string;
 };
 
@@ -24,6 +46,7 @@ type CommentType = {
   postId: string;
   content: string;
   commentatorInfo: CommentatorInfoType;
+  likesInfo: LikesInfoType;
   createdAt: Date;
 };
 
@@ -43,7 +66,7 @@ enum CommentsSortField {
 
 type ViewCommentsQuery = PaginationAndSortQuery<CommentsSortField>;
 
-export { CommentsSortField };
+export { CommentsSortField, LikeStatus };
 export type {
   CommentatorInfoType,
   CommentIdParamType,
@@ -52,4 +75,7 @@ export type {
   ViewCommentType,
   MongoCommentType,
   ViewCommentsQuery,
+  LikesInfoType,
+  ViewLikesInfoType,
+  InputLikeStatus,
 };

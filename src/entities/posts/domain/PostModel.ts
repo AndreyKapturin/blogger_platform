@@ -21,7 +21,7 @@ const postSchema = new mongoose.Schema<PostType>({
   content: { type: 'String', required: true, maxLength: MAX_POST_CONTENT_LENGTH_DB },
   blogId: { type: 'String', required: true },
   blogName: { type: 'String', required: true, maxLength: MAX_BLOG_NAME_LENGTH_DB },
-  createdAt: { type: 'Date', required: true, default: new Date() },
+  createdAt: { type: 'Date', required: true, default: () => new Date() },
 });
 
 const PostModel = mongoose.model<PostType>('Post', postSchema);

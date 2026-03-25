@@ -15,7 +15,7 @@ const blogSchema = new mongoose.Schema<BlogType>({
   description: { type: 'String', required: true, maxLength: MAX_BLOG_DESCRIPTION_LENGTH_DB },
   isMembership: { type: 'Boolean', default: false },
   websiteUrl: { type: 'String', required: true, maxLength: MAX_BLOG_WEBSITE_URL_LENGTH_DB },
-  createdAt: { type: 'Date', required: true, default: new Date() },
+  createdAt: { type: 'Date', required: true, default: () => new Date() },
 });
 
 const BlogModel = mongoose.model<BlogType>('Blog', blogSchema);
