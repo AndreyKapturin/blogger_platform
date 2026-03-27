@@ -126,12 +126,36 @@ paths:
           description: Unauthorized
         '404':
           description: Post not found
+  
+  /posts/{id}/like-status:
+    put:
+      tags: [Posts]
+      summary: Change like status for post
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PostIdPathParam'
+      requestBody:
+        description: New like status
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InputLikeStatusSchema'
+      responses:
+        '204':
+          description: Successfully udpate post like status
+        '400':
+          $ref: '#/components/responses/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Post not found
       
 components: 
   schemas: 
     ViewPostSchema:
       type: object
-      required: 
+      required:
         - id
         - title
         - shortDescription
@@ -139,7 +163,8 @@ components:
         - blogId
         - blogName
         - createdAt
-      properties: 
+        - extendedLikesInfo
+      properties:
         id:
           type: string
         title:
@@ -155,6 +180,28 @@ components:
         createdAt:
           type: string
           format: date-time
+        extendedLikesInfo:
+          type: object
+          properties:
+            likesCount:
+              type: integer
+            dislikesCount:
+              type: integer
+            myStatus:
+              $ref: '#/components/schemas/LikeStatus'
+            newestLikes:
+              type: array
+              description: Last 3 users who liked post
+              items:
+                type: object
+                properties:
+                  addedAt:
+                    type: string
+                    format: date-time
+                  userId:
+                    type: string
+                  login:
+                    type: string
 
     ViewPostsPaginationSchema:
       allOf:
