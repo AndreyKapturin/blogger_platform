@@ -9,6 +9,7 @@ import {
 import {
   CommentIdParamType,
   InputCommentType,
+  InputLikeStatus,
   ViewCommentsQuery,
   ViewCommentType,
 } from '../../comments/types';
@@ -29,6 +30,7 @@ import { PostsCommandRepository } from '../repositories/postsCommandRepository';
 import { inject, injectable } from 'inversify';
 import { InputCreatePostDto } from '../domain/InputCreatePostDto';
 import { InputUpdatePostDto } from '../domain/InputUpdatePostDto';
+import { InputPostLikeStatusDto } from '../domain/InputPostLikeStatusDto';
 
 @injectable()
 class PostsController {
@@ -98,7 +100,7 @@ class PostsController {
   }
 
   async getPostById(req: RequestWithParams<PostIdParamType>, res: Response<ViewPostType>) {
-    const foundPost = await this.postsQueryRepository.findById(req.params.id);
+    const foundPost = await this.postsQueryRepository.findById(req.params.id, req.user?.userId);
 
     if (!foundPost) {
       res.sendStatus(HttpStatus.Not_Found);
@@ -133,7 +135,10 @@ class PostsController {
 
   async getPosts(req: RequestWithQuery<ViewPostQuery>, res: Response<Paginator<ViewPostType>>) {
     const cleanQuery = matchedData<ViewPostQuery>(req, { locations: ['query'] });
-    const paginateViewPosts = await this.postsQueryRepository.findAllWithPagination(cleanQuery);
+    const paginateViewPosts = await this.postsQueryRepository.findAllWithPagination(
+      cleanQuery,
+      req.user?.userId,
+    );
     res.status(HttpStatus.Ok).json(paginateViewPosts);
   }
 
@@ -152,6 +157,27 @@ class PostsController {
 
     if (isWrongResult(updatePostResult)) {
       sendHttpResponseIfWrongResult(updatePostResult, res);
+      return;
+    }
+
+    res.sendStatus(HttpStatus.No_Content);
+  }
+
+  async changeLikeStatus(
+    req: RequestWithParamsAndBody<PostIdParamType, InputLikeStatus>,
+    res: Response<APIErrorResult>,
+  ) {
+    const inputPostLikeStatusDto = new InputPostLikeStatusDto(
+      req.params.id,
+      req.user!.userId,
+      req.body.likeStatus,
+    );
+
+    const changePostLikeStatusResult =
+      await this.postsService.changeLikeStatus(inputPostLikeStatusDto);
+
+    if (isWrongResult(changePostLikeStatusResult)) {
+      sendHttpResponseIfWrongResult(changePostLikeStatusResult, res);
       return;
     }
 

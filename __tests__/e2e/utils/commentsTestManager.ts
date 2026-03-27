@@ -5,14 +5,12 @@ import { Express } from 'express';
 import { faker } from '@faker-js/faker';
 import {
   InputCommentType,
-  LikeStatus,
   ViewCommentType,
 } from '../../../src/entities/comments/types';
 import { getRandomIntInRange } from '../../../src/core/utils/numbers/numberUtils';
 import { Paginator } from '../../../src/core/types/PaginationAndSorting';
 import { ISODateStringRegExp } from './constants';
-
-const likeStatusesRegExp = new RegExp('^' + Object.values(LikeStatus).join('|') + '$');
+import { likeStatusesRegExp } from '../../../src/core/constants';
 
 const expectedViewComment: ViewCommentType = {
   id: expect.any(String),

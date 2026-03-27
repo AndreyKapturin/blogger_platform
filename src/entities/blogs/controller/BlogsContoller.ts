@@ -125,6 +125,7 @@ class BlogsController {
     const paginatedViewPosts = await this.postsQueryRepository.findAllForBlogWithPagination(
       blogId,
       cleanQuery,
+      req.user?.userId,
     );
     res.status(HttpStatus.Ok).json(paginatedViewPosts);
   }

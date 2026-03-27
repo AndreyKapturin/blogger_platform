@@ -282,7 +282,7 @@ describe(`GET ${Routes.PostCommentsById(':id')}`, () => {
       user3AccessToken,
       'User 1 correct comment',
     );
-    expect(true).toBe(true);
+    
     await request(app)
       .put(Routes.CommentLikeStatus(comment1User.id))
       .set('Authorization', `Bearer ${user2AccessToken}`)

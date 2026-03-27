@@ -6,6 +6,8 @@ import { PostsCommandRepository } from '../repositories/postsCommandRepository';
 import { PostModel } from '../domain/PostModel';
 import { InputCreatePostDto } from '../domain/InputCreatePostDto';
 import { InputUpdatePostDto } from '../domain/InputUpdatePostDto';
+import { InputPostLikeStatusDto } from '../domain/InputPostLikeStatusDto';
+import { UsersCommandRepository } from '../../users/repositories/usersCommandRepository';
 
 @injectable()
 class PostsService {
@@ -14,6 +16,8 @@ class PostsService {
     private blogsCommandRepository: BlogsCommandRepository,
     @inject(PostsCommandRepository)
     private postsCommandRepository: PostsCommandRepository,
+    @inject(UsersCommandRepository)
+    private usersCommandRepository: UsersCommandRepository,
   ) {}
   async createPost(inputCreatePostDto: InputCreatePostDto): Promise<Result<string>> {
     const blogDocument = await this.blogsCommandRepository.findById(inputCreatePostDto.blogId);
@@ -90,6 +94,36 @@ class PostsService {
     }
 
     await this.postsCommandRepository.delete(postDocument);
+    return ResultFactory.success(null);
+  }
+
+  async changeLikeStatus(inputPostLikeStatusDto: InputPostLikeStatusDto): Promise<Result> {
+    const { postId, newLikeStatus, userId } = inputPostLikeStatusDto;
+
+    const userDocument = await this.usersCommandRepository.findById(userId);
+
+    if (!userDocument) {
+      return ResultFactory.wrong(ResultStatus.InvalidCredentials, 'User unauthorized', [
+        {
+          field: 'accessToken',
+          message: `User unauthorized`,
+        },
+      ]);
+    }
+
+    const postDocument = await this.postsCommandRepository.findById(postId);
+
+    if (!postDocument) {
+      return ResultFactory.wrong(ResultStatus.NotFound, 'Post not found', [
+        {
+          field: 'id',
+          message: `Post with id ${postId} not found`,
+        },
+      ]);
+    }
+
+    postDocument.changeLikeStatus(userId, userDocument.login, newLikeStatus);
+    await this.postsCommandRepository.update(postDocument);
     return ResultFactory.success(null);
   }
 }

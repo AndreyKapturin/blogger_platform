@@ -1,7 +1,21 @@
 import { PaginationAndSortQuery } from '../../core/types/PaginationAndSorting';
+import { LikeStatus } from '../comments/types';
 
 type PostIdParamType = {
   id: string;
+};
+
+type NewestLike = {
+  addedAt: string;
+  userId: string;
+  login: string;
+};
+
+type ReactionType = {
+  status: LikeStatus;
+  addedAt: Date;
+  userId: string;
+  login: string;
 };
 
 type PostType = {
@@ -11,20 +25,41 @@ type PostType = {
   blogId: string;
   createdAt: Date;
   blogName: string;
+  reactions: ReactionType[];
+};
+
+type ExtendedLikesInfo = {
+  likesCount: number;
+  dislikesCount: number;
+  myStatus: LikeStatus;
+  newestLikes: NewestLike[];
 };
 
 type ViewPostType = {
-  id: string,
+  id: string;
   title: string;
   shortDescription: string;
   content: string;
   blogId: string;
   createdAt: string;
   blogName: string;
-}
+  extendedLikesInfo: ExtendedLikesInfo;
+};
 
-type InputUpdatePostType = Omit<PostType, 'createdAt'>;
-type InputPostType = Omit<InputUpdatePostType, 'blogName'>;
+type InputUpdatePostType = {
+  title: string;
+  shortDescription: string;
+  content: string;
+  blogId: string;
+};
+
+type InputPostType = {
+  title: string;
+  shortDescription: string;
+  content: string;
+  blogId: string;
+};
+
 type InputBlogPostType = Omit<InputPostType, 'blogId'>;
 
 enum PostSortField {
@@ -44,4 +79,7 @@ export type {
   InputPostType,
   ViewPostQuery,
   InputBlogPostType,
+  NewestLike,
+  ExtendedLikesInfo,
+  ReactionType,
 };

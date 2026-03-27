@@ -12,6 +12,7 @@ import { paginationAndSortingCommentValidationSchema } from '../../comments/vali
 import { Routes } from '../../../app/routes';
 import { container } from '../../../compositionRoot';
 import { PostsController } from '../controller/PostsController';
+import { inputLikeStatusValidation } from '../../comments/validations/inputLikeStatusValidation';
 
 const postsController = container.get(PostsController);
 
@@ -19,6 +20,7 @@ const postsRouter = Router();
 
 postsRouter.get(
   Routes.Index,
+  optionalBearerAuthMiddlewate,
   paginationAndSortingPostsValidationSchema,
   validationResultMiddleware,
   postsController.getPosts.bind(postsController),
@@ -26,6 +28,7 @@ postsRouter.get(
 
 postsRouter.get(
   Routes.ById(':id'),
+  optionalBearerAuthMiddlewate,
   idInParamsCheckMiddleware,
   validationResultMiddleware,
   postsController.getPostById.bind(postsController),
@@ -55,6 +58,15 @@ postsRouter.post(
   inputCommentValidationSchema,
   validationResultMiddleware,
   postsController.createPostComment.bind(postsController),
+);
+
+postsRouter.put(
+  Routes.IdLikeStatus(':id'),
+  bearerAuthMiddlewate,
+  idInParamsCheckMiddleware,
+  inputLikeStatusValidation,
+  validationResultMiddleware,
+  postsController.changeLikeStatus.bind(postsController),
 );
 
 postsRouter.put(

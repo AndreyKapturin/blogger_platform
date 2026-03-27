@@ -30,7 +30,7 @@ commentsRouter.put(
 );
 
 commentsRouter.put(
-  Routes.CommentIdLikeStatus(':id'),
+  Routes.IdLikeStatus(':id'),
   bearerAuthMiddlewate,
   idInParamsCheckMiddleware,
   inputLikeStatusValidation,

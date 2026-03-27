@@ -9,6 +9,7 @@ import request from 'supertest';
 import { authHeader } from '../../../../src/core/constants';
 import { ISODateStringRegExp } from '../../utils/constants';
 import { closeBbConnection } from '../../../../src/database/mongoDB';
+import { LikeStatus } from '../../../../src/entities/comments/types';
 
 let app: Express;
 let blogsTestManager: BlogsTestManagerType;
@@ -46,6 +47,12 @@ describe(`POST ${Routes.BlogPostsById(':id')}`, () => {
         blogId: blog.id,
         blogName: blog.name,
         createdAt: expect.stringMatching(ISODateStringRegExp),
+        extendedLikesInfo: {
+          likesCount: 0,
+          dislikesCount: 0,
+          newestLikes: [],
+          myStatus: LikeStatus.None,
+        },
       };
 
       expect(createPostResponse.status).toBe(HttpStatus.Created);
