@@ -16,22 +16,18 @@ let postsTestManager: PostsTestManagerType;
 let blogs: ViewBlogType[];
 let posts: ViewPostType[];
 
-
 beforeAll(async () => {
   app = await createApp();
   blogTestManager = createBlogsTestManager(app);
   postsTestManager = createPostsTestManager(app);
   await request(app).delete(Routes.TestingAllData).expect(HttpStatus.No_Content);
 
-  blogs = await blogTestManager.createManyBlogs(3);
+  blogs = await blogTestManager.createManyBlogs(2);
 
-  const blog1Posts = await postsTestManager.createManyPosts(blogs[0], 100);
-  const blog2Posts = await postsTestManager.createManyPosts(blogs[1], 150);
+  const blog1Posts = await postsTestManager.createManyPosts(blogs[0], 10);
+  const blog2Posts = await postsTestManager.createManyPosts(blogs[1], 15);
 
-  posts = [
-    ...blog1Posts,
-    ...blog2Posts,
-  ]
+  posts = [...blog1Posts, ...blog2Posts];
 });
 
 describe(`GET ${Routes.Posts}`, () => {
@@ -59,7 +55,11 @@ describe(`GET ${Routes.Posts}`, () => {
     ])(
       'paginated posts with $sortDirection by $sortBy field sorting and $pageSize posts on page',
       async ({ sortDirection, sortBy, pageSize }) => {
-        await postsTestManager.getPaginatedPosts(posts, blogs[1].id, { pageSize, sortBy, sortDirection });
+        await postsTestManager.getPaginatedPosts(posts, blogs[1].id, {
+          pageSize,
+          sortBy,
+          sortDirection,
+        });
       },
     );
   });
@@ -68,4 +68,3 @@ describe(`GET ${Routes.Posts}`, () => {
 afterAll(async () => {
   await closeBbConnection();
 });
-

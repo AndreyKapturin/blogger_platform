@@ -8,7 +8,8 @@
   "scripts": {
     "watch": "tsc -w",
     "dev": "nodemon dist/index.js",
-    "test": "jest -i"
+    "test": "jest -i",
+    "localhostRun": "ssh -R 80:localhost:5001 nokey@localhost.run"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

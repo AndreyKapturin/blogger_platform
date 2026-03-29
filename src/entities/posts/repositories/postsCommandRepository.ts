@@ -14,7 +14,7 @@ class PostsCommandRepository {
 
   async save(newPostDocument: PostDocumentType): Promise<string> {
     const savedPostDocument = await newPostDocument.save();
-    return savedPostDocument.id;
+    return savedPostDocument._id.toString();
   }
 
   async update(updatedPostDocument: PostDocumentType): Promise<boolean> {

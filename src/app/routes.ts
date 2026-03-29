@@ -76,12 +76,12 @@ export const Routes = {
   PostCommentsById(id: string) {
     return `${this.Posts}/${id}${this.Comments}`;
   },
+  PostLikeStatus(id: string) {
+    return `${this.Posts}/${id}${this.LikeStatus}`;
+  },
 
   CommentById(id: string) {
     return `${this.Comments}/${id}`;
-  },
-  CommentIdLikeStatus(id: string) {
-    return `/${id}${this.LikeStatus}`;
   },
   CommentLikeStatus(id: string) {
     return `${this.Comments}/${id}${this.LikeStatus}`;
@@ -101,4 +101,8 @@ export const Routes = {
   ById(id: string) {
     return `/${id}`;
   },
+  
+  IdLikeStatus(id: string) {
+    return `/${id}${this.LikeStatus}`;
+  }
 };

@@ -26,6 +26,7 @@ import { UsersService } from './entities/users/application/usersService';
 import { UsersController } from './entities/users/controller/UsersController';
 import { UsersCommandRepository } from './entities/users/repositories/usersCommandRepository';
 import { UsersQueryRepository } from './entities/users/repositories/usersQueryRepository';
+import { ReactionRepository } from './entities/reactions/repositories/ReactionRepository';
 
 export const container = new Container();
 
@@ -42,6 +43,7 @@ export const container = new Container();
   CommentsQueryRepository,
   RequestsCommandRepository,
   RecoveryCodesCommandRepository,
+  ReactionRepository,
   CryptoService,
   JwtService,
   EmailService,

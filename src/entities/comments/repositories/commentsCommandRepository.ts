@@ -9,7 +9,7 @@ class CommentsCommandRepository {
 
   async save(newCommentDocument: CommentDocumentType): Promise<string> {
     const savedCommentDocument = await newCommentDocument.save();
-    return savedCommentDocument.id;
+    return savedCommentDocument._id.toString();
   }
 
   async update(updatedCommentDocument: CommentDocumentType): Promise<boolean> {

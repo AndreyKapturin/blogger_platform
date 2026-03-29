@@ -12,6 +12,7 @@ import { idInParamsCheckMiddleware } from '../../../core/validation/idInParamsCh
 import { Routes } from '../../../app/routes';
 import { container } from '../../../compositionRoot';
 import { BlogsController } from '../controller/BlogsContoller';
+import { optionalBearerAuthMiddlewate } from '../../../core/middlewares/bearerAuthMiddlewate';
 
 const blogsController = container.get(BlogsController);
 
@@ -34,6 +35,7 @@ blogsRouter.get(
 
 blogsRouter.get(
   Routes.BlogIdPosts(':id'),
+  optionalBearerAuthMiddlewate,
   idInParamsCheckMiddleware,
   paginationAndSortingPostsValidationSchema,
   validationResultMiddleware,
