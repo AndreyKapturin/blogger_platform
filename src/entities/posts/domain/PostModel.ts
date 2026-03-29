@@ -1,5 +1,5 @@
-import { HydratedDocument, Model, Schema, model } from 'mongoose';
-import { PostType, ReactionType } from '../types';
+import { HydratedDocument, Model, Schema, Types, model, Document } from 'mongoose';
+import { NewestLike, PostLikesInfoType, PostType } from '../types';
 import {
   MAX_BLOG_NAME_LENGTH_DB,
   MAX_POST_CONTENT_LENGTH_DB,
@@ -7,10 +7,15 @@ import {
   MAX_POST_TITLE_LENGTH_DB,
 } from '../../../database/constants';
 import { LeanDocument } from '../../../database/types';
-import { LikeStatus } from '../../comments/types';
 
 type PostMethods = {
-  changeLikeStatus(userId: string, login: string, newLikeStatus: LikeStatus): void;
+  addLike(): void;
+  addDislike(): void;
+  removeLike(): void;
+  removeDislike(): void;
+  likeToDislike(): void;
+  dislikeToLike(): void;
+  setNewestLikes(newestLikes: NewestLike[]): void;
 };
 
 type PostModelType = Model<PostType, {}, PostMethods>;
@@ -18,12 +23,22 @@ type PostModelType = Model<PostType, {}, PostMethods>;
 type PostDocumentType = HydratedDocument<PostType, PostMethods>;
 type PostLeanDocument = LeanDocument<PostType>;
 
-const reactionsSchema = new Schema<ReactionType>(
+const newestLikesSchema = new Schema<NewestLike>(
   {
+    addedAt: { type: 'String', required: true },
     login: { type: 'String', required: true },
     userId: { type: 'String', required: true },
-    addedAt: { type: 'Date', required: true },
-    status: { type: 'String', enum: LikeStatus },
+  },
+  {
+    _id: false,
+  },
+);
+
+const likesInfoSchema = new Schema<PostLikesInfoType>(
+  {
+    likesCount: { type: 'Number', required: true, default: 0 },
+    dislikesCount: { type: 'Number', required: true, default: 0 },
+    newestLikes: { type: [{ type: newestLikesSchema }], default: [] },
   },
   {
     _id: false,
@@ -42,26 +57,35 @@ const postSchema = new Schema<PostType, PostModelType, PostMethods>(
     blogId: { type: 'String', required: true },
     blogName: { type: 'String', required: true, maxLength: MAX_BLOG_NAME_LENGTH_DB },
     createdAt: { type: 'Date', required: true, default: () => new Date() },
-    reactions: { type: [{ type: reactionsSchema }], default: [] },
+    likesInfo: {
+      type: likesInfoSchema,
+      default: { likesCount: 0, dislikesCount: 0, newestLikes: [] },
+    },
   },
   {
     methods: {
-      changeLikeStatus(userId: string, login: string, newLikeStatus: LikeStatus): void {
-        const userReaction = this.reactions.find((r) => r.userId === userId);
-
-        if (!userReaction) {
-          const newReaction: ReactionType = {
-            userId,
-            login,
-            status: newLikeStatus,
-            addedAt: new Date(),
-          };
-
-          this.reactions.push(newReaction);
-          return;
-        }
-
-        userReaction.status = newLikeStatus;
+      addLike() {
+        this.likesInfo.likesCount += 1;
+      },
+      addDislike() {
+        this.likesInfo.dislikesCount += 1;
+      },
+      removeLike() {
+        this.likesInfo.likesCount -= 1;
+      },
+      removeDislike() {
+        this.likesInfo.dislikesCount -= 1;
+      },
+      likeToDislike() {
+        this.removeLike();
+        this.addDislike();
+      },
+      dislikeToLike() {
+        this.removeDislike();
+        this.addLike();
+      },
+      setNewestLikes(newestLikes) {
+        this.likesInfo.newestLikes = newestLikes;
       },
     },
   },

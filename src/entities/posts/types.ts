@@ -11,11 +11,10 @@ type NewestLike = {
   login: string;
 };
 
-type ReactionType = {
-  status: LikeStatus;
-  addedAt: Date;
-  userId: string;
-  login: string;
+type PostLikesInfoType = {
+  likesCount: number;
+  dislikesCount: number;
+  newestLikes: NewestLike[];
 };
 
 type PostType = {
@@ -25,7 +24,7 @@ type PostType = {
   blogId: string;
   createdAt: Date;
   blogName: string;
-  reactions: ReactionType[];
+  likesInfo: PostLikesInfoType;
 };
 
 type ExtendedLikesInfo = {
@@ -80,6 +79,6 @@ export type {
   ViewPostQuery,
   InputBlogPostType,
   NewestLike,
+  PostLikesInfoType,
   ExtendedLikesInfo,
-  ReactionType,
 };

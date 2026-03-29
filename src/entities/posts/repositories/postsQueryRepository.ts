@@ -4,78 +4,64 @@ import { injectable } from 'inversify';
 import { PostLeanDocument, PostModel } from '../domain/PostModel';
 import { QueryFilter } from 'mongoose';
 import { LikeStatus } from '../../comments/types';
+import { ReactionDocument, ReactionModel } from '../../reactions/domain/ReactionModel';
 
 @injectable()
 class PostsQueryRepository {
   async findAllWithPagination(postsQuery: ViewPostQuery, userId?: string) {
-    const { sortBy, sortDirection, pageSize, pageNumber } = postsQuery;
-
-    const skip = (pageNumber - 1) * pageSize;
-    const foundPosts: PostLeanDocument[] = await PostModel.find()
-      .sort({ [sortBy]: sortDirection })
-      .skip(skip)
-      .limit(pageSize)
-      .lean();
-
-    const viewPosts: ViewPostType[] = foundPosts.map((pld) => this._postToViewMapper(pld, userId));
-
-    const totalCount = await PostModel.countDocuments();
-    const paginatedViewPosts = toPaginateMapper(viewPosts, postsQuery, totalCount);
-    return paginatedViewPosts;
+    return this._findAllWithPagination({}, postsQuery, userId);
   }
 
   async findAllForBlogWithPagination(blogId: string, postsQuery: ViewPostQuery, userId?: string) {
+    return this._findAllWithPagination({ blogId }, postsQuery, userId);
+  }
+
+  async findById(postId: string, userId?: string): Promise<ViewPostType | null> {
+    const postLeanDocument = await PostModel.findById(postId).lean();
+
+    let myStatus = LikeStatus.None;
+
+    if (userId) {
+      const reactionDocument = await ReactionModel.findOne({ parentId: postId, userId });
+      myStatus = reactionDocument ? reactionDocument.status : myStatus;
+    }
+
+    return postLeanDocument ? this._postToViewMapper(postLeanDocument, myStatus) : null;
+  }
+
+  private async _findAllWithPagination(
+    filter: QueryFilter<PostType>,
+    postsQuery: ViewPostQuery,
+    userId?: string,
+  ) {
     const { sortBy, sortDirection, pageSize, pageNumber } = postsQuery;
 
     const skip = (pageNumber - 1) * pageSize;
-    const filter: QueryFilter<PostType> = { blogId };
-
-    const foundPosts = await PostModel.find(filter)
+    const postLeanDocuments: PostLeanDocument[] = await PostModel.find(filter)
       .sort({ [sortBy]: sortDirection })
       .skip(skip)
       .limit(pageSize)
       .lean();
 
-    const viewPosts: ViewPostType[] = foundPosts.map((pld) => this._postToViewMapper(pld, userId));
-    const totalCount = await PostModel.countDocuments(filter);
+    let viewPosts: ViewPostType[];
 
+    if (!userId) {
+      viewPosts = postLeanDocuments.map((pld) => this._postToViewMapper(pld, LikeStatus.None));
+    } else {
+      const postIds = postLeanDocuments.map((pld) => pld._id.toString());
+      const reactionDocuments = await ReactionModel.find({ userId, parentId: { $in: postIds } });
+      viewPosts = this._manyPostToViewMapper(postLeanDocuments, reactionDocuments);
+    }
+
+    const totalCount = await PostModel.countDocuments(filter);
     const paginatedViewPosts = toPaginateMapper(viewPosts, postsQuery, totalCount);
     return paginatedViewPosts;
   }
 
-  async findById(postId: string, userId?: string): Promise<ViewPostType | null> {
-    
-    const postLeanDocument = await PostModel.findById(postId).lean();
-    return postLeanDocument ? this._postToViewMapper(postLeanDocument, userId) : null;
-  }
-
-  private _postToViewMapper(postLeanDocument: PostLeanDocument, userId?: string): ViewPostType {
-    const reactionStats = postLeanDocument.reactions.reduce(
-      (rs, r) => {
-        if (r.status === LikeStatus.Like) rs.likesCount += 1;
-        if (r.status === LikeStatus.Dislike) rs.dislikesCount += 1;
-        if (userId && r.userId === userId) rs.myStatus = r.status;
-        return rs;
-      },
-      {
-        likesCount: 0,
-        dislikesCount: 0,
-        myStatus: LikeStatus.None,
-      },
-    );
-    
-    const newestLikes = postLeanDocument.reactions
-      .filter((r) => r.status === LikeStatus.Like)
-      .sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime())
-      .slice(0, 3)
-      .map((r) => {
-        return {
-          addedAt: r.addedAt.toISOString(),
-          userId: r.userId,
-          login: r.login,
-        };
-      });
-
+  private _postToViewMapper(
+    postLeanDocument: PostLeanDocument,
+    myStatus: LikeStatus,
+  ): ViewPostType {
     return {
       id: postLeanDocument._id.toString(),
       title: postLeanDocument.title,
@@ -85,12 +71,27 @@ class PostsQueryRepository {
       blogId: postLeanDocument.blogId,
       blogName: postLeanDocument.blogName,
       extendedLikesInfo: {
-        likesCount: reactionStats.likesCount,
-        dislikesCount: reactionStats.dislikesCount,
-        myStatus: reactionStats.myStatus,
-        newestLikes,
+        likesCount: postLeanDocument.likesInfo.likesCount,
+        dislikesCount: postLeanDocument.likesInfo.dislikesCount,
+        myStatus: myStatus,
+        newestLikes: postLeanDocument.likesInfo.newestLikes,
       },
     };
+  }
+
+  private _manyPostToViewMapper(
+    postLeanDocuments: PostLeanDocument[],
+    reactionDocuments: ReactionDocument[],
+  ): ViewPostType[] {
+    const postStatusesDictionary = reactionDocuments.reduce((rd, r) => {
+      rd.set(r.parentId, r.status);
+      return rd;
+    }, new Map());
+    return postLeanDocuments.map((pld) => {
+      const userStatus = postStatusesDictionary.get(pld._id.toString());
+      const myStatus = userStatus ? userStatus : LikeStatus.None;
+      return this._postToViewMapper(pld, myStatus);
+    });
   }
 }
 
